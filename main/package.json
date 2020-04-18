@@ -1,13 +1,14 @@
 {
   "name": "robin",
   "version": "1.0.0",
-  "main": "./src/electron.js",
+  "main": "./dist/main/src/electron.js",
   "scripts": {
-    "start": "concurrently \"tsc ./src/electron.ts -w\"  \"cross-env NODE_ENV=dev nodemon --exec 'wait-on http://localhost:3000 && electron src/electron.js'\""
+    "start": "concurrently \"tsc -w\"  \"cross-env NODE_ENV=dev nodemon --exec 'wait-on http://localhost:3000 && electron dist/main/src/electron.js'\""
   },
   "author": "Guilherme Girotto",
   "dependencies": {
     "@types/hoxy": "^3.3.0",
+    "@types/node": "^13.13.0",
     "electron": "^8",
     "hoxy": "^3.3.1"
   },

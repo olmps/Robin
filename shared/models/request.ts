@@ -3,7 +3,7 @@ enum NetworkRequestMethod {
     get, put, post
 }
 
-export function networkRequest(request: string): NetworkRequestMethod {
+export function createNetworkRequest(request: string): NetworkRequestMethod {
     switch (request) {
         case "GET": return NetworkRequestMethod.get
         case "POST": return NetworkRequestMethod.post

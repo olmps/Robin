@@ -1,5 +1,5 @@
 import React from 'react';
-import { NetworkRequest } from '../../models/request';
+import { NetworkRequest } from '../../../../shared/models/request';
 
 export const DisclosureRequestItem = (request: NetworkRequest) => {
     return (

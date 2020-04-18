@@ -1,6 +1,6 @@
 import React from 'react';
 import { DisclosureRequestItem } from './DisclosureRequestItem';
-import { NetworkRequest } from '../../models/request';
+import { NetworkRequest } from '../../../../shared/models/request';
 
 const DisclosureRequestsList = ({ requests }: { requests: NetworkRequest[] }) => {
   return (

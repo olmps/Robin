@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { NetworkRequest, networkRequest } from './models/request';
+import { NetworkRequest } from '../../shared/models/request';
 import DisclosureRequestsList from './components/disclosure-list/DisclosureRequestsList';
 const { ipcRenderer } = window.require('electron');
 
@@ -24,11 +24,10 @@ class InitialHomeState {
 const useHomeState = () => {
   const [homeState, setHomeState] = useState(new InitialHomeState([]))
   useEffect(() => {
-    function proxyRequestHandler(requestPayload: any) {
+    function proxyRequestHandler(requestPayload: NetworkRequest) {
       setHomeState(state => {
-        const newRequest = new NetworkRequest(requestPayload.hostname, requestPayload.url, networkRequest(requestPayload.method))
         const requests = state.requests
-        requests.push(newRequest)
+        requests.push(requestPayload)
         return { ...state, requests }
       })
     }
@@ -36,14 +35,12 @@ const useHomeState = () => {
     // Ensure that ipcRenderer is not already registered. It may happening while
     // debugging for example, when React hot reload.
     if (ipcRenderer.rawListeners('proxy-new-request').length === 0) {
-      ipcRenderer.on('proxy-new-request', (evt: any, payload: any) => {
-        proxyRequestHandler(payload)
+      ipcRenderer.on('proxy-new-request', (evt: any, request: NetworkRequest) => {
+        proxyRequestHandler(request)
       })
-      console.log(ipcRenderer.rawListeners('proxy-new-request'))
     }
 
     return function unsubscribeProxyListener() {
-      console.log("UNSUBSCRIBING")
       ipcRenderer.removeListener('proxy-new-request', proxyRequestHandler)
     }
   }, [])
