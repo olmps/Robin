@@ -5,6 +5,7 @@ import * as fs from 'fs'
 import * as hoxy from 'hoxy'
 
 let mainWindow: BrowserWindow
+let didSetupProxy: boolean = false
 
 function startWindow() {
     mainWindow = new BrowserWindow({ 
@@ -34,10 +35,14 @@ function startProxy() {
     }).listen(8080)
 
     mainWindow.webContents.on('did-finish-load', () => {
-        proxy.intercept('request', (req, res, cycle) => {
-            mainWindow.webContents.send('proxy-new-request', { headers: req.headers, protocol: req.protocol, hostname: req.hostname, method: req.method, url: req.url });
-        });
-    });
+        // 'did-finish-load' may be called multiple times when debugging with React Hot Reload
+        if (!didSetupProxy) {
+            didSetupProxy = true
+            proxy.intercept('request', (req, res, cycle) => {
+                mainWindow.webContents.send('proxy-new-request', { headers: req.headers, protocol: req.protocol, hostname: req.hostname, method: req.method, url: req.url });
+            })
+        }
+    })
 }
 
 app.allowRendererProcessReuse = true

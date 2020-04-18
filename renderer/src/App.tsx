@@ -31,12 +31,16 @@ const useHomeState = () => {
         requests.push(newRequest)
         return { ...state, requests }
       })
-    } 
-    console.log("REGISTERING")
-    ipcRenderer.on('proxy-new-request', (evt: any, payload: any) => {
-      console.log(evt)
-      proxyRequestHandler(payload)
-    })
+    }
+    
+    // Ensure that ipcRenderer is not already registered. It may happening while
+    // debugging for example, when React hot reload.
+    if (ipcRenderer.rawListeners('proxy-new-request').length === 0) {
+      ipcRenderer.on('proxy-new-request', (evt: any, payload: any) => {
+        proxyRequestHandler(payload)
+      })
+      console.log(ipcRenderer.rawListeners('proxy-new-request'))
+    }
 
     return function unsubscribeProxyListener() {
       console.log("UNSUBSCRIBING")
