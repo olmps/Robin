@@ -1,0 +1,19 @@
+.SingleListItem {
+    line-height: 22px;
+}
+
+.SingleListItem summary {
+    display: inline-flex;
+    align-items: center;
+}
+
+.SingleListItem img {
+    padding-right: 6px;
+    width: 16px;
+    height: 16px;
+}
+
+.ListItem ul {
+    padding-left: 20px;
+    list-style-position: inside;
+}
