@@ -1,16 +1,17 @@
 import React from 'react';
+import { DisclosureList } from '../disclosure-list/DisclosureList';
+
 import { NetworkRequest } from '../../../../shared/models/request';
-import { DisclosureItem } from './DisclosureItem';
-import { DisclosureListItem } from './DisclosureListItem';
-import { DisclosureList } from './DisclosureList';
+import { DisclosureItemModel } from '../disclosure-list/models/DisclosureItemModel';
+import { DisclosureListModel } from '../disclosure-list/models/DisclosureListModel';
 
 const DisclosureRequestsList = ({ requests }: { requests: NetworkRequest[] }) => {
   const listItems = buildDisclosureItems(requests)
-  const list = new DisclosureList("", listItems)
+  const list = new DisclosureListModel("", listItems)
   return (
     <>
       <ul style={{paddingLeft: 0}}>
-        <DisclosureListItem list={list}/>
+        <DisclosureList list={list}/>
       </ul>
     </>
   )
@@ -30,7 +31,7 @@ const DisclosureRequestsList = ({ requests }: { requests: NetworkRequest[] }) =>
  * 
  * @param requests List of intercepted requests
  */
-function buildDisclosureItems(requests: NetworkRequest[]): DisclosureItem[] {
+function buildDisclosureItems(requests: NetworkRequest[]): DisclosureItemModel[] {
   // Builds the root lever, i.e, the items representing the domains urls (like www.google.com, www.apple.com, etc)
   const baseUrls = requests.map(request => request.domain)
   const filteredBaseUrls = baseUrls.filter((item, index) => baseUrls.indexOf(item) === index) // Remove duplicates
@@ -38,7 +39,7 @@ function buildDisclosureItems(requests: NetworkRequest[]): DisclosureItem[] {
   // We assign an incremental key for each DisclosureItem
   let currentKey = 0
   const baseItems = filteredBaseUrls.map(baseUrl => {
-    let item = new DisclosureItem(currentKey.toString(), baseUrl, true, [])
+    let item = new DisclosureItemModel(currentKey.toString(), baseUrl, true, [])
     currentKey += 1
     return item
   })
@@ -62,14 +63,14 @@ function buildDisclosureItems(requests: NetworkRequest[]): DisclosureItem[] {
  * @param item The item that represents current `urlSegment`
  * @param key Key object
  */
-function setup(urlSegment: string, item: DisclosureItem, key: { value: number }) {
+function setup(urlSegment: string, item: DisclosureItemModel, key: { value: number }) {
   // Special scenario where the first URL segment is just a slash ('/'). This scenario means a
-  // request on a URL base, like GET www.google.com. We must handle this as a DisclosureItem.
+  // request on a URL base, like GET www.google.com. We must handle this as a DisclosureItem.Model
   // Other standalone slashes must be ignored, because the `urlSegment` is something like /path/to/page/,
   // and the /page already represents the final segment
   if (urlSegment === "/") {
       key.value++
-      const subItem = new DisclosureItem(key.value.toString(), urlSegment, false, [])
+      const subItem = new DisclosureItemModel(key.value.toString(), urlSegment, false, [])
       item.subItems.push(subItem)
       return
   }
@@ -93,7 +94,7 @@ function setup(urlSegment: string, item: DisclosureItem, key: { value: number })
       setup(remainingFragments, existingItem, key)
     } else {
       key.value++
-      const subItem = new DisclosureItem(key.value.toString(), firstFragment, false, [])
+      const subItem = new DisclosureItemModel(key.value.toString(), firstFragment, false, [])
       item.subItems.push(subItem)
       setup(remainingFragments, subItem, key)
     }
@@ -102,7 +103,7 @@ function setup(urlSegment: string, item: DisclosureItem, key: { value: number })
     formattedUrl = formattedUrl.substring(1)
     if (formattedUrl === "") { return }
     key.value++
-    const subItem = new DisclosureItem(key.value.toString(), formattedUrl, false, [])
+    const subItem = new DisclosureItemModel(key.value.toString(), formattedUrl, false, [])
     item.subItems.push(subItem)
   }
 }
