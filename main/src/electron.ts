@@ -2,7 +2,7 @@ import { BrowserWindow, app } from 'electron';
 import * as isDev from "electron-is-dev";
 import * as path from 'path'
 import createProxyHandler from './proxy/proxy';
-import { NetworkRequest } from '../../shared/models/request';
+import { NetworkRequest, createNetworkRequest } from '../../shared/models/request';
 
 let mainWindow: BrowserWindow
 let proxyServer = createProxyHandler({ listenPort: 8080, excludedExtensions: [] })
@@ -12,6 +12,7 @@ function startWindow() {
     mainWindow = new BrowserWindow({
         width: 900,
         height: 680,
+        backgroundColor: '#FFFFFF',
         webPreferences: {
             nodeIntegration: true,
         }

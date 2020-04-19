@@ -20,12 +20,17 @@ class ProxyHandler extends events.EventEmitter {
             cert: fs.readFileSync(`src/resources/certificates/my-private-root-ca.crt.pem`)
           }
     })
-    proxyServer.log('error warn', (event: any) => {
+    proxyServer.on('error', (error: any) => {
+        console.error('hoxy error: ', error)
         // Fallback to "socket hang up" error
         // ENOTFOUND means the target URL was not found -> it may not exists and DNS couldn't resolve it
-        if (event.code === 'ENOTFOUND') return
-        console.warn('hoxy error: ', event.code, event)
-    });
+        if (error.code === 'ENOTFOUND') return
+    })
+
+    proxyServer.log('error warn debug', (evt: any) => {
+      console.error('Hoxy Error')
+      console.error(evt)
+    })
 
     proxyServer.listen(8080)
 

@@ -3,7 +3,7 @@ enum NetworkRequestMethod {
     get, put, post
 }
 
-export function createNetworkRequest(request: string): NetworkRequestMethod {
+export function networkRequest(request: string): NetworkRequestMethod {
     switch (request) {
         case "GET": return NetworkRequestMethod.get
         case "POST": return NetworkRequestMethod.post
@@ -20,9 +20,8 @@ export class NetworkRequest {
     createdAt: Date
 
     get key(): string { return this.createdAt.getTime().toString() }
-    get fullUrl(): string { return `${this.domain}${this.url}` }
 
-    constructor(domain: string, url: string, method: NetworkRequestMethod = NetworkRequestMethod.get) {
+    constructor(domain: string, url: string, method: NetworkRequestMethod) {
         this.domain = domain
         this.url = url
         this.method = method
