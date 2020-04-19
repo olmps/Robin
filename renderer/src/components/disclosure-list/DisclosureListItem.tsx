@@ -26,7 +26,7 @@ const ListItem = ({ item }: { item: DisclosureItem }) => {
         return (
             <>
             <SingleListItem item={item} toggleAction={toggleItem}/>
-            <ul>
+            <ul style={{paddingLeft: 20, listStylePosition: "inside"}}>
                 <DisclosureListItem items={item.subItems}/>
             </ul>
             </>
@@ -48,12 +48,12 @@ const SingleListItem = ({ item, toggleAction }: { item: DisclosureItem, toggleAc
                 e.preventDefault()
                 toggleAction(!item.isOpen)
             }}>
-                <summary>
-                    <img src={itemImage} width="16" height="16" style={{paddingRight: 10}}/>{item.label}
+                <summary style={{display: 'inline'}}>
+                    <img src={itemImage} width="16" height="16" style={{paddingRight: 10, fill: '#B6B6B6'}}/>{item.label}
                 </summary>
             </details>
         )
     }
 
-    return <summary><img src={itemImage} width="16" height="16" style={{paddingRight: 10}}/>{item.label}</summary>
+    return <summary style={{display: 'inline'}}><img src={itemImage} width="16" height="16" style={{paddingRight: 10}}/>{item.label}</summary>
 }
