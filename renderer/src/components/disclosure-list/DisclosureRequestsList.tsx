@@ -2,13 +2,15 @@ import React from 'react';
 import { NetworkRequest } from '../../../../shared/models/request';
 import { DisclosureItem } from './DisclosureItem';
 import { DisclosureListItem } from './DisclosureListItem';
+import { DisclosureList } from './DisclosureList';
 
 const DisclosureRequestsList = ({ requests }: { requests: NetworkRequest[] }) => {
   const listItems = buildDisclosureItems(requests)
+  const list = new DisclosureList("", listItems)
   return (
     <>
-      <ul style={{paddingLeft: 10}}>
-        <DisclosureListItem items={listItems}/>
+      <ul style={{paddingLeft: 0}}>
+        <DisclosureListItem list={list}/>
       </ul>
     </>
   )
@@ -36,7 +38,7 @@ function buildDisclosureItems(requests: NetworkRequest[]): DisclosureItem[] {
   // We assign an incremental key for each DisclosureItem
   let currentKey = 0
   const baseItems = filteredBaseUrls.map(baseUrl => {
-    let item = new DisclosureItem(currentKey.toString(), baseUrl, baseUrl, true, [])
+    let item = new DisclosureItem(currentKey.toString(), baseUrl, true, [])
     currentKey += 1
     return item
   })
@@ -67,7 +69,7 @@ function setup(urlSegment: string, item: DisclosureItem, key: { value: number })
   // and the /page already represents the final segment
   if (urlSegment === "/") {
       key.value++
-      const subItem = new DisclosureItem(key.value.toString(), urlSegment, urlSegment, false, [])
+      const subItem = new DisclosureItem(key.value.toString(), urlSegment, false, [])
       item.subItems.push(subItem)
       return
   }
@@ -91,7 +93,7 @@ function setup(urlSegment: string, item: DisclosureItem, key: { value: number })
       setup(remainingFragments, existingItem, key)
     } else {
       key.value++
-      const subItem = new DisclosureItem(key.value.toString(), firstFragment, firstFragment, false, [])
+      const subItem = new DisclosureItem(key.value.toString(), firstFragment, false, [])
       item.subItems.push(subItem)
       setup(remainingFragments, subItem, key)
     }
@@ -100,7 +102,7 @@ function setup(urlSegment: string, item: DisclosureItem, key: { value: number })
     formattedUrl = formattedUrl.substring(1)
     if (formattedUrl === "") { return }
     key.value++
-    const subItem = new DisclosureItem(key.value.toString(), formattedUrl, formattedUrl, false, [])
+    const subItem = new DisclosureItem(key.value.toString(), formattedUrl, false, [])
     item.subItems.push(subItem)
   }
 }

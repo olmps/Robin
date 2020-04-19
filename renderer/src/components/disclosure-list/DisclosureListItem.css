@@ -1,13 +1,26 @@
 .SingleListItem {
-    line-height: 22px;
-}
-
-.SingleListItem summary {
-    display: inline-flex;
-    align-items: center;
+    line-height: 25px;
+    cursor: default;
 }
 
 .SingleListItem img {
+    padding-left: 6px;
+    padding-right: 6px;
+    width: 16px;
+    height: 16px;
+}
+
+.LeafSingleListItem {
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+    line-height: 25px;
+    padding-left: 2px;
+    cursor: default;
+}
+
+.LeafSingleListItem img {
+    padding-left: 6px;
     padding-right: 6px;
     width: 16px;
     height: 16px;
@@ -16,4 +29,30 @@
 .ListItem ul {
     padding-left: 20px;
     list-style-position: inside;
+}
+
+.DiscloseFinalItem {
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+}
+
+.DiscloseClosedIcon {
+    background: transparent;
+    border-color: transparent;
+    padding: 0px;
+    margin-left: 10px;
+	border-top: 6px solid transparent;
+	border-left: 10px solid #555;
+	border-bottom: 6px solid transparent;
+}
+
+.DiscloseOpenIcon {
+    background: transparent;
+    border-color: transparent;
+    padding: 0px;
+    margin-left: 10px;
+	border-left: 6px solid transparent;
+	border-right: 6px solid transparent;
+	border-top: 10px solid #555;
 }
