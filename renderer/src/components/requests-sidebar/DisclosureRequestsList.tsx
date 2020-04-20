@@ -39,7 +39,7 @@ function buildDisclosureItems(requests: NetworkRequest[]): DisclosureItemModel[]
   // We assign an incremental key for each DisclosureItem
   let currentKey = 0
   const baseItems = filteredBaseUrls.map(baseUrl => {
-    let item = new DisclosureItemModel(currentKey.toString(), baseUrl, true, [])
+    let item = new DisclosureItemModel(currentKey.toString(), baseUrl, true, [], false)
     currentKey += 1
     return item
   })
@@ -51,6 +51,7 @@ function buildDisclosureItems(requests: NetworkRequest[]): DisclosureItemModel[]
   // For each baseUrl, use `setup` function to recursively build its subItems
   requests.forEach(request => {
     const relatedItem = baseItems.find(item => item.label === request.domain)
+    relatedItem!.isNew = request.isNewRequest
     setup(request.url, relatedItem!, key)
   })
   
@@ -70,7 +71,7 @@ function setup(urlSegment: string, item: DisclosureItemModel, key: { value: numb
   // and the /page already represents the final segment
   if (urlSegment === "/") {
       key.value++
-      const subItem = new DisclosureItemModel(key.value.toString(), urlSegment, false, [])
+      const subItem = new DisclosureItemModel(key.value.toString(), urlSegment, false, [], item.isNew)
       item.subItems.push(subItem)
       return
   }
@@ -94,7 +95,7 @@ function setup(urlSegment: string, item: DisclosureItemModel, key: { value: numb
       setup(remainingFragments, existingItem, key)
     } else {
       key.value++
-      const subItem = new DisclosureItemModel(key.value.toString(), firstFragment, false, [])
+      const subItem = new DisclosureItemModel(key.value.toString(), firstFragment, false, [], item.isNew)
       item.subItems.push(subItem)
       setup(remainingFragments, subItem, key)
     }
@@ -103,7 +104,7 @@ function setup(urlSegment: string, item: DisclosureItemModel, key: { value: numb
     formattedUrl = formattedUrl.substring(1)
     if (formattedUrl === "") { return }
     key.value++
-    const subItem = new DisclosureItemModel(key.value.toString(), formattedUrl, false, [])
+    const subItem = new DisclosureItemModel(key.value.toString(), formattedUrl, false, [], item.isNew)
     item.subItems.push(subItem)
   }
 }

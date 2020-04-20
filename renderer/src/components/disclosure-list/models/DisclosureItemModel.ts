@@ -6,6 +6,7 @@ export class DisclosureItemModel {
                 public isRoot: boolean,
                 public subItems: DisclosureItemModel[],
                 // Transient vars
+                public isNew: boolean,
                 public isOpen: boolean = false,
                 public isSelected: boolean = false) { }
 

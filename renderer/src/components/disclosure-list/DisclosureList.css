@@ -11,7 +11,7 @@
 }
 
 .LeafSingleListItem {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     width: 100%;
     line-height: 25px;

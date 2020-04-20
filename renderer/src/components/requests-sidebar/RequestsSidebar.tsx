@@ -13,16 +13,17 @@ const RequestsSidebar = () => {
   )
 }
 
-class InitialHomeState {
+class SidebarState {
   constructor(public requests: NetworkRequest[]) { }
 }
 
 const useSidebarState = () => {
-  const [sidebarState, setSidebarState] = useState(new InitialHomeState([]))
+  const [sidebarState, setSidebarState] = useState(new SidebarState([]))
   useEffect(() => {
     function proxyRequestHandler(requestPayload: NetworkRequest) {
       setSidebarState(state => {
         const requests = state.requests
+        state.requests.forEach(request => request.isNewRequest = false)
         requests.push(requestPayload)
         return { ...state, requests }
       })
