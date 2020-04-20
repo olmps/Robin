@@ -17,9 +17,7 @@ class DisclosureListState {
     constructor(public selectedItemKey: string = "", public openItemsKeys: string[] = []) { }
 }
 
-type SetDisclosureListState = React.Dispatch<React.SetStateAction<DisclosureListState>>
 type KeyAction = ((itemKey: string) => void)
-type KeyboardAction = ((event: Event, item: DisclosureItemModel) => void)
 
 export const DisclosureList = (props: { list: DisclosureListModel }) => {
     const [listState, setListState] = useState(new DisclosureListState())
@@ -39,15 +37,30 @@ export const DisclosureList = (props: { list: DisclosureListModel }) => {
         setListState({ ...listState, openItemsKeys: openItems })
     }
 
-    const onKeyboardKeyDown = (event: Event, item: DisclosureItemModel) => onKeyboardInput(event, item, setSelectedItem, toggleVisibility, props.list, setListState)
+    const onKeyboardKeyDown = (event: Event) => {
+        const keyboardEvent = event as KeyboardEvent
+        const item = props.list.getItem(listState.selectedItemKey)
+        if (item) {
+            item.isSelected = listState.selectedItemKey === item.key
+            item.isOpen = listState.openItemsKeys.indexOf(item.key) !== -1
+            onKeyboardInput(keyboardEvent, item, listState.openItemsKeys, setSelectedItem, toggleVisibility, props.list)
+        }
+    }
+
+    useEffect(() => {
+        document.addEventListener("keydown", onKeyboardKeyDown, false)
+
+        return () => {
+            document.removeEventListener('keydown', onKeyboardKeyDown)
+        }
+    })
 
     return (
         <RecursiveDisclosureList items={props.list.items}
                                  selectedItemKey={listState.selectedItemKey}
                                  openItemsKeys={listState.openItemsKeys}
                                  selectionHandler={setSelectedItem}
-                                 visibilityHandler={toggleVisibility}
-                                 keyboardHandler={onKeyboardKeyDown}/>
+                                 visibilityHandler={toggleVisibility} />
     )
 }
 
@@ -55,8 +68,7 @@ const RecursiveDisclosureList = (props: { items: DisclosureItemModel[],
                                  selectedItemKey: string,
                                  openItemsKeys: string[],
                                  selectionHandler: KeyAction,
-                                 visibilityHandler: KeyAction,
-                                 keyboardHandler: KeyboardAction }) => {
+                                 visibilityHandler: KeyAction }) => {
     // Setup transient vars
     props.items.forEach(item => {
         item.isSelected = item.key === props.selectedItemKey
@@ -69,8 +81,7 @@ const RecursiveDisclosureList = (props: { items: DisclosureItemModel[],
                                                               selectedItemKey={props.selectedItemKey}
                                                               openItemsKeys={props.openItemsKeys}
                                                               selectionHandler={props.selectionHandler}
-                                                              visibilityHandler={props.visibilityHandler}
-                                                              keyboardHandler={props.keyboardHandler} />)}
+                                                              visibilityHandler={props.visibilityHandler} />)}
         </>
     )
 }
@@ -79,22 +90,19 @@ const RecursiveDisclosureItem = (props: { item: DisclosureItemModel,
                                           selectedItemKey: string,
                                           openItemsKeys: string[],
                                           selectionHandler: KeyAction,
-                                          visibilityHandler: KeyAction,
-                                          keyboardHandler: KeyboardAction }) => {
+                                          visibilityHandler: KeyAction }) => {
     if (props.item.hasSubItems && props.item.isOpen) {
         return (
             <div className="ListItem">
                 <DisclosureItem item={props.item}
                                 selectionHandler={props.selectionHandler}
-                                visibilityHandler={props.visibilityHandler}
-                                keyboardHandler={props.keyboardHandler} />
+                                visibilityHandler={props.visibilityHandler} />
                 <ul>
                     <RecursiveDisclosureList items={props.item.subItems}
                                              selectedItemKey={props.selectedItemKey}
                                              openItemsKeys={props.openItemsKeys}
                                              selectionHandler={props.selectionHandler}
-                                             visibilityHandler={props.visibilityHandler}
-                                             keyboardHandler={props.keyboardHandler} />
+                                             visibilityHandler={props.visibilityHandler} />
                 </ul>
             </div>
         )
@@ -102,14 +110,12 @@ const RecursiveDisclosureItem = (props: { item: DisclosureItemModel,
     
     return <DisclosureItem item={props.item} 
                            selectionHandler={props.selectionHandler} 
-                           visibilityHandler={props.visibilityHandler} 
-                           keyboardHandler={props.keyboardHandler} />
+                           visibilityHandler={props.visibilityHandler} />
 }
 
 const DisclosureItem = (props: { item: DisclosureItemModel,
                                  selectionHandler: KeyAction,
-                                 visibilityHandler: KeyAction,
-                                 keyboardHandler: KeyboardAction }) => {
+                                 visibilityHandler: KeyAction }) => {
     let itemImage = ""
     if (props.item.isRoot) { itemImage = props.item.isSelected ? selectedWebsiteIcon : websiteIcon }
     else if (props.item.hasSubItems) { itemImage = props.item.isSelected ? selectedFolderIcon : folderIcon }
@@ -122,7 +128,6 @@ const DisclosureItem = (props: { item: DisclosureItemModel,
                                       image={itemImage}
                                       selectionHandler={props.selectionHandler} 
                                       visibilityHandler={props.visibilityHandler}
-                                      keyboardHandler={props.keyboardHandler}
                 />
             </div>
         )
@@ -142,22 +147,13 @@ const DisclosureItem = (props: { item: DisclosureItemModel,
 const ToggleDisclosureItem = (props: { item: DisclosureItemModel,
                                        image: string,
                                        selectionHandler: KeyAction,
-                                       visibilityHandler: KeyAction,
-                                       keyboardHandler: KeyboardAction }) => {
-
-    const keyboardEventHandler = (event: KeyboardEvent) => props.keyboardHandler(event, props.item)
+                                       visibilityHandler: KeyAction}) => {
+                                           
     const visibilityHandler = (event: React.MouseEvent) => {
         props.visibilityHandler(props.item.key)
         event.stopPropagation()
     }
 
-    useEffect(() => {
-        document.addEventListener("keydown", keyboardEventHandler, false)
-
-        return () => {
-            document.removeEventListener('keydown', keyboardEventHandler)
-        }
-    })
     // Div-style based on selection state
     const selectedStyle = props.item.isSelected ? { backgroundColor: '#257AFD', color: '#FFF' } : { color: '#B6B6B6' }
     const selectedDisclosureIconColor = props.item.isSelected ? props.item.isOpen ? { borderTopColor: '#FFF' } : { borderLeftColor: '#FFF' } : { }
@@ -171,28 +167,65 @@ const ToggleDisclosureItem = (props: { item: DisclosureItemModel,
     )
 }
 
-function onKeyboardInput(event: Event, 
-                         item: DisclosureItemModel, 
+function onKeyboardInput(event: KeyboardEvent, 
+                         item: DisclosureItemModel,
+                         openItemsKeys: string[],
                          setSelected: KeyAction,
                          toggleVisibility: KeyAction,
-                         list: DisclosureListModel, 
-                         setListState: SetDisclosureListState) {
-    const keyboardEvent = event as KeyboardEvent
-    switch (keyboardEvent.key) {
+                         list: DisclosureListModel) {
+    switch (event.key) {
         case "ArrowLeft":
-            if (item.isSelected && item.isOpen) { toggleVisibility(item.key) }
+            if (item.isSelected) {
+                if (item.isOpen) {
+                    toggleVisibility(item.key)
+                } else if (item.hasSubItems) {
+                    const previousDisclosureItem = previousItem(item, openItemsKeys, list)
+                    if (previousDisclosureItem) { setSelected(previousDisclosureItem.key) }
+                }
+            }
             break
         case "ArrowRight":
-            if (item.isSelected && item.isOpen) { toggleVisibility(item.key) }
+            if (item.isSelected && !item.isOpen) { toggleVisibility(item.key) }
             break
         case "ArrowUp":
-            // todo
+            const previousDisclosureItem = previousItem(item, openItemsKeys, list)
+            if (previousDisclosureItem) { setSelected(previousDisclosureItem.key) }
             break
         case "ArrowDown":
-            // todo
+            const nextDisclosureItem = nextItem(item, openItemsKeys, list)
+            if (nextDisclosureItem) { setSelected(nextDisclosureItem.key) }
             break
         
         default: break
     }
 }
 
+function nextItem(item: DisclosureItemModel, openItemsKeys: string[], list: DisclosureListModel): DisclosureItemModel | null {
+    const flattenItems = flattenList(list.items, openItemsKeys, [])
+
+    const nextItemIndex = flattenItems.indexOf(item) + 1
+    if (nextItemIndex < flattenItems.length) { return flattenItems[nextItemIndex] }
+    return null
+}
+
+function previousItem(item: DisclosureItemModel, openItemsKeys: string[], list: DisclosureListModel): DisclosureItemModel | null {
+    const flattenItems = flattenList(list.items, openItemsKeys, [])
+
+    const previousItemIndex = flattenItems.indexOf(item) - 1
+    if (previousItemIndex >= 0) { return flattenItems[previousItemIndex] }
+    return null
+}
+
+function flattenList(items: DisclosureItemModel[], openItemsKeys: string[], flattenArray: DisclosureItemModel[]): DisclosureItemModel[] {
+    const result: DisclosureItemModel[] = flattenArray
+    items.forEach(item => {
+        result.push(item)
+        const isOpen = openItemsKeys.indexOf(item.key) !== -1
+        if (isOpen) {
+            const recursiveResult = flattenList(item.subItems, openItemsKeys, result)
+            result.concat(recursiveResult)
+        }
+    })
+
+    return result
+}
