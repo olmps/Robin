@@ -11,110 +11,188 @@ import fileIcon from '../../resources/assets/file_icon.svg'
 import selectedFileIcon from '../../resources/assets/file_icon_selected.svg'
 
 // Style
-import './DisclosureListItem.css'
+import './DisclosureList.css'
 
-export const DisclosureList = ({ list }: { list: DisclosureListModel }) => {
-    const [listState, setListState] = useState({ selectedItemKey: list.selectedItemKey })
+class DisclosureListState {
+    constructor(public selectedItemKey: string = "", public openItemsKeys: string[] = []) { }
+}
 
-    const toggleSelection = (selectedItemKey: string) => {
-        list.selectedItemKey = selectedFileIcon
-        setListState({ selectedItemKey })
+type SetDisclosureListState = React.Dispatch<React.SetStateAction<DisclosureListState>>
+type KeyAction = ((itemKey: string) => void)
+type KeyboardAction = ((event: Event, item: DisclosureItemModel) => void)
+
+export const DisclosureList = (props: { list: DisclosureListModel }) => {
+    const [listState, setListState] = useState(new DisclosureListState())
+
+    const setSelectedItem = (selectedItemKey: string) => {
+        props.list.selectedItemKey = selectedFileIcon
+        setListState({ ...listState, selectedItemKey })
+    }
+    const toggleVisibility = (itemKey: string) => {
+        const openItems = listState.openItemsKeys
+        const openKeyIndex = openItems.indexOf(itemKey)
+        if (openKeyIndex !== -1) {
+            delete openItems[openKeyIndex]
+        } else {
+            openItems.push(itemKey)
+        }
+        setListState({ ...listState, openItemsKeys: openItems })
     }
 
+    const onKeyboardKeyDown = (event: Event, item: DisclosureItemModel) => onKeyboardInput(event, item, setSelectedItem, toggleVisibility, props.list, setListState)
+
     return (
-        <RecursiveDisclosureList items={list.items} selectedItemKey={listState.selectedItemKey} toggleSelection={toggleSelection} />
+        <RecursiveDisclosureList items={props.list.items}
+                                 selectedItemKey={listState.selectedItemKey}
+                                 openItemsKeys={listState.openItemsKeys}
+                                 selectionHandler={setSelectedItem}
+                                 visibilityHandler={toggleVisibility}
+                                 keyboardHandler={onKeyboardKeyDown}/>
     )
 }
 
-const RecursiveDisclosureList = ({ items, selectedItemKey, toggleSelection }: { items: DisclosureItemModel[], selectedItemKey: string, toggleSelection: ((itemKey: string) => void) }) => {
+const RecursiveDisclosureList = (props: { items: DisclosureItemModel[],
+                                 selectedItemKey: string,
+                                 openItemsKeys: string[],
+                                 selectionHandler: KeyAction,
+                                 visibilityHandler: KeyAction,
+                                 keyboardHandler: KeyboardAction }) => {
+    // Setup transient vars
+    props.items.forEach(item => {
+        item.isSelected = item.key === props.selectedItemKey
+        item.isOpen = props.openItemsKeys.indexOf(item.key) !== -1
+    })
     return (
         <>
-            {items.map(item => <RecursiveDisclosureItem key={item.key} item={item} selectedItemKey={selectedItemKey} toggleSelection={toggleSelection} />)}
+            {props.items.map(item => <RecursiveDisclosureItem key={item.key} 
+                                                              item={item}
+                                                              selectedItemKey={props.selectedItemKey}
+                                                              openItemsKeys={props.openItemsKeys}
+                                                              selectionHandler={props.selectionHandler}
+                                                              visibilityHandler={props.visibilityHandler}
+                                                              keyboardHandler={props.keyboardHandler} />)}
         </>
     )
 }
 
-const RecursiveDisclosureItem = ({ item, selectedItemKey, toggleSelection }: { item: DisclosureItemModel, selectedItemKey: string, toggleSelection: ((itemKey: string) => void) }) => {
-    const [itemState, setItemState] = useState({ isOpen: item.isOpen, isSelected: item.key === selectedItemKey })
-    item.isSelected = selectedItemKey === item.key
-
-    const toggleItem = (isOpen: boolean) => {
-        item.isOpen = isOpen
-        item.isSelected = selectedItemKey === item.key
-        setItemState({ isOpen, isSelected: item.key === selectedItemKey })
-    }
-
-    if (item.hasSubItems && itemState.isOpen) {
+const RecursiveDisclosureItem = (props: { item: DisclosureItemModel,
+                                          selectedItemKey: string,
+                                          openItemsKeys: string[],
+                                          selectionHandler: KeyAction,
+                                          visibilityHandler: KeyAction,
+                                          keyboardHandler: KeyboardAction }) => {
+    if (props.item.hasSubItems && props.item.isOpen) {
         return (
             <div className="ListItem">
-                <DisclosureItem item={item} toggleAction={toggleItem} selectAction={toggleSelection}/>
+                <DisclosureItem item={props.item}
+                                selectionHandler={props.selectionHandler}
+                                visibilityHandler={props.visibilityHandler}
+                                keyboardHandler={props.keyboardHandler} />
                 <ul>
-                    <RecursiveDisclosureList items={item.subItems} selectedItemKey={selectedItemKey} toggleSelection={toggleSelection} />
+                    <RecursiveDisclosureList items={props.item.subItems}
+                                             selectedItemKey={props.selectedItemKey}
+                                             openItemsKeys={props.openItemsKeys}
+                                             selectionHandler={props.selectionHandler}
+                                             visibilityHandler={props.visibilityHandler}
+                                             keyboardHandler={props.keyboardHandler} />
                 </ul>
             </div>
         )
     }
     
-    return <DisclosureItem item={item} toggleAction={toggleItem} selectAction={toggleSelection}/>
+    return <DisclosureItem item={props.item} 
+                           selectionHandler={props.selectionHandler} 
+                           visibilityHandler={props.visibilityHandler} 
+                           keyboardHandler={props.keyboardHandler} />
 }
 
-const DisclosureItem = ({ item, toggleAction, selectAction }: { item: DisclosureItemModel, toggleAction: ((isOpen: boolean) => void), selectAction: ((selectedItemKey: string) => void) }) => {
+const DisclosureItem = (props: { item: DisclosureItemModel,
+                                 selectionHandler: KeyAction,
+                                 visibilityHandler: KeyAction,
+                                 keyboardHandler: KeyboardAction }) => {
     let itemImage = ""
-    if (item.isRoot) { itemImage = item.isSelected ? selectedWebsiteIcon : websiteIcon }
-    else if (item.hasSubItems) { itemImage = item.isSelected ? selectedFolderIcon : folderIcon }
-    else { itemImage = item.isSelected ? selectedFileIcon : fileIcon }
+    if (props.item.isRoot) { itemImage = props.item.isSelected ? selectedWebsiteIcon : websiteIcon }
+    else if (props.item.hasSubItems) { itemImage = props.item.isSelected ? selectedFolderIcon : folderIcon }
+    else { itemImage = props.item.isSelected ? selectedFileIcon : fileIcon }
 
-    if (item.hasSubItems) {
+    if (props.item.hasSubItems) {
         return (
             <div className="SingleListItem">
-                <ToggleDisclosureItem label={item.label}
-                                image={itemImage}
-                                isOpen={item.isOpen} 
-                                isSelected={item.isSelected} 
-                                toggleSelection={() => selectAction(item.key)} 
-                                discloseAction={(e) => detailsToggled(e, item, toggleAction)}
-                                onKeyboardInput={(e) => onKeyboardInput(e, item, toggleAction)}
+                <ToggleDisclosureItem item={props.item}
+                                      image={itemImage}
+                                      selectionHandler={props.selectionHandler} 
+                                      visibilityHandler={props.visibilityHandler}
+                                      keyboardHandler={props.keyboardHandler}
                 />
             </div>
         )
     }
     
-    const selectedStyle = item.isSelected ? { backgroundColor: '#257AFD', color: '#FFF' } : { color: '#B6B6B6' }
-    return <div className="LeafSingleListItem" onClick={() => selectAction(item.key)} style={selectedStyle}><img src={itemImage}/>{item.label}</div>
+    const selectedStyle = props.item.isSelected ? { backgroundColor: '#257AFD', color: '#FFF' } : { color: '#B6B6B6' }
+    return <div className="LeafSingleListItem" onClick={() => props.selectionHandler(props.item.key)} style={selectedStyle}>
+                <img src={itemImage}/>
+                {props.item.label}
+           </div>
 }
 
 /**
  * Behaves exactly like HTML <details> tag but it only discloses when tapping on the disclose icon, and provides a callback
  * for outside touches
  */
-const ToggleDisclosureItem = ({ label, image, isOpen, isSelected, toggleSelection, discloseAction, onKeyboardInput }: 
-                    { label: string, image: string, isOpen: boolean, isSelected: boolean, toggleSelection: (() => void), discloseAction: ((event: Event) => void), onKeyboardInput: ((event: Event) => void)}) => {
+const ToggleDisclosureItem = (props: { item: DisclosureItemModel,
+                                       image: string,
+                                       selectionHandler: KeyAction,
+                                       visibilityHandler: KeyAction,
+                                       keyboardHandler: KeyboardAction }) => {
+
+    const keyboardEventHandler = (event: KeyboardEvent) => props.keyboardHandler(event, props.item)
+    const visibilityHandler = (event: React.MouseEvent) => {
+        props.visibilityHandler(props.item.key)
+        event.stopPropagation()
+    }
+
     useEffect(() => {
-        document.addEventListener("keydown", onKeyboardInput, false)
+        document.addEventListener("keydown", keyboardEventHandler, false)
 
         return () => {
-            document.removeEventListener('keydown', onKeyboardInput)
+            document.removeEventListener('keydown', keyboardEventHandler)
         }
     })
     // Div-style based on selection state
-    const selectedStyle = isSelected ? { backgroundColor: '#257AFD', color: '#FFF' } : { color: '#B6B6B6' }
-    const selectedDisclosureIconColor = isSelected ? isOpen ? { borderTopColor: '#FFF' } : { borderLeftColor: '#FFF' } : { }
-    const buttonClass = isOpen ? "DiscloseOpenIcon" : "DiscloseClosedIcon"
+    const selectedStyle = props.item.isSelected ? { backgroundColor: '#257AFD', color: '#FFF' } : { color: '#B6B6B6' }
+    const selectedDisclosureIconColor = props.item.isSelected ? props.item.isOpen ? { borderTopColor: '#FFF' } : { borderLeftColor: '#FFF' } : { }
+    const buttonClass = props.item.isOpen ? "DiscloseOpenIcon" : "DiscloseClosedIcon"
     return (
-        <div className="DiscloseFinalItem" style={selectedStyle} onClick={() => toggleSelection()}>
-            <button className={buttonClass} style={selectedDisclosureIconColor} onClick={(e) => discloseAction(e.nativeEvent)}/><img src={image}/>{label}
+        <div className="DiscloseFinalItem" style={selectedStyle} onClick={() => props.selectionHandler(props.item.key)}>
+            <button className={buttonClass} style={selectedDisclosureIconColor} onClick={(e) => visibilityHandler(e)}/>
+            <img src={props.image}/>
+            {props.item.label}
         </div>
     )
 }
 
-function detailsToggled(event: Event, item: DisclosureItemModel, toggleAction: ((isOpen: boolean) => void)) {
-    toggleAction(!item.isOpen)
-    event.stopPropagation()
+function onKeyboardInput(event: Event, 
+                         item: DisclosureItemModel, 
+                         setSelected: KeyAction,
+                         toggleVisibility: KeyAction,
+                         list: DisclosureListModel, 
+                         setListState: SetDisclosureListState) {
+    const keyboardEvent = event as KeyboardEvent
+    switch (keyboardEvent.key) {
+        case "ArrowLeft":
+            if (item.isSelected && item.isOpen) { toggleVisibility(item.key) }
+            break
+        case "ArrowRight":
+            if (item.isSelected && item.isOpen) { toggleVisibility(item.key) }
+            break
+        case "ArrowUp":
+            // todo
+            break
+        case "ArrowDown":
+            // todo
+            break
+        
+        default: break
+    }
 }
 
-function onKeyboardInput(event: Event, item: DisclosureItemModel, toggleAction: ((isOpen: boolean) => void)) {
-    const keyboardEvent = event as KeyboardEvent
-    if (!item.isSelected) { return }
-    if (keyboardEvent.key === "ArrowLeft" && item.isOpen) { toggleAction(false) }
-    if (keyboardEvent.key === "ArrowRight" && !item.isOpen) { toggleAction(true) }
-}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NetworkRequest } from '../../../../shared/models/request';
-import DisclosureRequestsList from '../disclosure-list/DisclosureRequestsList';
+import DisclosureRequestsList from './DisclosureRequestsList';
 import './RequestsSidebar.css';
 const { ipcRenderer } = window.require('electron');
 
