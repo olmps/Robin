@@ -66,6 +66,7 @@
     display: inline-flex;
     align-items: center;
     width: 100%;
+    color: #B6B6B6;
     animation: colorchange 1s;
     -webkit-animation: colorchange 1s;
 }
@@ -80,16 +81,16 @@
 
 @keyframes colorchange
 {
-    0%   {background: transparent;}
-    50%  {background: #75bffa;}
-    100% {background: transparent;}
+    0%   {background: transparent; color: #B6B6B6;}
+    50%  {background: #75bffa; color: #FFF;}
+    100% {background: transparent; color: #B6B6B6;}
 }
 
 @-webkit-keyframes colorchange /* Safari and Chrome - necessary duplicate */
 {
-    0%   {background: transparent;}
-    50%  {background: #75bffa;}
-    100% {background: transparent;}
+    0%   {background: transparent; color: #B6B6B6;}
+    50%  {background: #75bffa; color: #FFF;}
+    100% {background: transparent; color: #B6B6B6;}
 }
 
 

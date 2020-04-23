@@ -1,6 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { DisclosureItemModel } from './models/DisclosureItemModel'
-import { DisclosureListModel } from './models/DisclosureListModel';
+
+// Actions
+import { setupTransientItems, Action, onKeyboardInput, KeyAction } from './DisclosureListActions';
+
+// Models
+import { DisclosureListModel, DisclosureItemModel } from './models';
 
 // Images
 import websiteIcon from '../../resources/assets/website_icon.svg'
@@ -16,10 +20,6 @@ import './DisclosureList.css'
 class DisclosureListState {
     constructor(public selectedItemKey: string = "",  public openItemsKeys: string[] = []) { }
 }
-enum Action {
-    setSelected, toggleVisibility
-}
-type KeyAction = ((action: Action, itemKey: string) => void)
 
 export const DisclosureList = (props: { list: DisclosureListModel }) => {
     const [listState, setListState] = useState(new DisclosureListState())
@@ -52,12 +52,12 @@ export const DisclosureList = (props: { list: DisclosureListModel }) => {
         }
     }
 
-    const onTapOutside = (event: Event) => {
+    const onTapOutside = (event: MouseEvent) => {
         if (!wrapperRef.current) { return }
-        const targetNode = event.target as Node
+        const targetNode: any = event.target
         
-        // TODO: IMPROVE THIS. IT'S CANCELING TAPS ON OTHER PANES
-        if (wrapperRef.current && !wrapperRef.current!.contains(targetNode)) {
+        // TODO: This is probably not the right way of doing it
+        if (!wrapperRef.current.contains(targetNode) && targetNode.className == "RequestsSidebar") {
             setListState({ ...listState, selectedItemKey: "" })
         }
     }
@@ -139,95 +139,24 @@ const ToggleDisclosureItem = (props: { item: DisclosureItemModel, image: string,
         props.actionHandler(Action.toggleVisibility, props.item.key)
         event.stopPropagation()
     }
+    const selectionHandler = (event: React.MouseEvent) => {
+        // CMD + Click deselect the item
+        if (props.item.isSelected && event.metaKey) {
+            props.actionHandler(Action.setSelected, "")
+        } else if (!props.item.isSelected) {
+            props.actionHandler(Action.setSelected, props.item.key)
+        }
+    }
     
     const selectedDisclosureIconColor = props.item.isSelected ? props.item.isOpen ? { borderTopColor: '#FFF' } : { borderLeftColor: '#FFF' } : { }
     const buttonClass = props.item.isOpen ? "DiscloseOpenIcon" : "DiscloseClosedIcon"
     
     const discloseClassName = props.item.isSelected ? "DiscloseFinalItemSelected" : props.item.isHighlighted ? "DiscloseFinalItemHighlighted" : "DiscloseFinalItem"
     return (
-        <div className={discloseClassName} onClick={() => props.actionHandler(Action.setSelected, props.item.key)}>
+        <div className={discloseClassName} onClick={(e) => selectionHandler(e)}>
             <button className={buttonClass} style={selectedDisclosureIconColor} onClick={(e) => visibilityHandler(e)}/>
             <img src={props.image}/>
             {props.item.label}
         </div>
     )
-}
-
-function setupTransientItems(list: DisclosureListModel, selectedItemKey: string, openItemsKeys: string[]) {
-    const flattenList = list.flatten([], true)
-    // TODO: Explain why is it separate (the second loop depends on this one)
-    flattenList.forEach(item => {
-        item.isOpen = openItemsKeys.includes(item.key)
-    })
-
-    const newHighlightedItems = getHighlightedItems(list.items)
-
-    flattenList.forEach(item => {
-        item.isSelected = item.key === selectedItemKey
-        item.isHighlighted = newHighlightedItems.includes(item.key)
-    })
-}
-
-function getHighlightedItems(items: DisclosureItemModel[]): string[] {
-    var highlightedItemsKeys: string[] = []
-    items.forEach(item => {
-        if (!item.isOpen && item.hasNotVisibleChild(item.isOpen)) {
-            highlightedItemsKeys.push(item.key)
-        } else if (item.subItems.length === 0 && item.isNew) {
-            highlightedItemsKeys.push(item.key)
-        } else {
-            const newItems = getHighlightedItems(item.subItems)
-            highlightedItemsKeys = highlightedItemsKeys.concat(newItems)
-        }
-    })
-
-    return highlightedItemsKeys
-}
-
-function onKeyboardInput(event: KeyboardEvent, 
-                         item: DisclosureItemModel,
-                         openItemsKeys: string[],
-                         itemAction: KeyAction,
-                         list: DisclosureListModel) {
-    switch (event.key) {
-        case "ArrowLeft":
-            if (item.isSelected) {
-                if (item.isOpen) {
-                    itemAction(Action.toggleVisibility, item.key)
-                } else if (item.hasSubItems) {
-                    const previousDisclosureItem = previousItem(item, openItemsKeys, list)
-                    if (previousDisclosureItem) { itemAction(Action.toggleVisibility, previousDisclosureItem.key) }
-                }
-            }
-            break
-        case "ArrowRight":
-            if (item.isSelected && !item.isOpen) { itemAction(Action.toggleVisibility, item.key) }
-            break
-        case "ArrowUp":
-            const previousDisclosureItem = previousItem(item, openItemsKeys, list)
-            if (previousDisclosureItem) { itemAction(Action.setSelected, previousDisclosureItem.key) }
-            break
-        case "ArrowDown":
-            const nextDisclosureItem = nextItem(item, openItemsKeys, list)
-            if (nextDisclosureItem) { itemAction(Action.setSelected, nextDisclosureItem.key) }
-            break
-        
-        default: break
-    }
-}
-
-function nextItem(item: DisclosureItemModel, openItemsKeys: string[], list: DisclosureListModel): DisclosureItemModel | null {
-    const flattenItems = list.flatten(openItemsKeys, false)
-
-    const nextItemIndex = flattenItems.indexOf(item) + 1
-    if (nextItemIndex < flattenItems.length) { return flattenItems[nextItemIndex] }
-    return null
-}
-
-function previousItem(item: DisclosureItemModel, openItemsKeys: string[], list: DisclosureListModel): DisclosureItemModel | null {
-    const flattenItems = list.flatten(openItemsKeys, false)
-
-    const previousItemIndex = flattenItems.indexOf(item) - 1
-    if (previousItemIndex >= 0) { return flattenItems[previousItemIndex] }
-    return null
 }

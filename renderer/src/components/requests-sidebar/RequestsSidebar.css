@@ -1,6 +1,8 @@
 .RequestsSidebar {
   text-align: left;
   overflow: hidden;
+  overflow-y: scroll;
+  height: 100%;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
