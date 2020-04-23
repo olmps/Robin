@@ -1,9 +1,8 @@
-
 enum NetworkRequestMethod {
     get, put, post
 }
 
-export function createNetworkRequest(request: string): NetworkRequestMethod {
+export function createNetworkRequestMethod(request: string): NetworkRequestMethod {
     switch (request) {
         case "GET": return NetworkRequestMethod.get
         case "POST": return NetworkRequestMethod.post
@@ -18,18 +17,24 @@ export class NetworkRequest {
     url: string
     method: NetworkRequestMethod
     createdAt: Date
-
-    get key(): string { return this.createdAt.getTime().toString() }
+    
     get fullUrl(): string { return `${this.domain}${this.url}` }
 
     // Transient properties
     isNewRequest: boolean = true
 
-    constructor(domain: string, url: string, method: NetworkRequestMethod = NetworkRequestMethod.get) {
+    constructor(domain: string, url: string, method: NetworkRequestMethod, createdAt: Date) {
         this.domain = domain
         this.url = url
         this.method = method
+        this.createdAt = createdAt
+    }
 
-        this.createdAt = new Date()
+    static fromJson(json: any): NetworkRequest {
+        const { domain, url, method, createdAt } = json
+        const formattedMethod = createNetworkRequestMethod(method)
+        const formattedCreatedAt = new Date(createdAt)
+
+        return new NetworkRequest(domain, url, formattedMethod, formattedCreatedAt)
     }
 }

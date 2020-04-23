@@ -2,7 +2,7 @@ import * as hoxy from 'hoxy'
 import * as fs from 'fs'
 import * as events from 'events'
 import { ProxyConfig } from './proxy-config'
-import { NetworkRequest, createNetworkRequest } from '../../../shared/models/request'
+import { NetworkRequest, createNetworkRequestMethod } from '../../../shared/models/request'
 
 class ProxyHandler extends events.EventEmitter {
     config: ProxyConfig
@@ -39,12 +39,14 @@ class ProxyHandler extends events.EventEmitter {
 
   // Sanitize the received request
   async _onInterceptRequest(request: hoxy.Request) {
-    const parsedRequest = new NetworkRequest(
-      request.hostname,
-      request.url,
-      createNetworkRequest(request.method)
-    )
-    this.emit('new-request', parsedRequest)
+    const formattedRequest = {
+      domain: request.hostname,
+      url: request.url,
+      method: createNetworkRequestMethod(request.method),
+      createdAt: new Date().toDateString()
+    }
+    
+    this.emit('new-request', formattedRequest)
   }
 }
 

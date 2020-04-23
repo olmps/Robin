@@ -1,7 +1,7 @@
 import React from 'react';
 import { DisclosureList } from '../disclosure-list/DisclosureList';
 
-import { NetworkRequest } from '../../../../shared/models/request';
+import { NetworkRequest } from '../../models/request';
 import { DisclosureItemModel } from '../disclosure-list/models/DisclosureItemModel';
 import { DisclosureListModel } from '../disclosure-list/models/DisclosureListModel';
 
