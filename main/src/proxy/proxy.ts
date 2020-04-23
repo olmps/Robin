@@ -2,7 +2,6 @@ import * as hoxy from 'hoxy'
 import * as fs from 'fs'
 import * as events from 'events'
 import { ProxyConfig } from './proxy-config'
-import { NetworkRequest, createNetworkRequestMethod } from '../../../shared/models/request'
 
 class ProxyHandler extends events.EventEmitter {
     config: ProxyConfig
@@ -16,15 +15,9 @@ class ProxyHandler extends events.EventEmitter {
   startProxyServer() {
     const proxyServer = hoxy.createServer({
         certAuthority: {
-            key: fs.readFileSync(`src/resources/certificates/my-private-root-ca.key.pem`),
-            cert: fs.readFileSync(`src/resources/certificates/my-private-root-ca.crt.pem`)
+            key: fs.readFileSync(`src/resources/certificates/proxy-cert-key.key.pem`),
+            cert: fs.readFileSync(`src/resources/certificates/proxy-cert.crt.pem`)
           }
-    })
-    proxyServer.on('error', (error: any) => {
-        console.error('hoxy error: ', error)
-        // Fallback to "socket hang up" error
-        // ENOTFOUND means the target URL was not found -> it may not exists and DNS couldn't resolve it
-        if (error.code === 'ENOTFOUND') return
     })
 
     proxyServer.log('error warn debug', (evt: any) => {
@@ -42,7 +35,7 @@ class ProxyHandler extends events.EventEmitter {
     const formattedRequest = {
       domain: request.hostname,
       url: request.url,
-      method: createNetworkRequestMethod(request.method),
+      method: request.method,
       createdAt: new Date().toDateString()
     }
     
