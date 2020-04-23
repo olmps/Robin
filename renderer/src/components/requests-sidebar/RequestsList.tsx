@@ -1,9 +1,9 @@
 import React from 'react';
-import { DisclosureList } from '../disclosure-list/DisclosureList';
+import { DisclosureList } from './disclosure-list/DisclosureList';
 
 import { NetworkRequest } from '../../models/request';
-import { DisclosureItemModel } from '../disclosure-list/models/DisclosureItemModel';
-import { DisclosureListModel } from '../disclosure-list/models/DisclosureListModel';
+import { DisclosureItemModel } from './disclosure-list/models/DisclosureItemModel';
+import { DisclosureListModel } from './disclosure-list/models/DisclosureListModel';
 
 const RequestsList = ({ requests }: { requests: NetworkRequest[] }) => {
   const listItems = buildDisclosureItems(requests)

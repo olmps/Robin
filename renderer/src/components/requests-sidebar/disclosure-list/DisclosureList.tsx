@@ -7,12 +7,12 @@ import { setupTransientItems, Action, onKeyboardInput, KeyAction } from './Discl
 import { DisclosureListModel, DisclosureItemModel } from './models';
 
 // Images
-import websiteIcon from '../../resources/assets/website_icon.svg'
-import selectedWebsiteIcon from '../../resources/assets/website_icon_selected.svg'
-import folderIcon from '../../resources/assets/folder_icon.svg'
-import selectedFolderIcon from '../../resources/assets/folder_icon_selected.svg'
-import fileIcon from '../../resources/assets/file_icon.svg'
-import selectedFileIcon from '../../resources/assets/file_icon_selected.svg'
+import websiteIcon from '../../../resources/assets/website_icon.svg'
+import selectedWebsiteIcon from '../../../resources/assets/website_icon_selected.svg'
+import folderIcon from '../../../resources/assets/folder_icon.svg'
+import selectedFolderIcon from '../../../resources/assets/folder_icon_selected.svg'
+import fileIcon from '../../../resources/assets/file_icon.svg'
+import selectedFileIcon from '../../../resources/assets/file_icon_selected.svg'
 
 // Style
 import './DisclosureList.css'
