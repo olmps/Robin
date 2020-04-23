@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { NetworkRequest } from '../../../../shared/models/request';
-import DisclosureRequestsList from './DisclosureRequestsList';
+import RequestsList from './RequestsList';
 import './RequestsSidebar.css';
 const { ipcRenderer } = window.require('electron');
 
@@ -8,7 +8,7 @@ const RequestsSidebar = () => {
   const sidebarState = useSidebarState()
   return (
     <div className="RequestsSidebar">
-      <DisclosureRequestsList requests={sidebarState.requests} />
+      <RequestsList requests={sidebarState.requests} />
     </div>
   )
 }

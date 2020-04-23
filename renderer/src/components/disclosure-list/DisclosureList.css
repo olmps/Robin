@@ -13,13 +13,37 @@
 .LeafSingleListItem {
     display: flex;
     align-items: center;
+    color: #B6B6B6;
     width: 100%;
     line-height: 25px;
-    padding-left: 2px;
+    padding-left: 20px;
     cursor: default;
 }
 
 .LeafSingleListItem img {
+    padding-left: 6px;
+    padding-right: 6px;
+    width: 16px;
+    height: 16px;
+}
+
+.SelectedLeafSingleListItem {
+    display: flex;
+    align-items: center;
+    background-color: #257AFD;
+    color: #FFF;
+    width: 100%;
+    line-height: 25px;
+    padding-left: 20px;
+    cursor: default;
+}
+
+.SelectedLeafSingleListItem::before {
+    content: '';
+    background-color: #257AFD;
+}
+
+.SelectedLeafSingleListItem img {
     padding-left: 6px;
     padding-right: 6px;
     width: 16px;
@@ -34,8 +58,40 @@
 .DiscloseFinalItem {
     display: inline-flex;
     align-items: center;
+    color: #B6B6B6;
     width: 100%;
 }
+
+.DiscloseFinalItemHighlighted {
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+    animation: colorchange 1s;
+    -webkit-animation: colorchange 1s;
+}
+
+.DiscloseFinalItemSelected {
+    display: inline-flex;
+    align-items: center;
+    background-color: #257AFD;
+    color: #FFF;
+    width: 100%;
+}
+
+@keyframes colorchange
+{
+    0%   {background: transparent;}
+    50%  {background: #75bffa;}
+    100% {background: transparent;}
+}
+
+@-webkit-keyframes colorchange /* Safari and Chrome - necessary duplicate */
+{
+    0%   {background: transparent;}
+    50%  {background: #75bffa;}
+    100% {background: transparent;}
+}
+
 
 .DiscloseClosedIcon {
     background: transparent;
@@ -56,3 +112,7 @@
 	border-right: 6px solid transparent;
 	border-top: 10px solid #555;
 }
+
+
+
+

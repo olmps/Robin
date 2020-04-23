@@ -14,20 +14,21 @@ import selectedFileIcon from '../../resources/assets/file_icon_selected.svg'
 import './DisclosureList.css'
 
 class DisclosureListState {
-    constructor(public selectedItemKey: string = "", public openItemsKeys: string[] = []) { }
+    constructor(public selectedItemKey: string = "",  public openItemsKeys: string[] = []) { }
 }
 enum Action {
-    setSelected, toggleVisibility, unhighlight
+    setSelected, toggleVisibility
 }
 type KeyAction = ((action: Action, itemKey: string) => void)
 
 export const DisclosureList = (props: { list: DisclosureListModel }) => {
     const [listState, setListState] = useState(new DisclosureListState())
     
+    setupTransientItems(props.list, listState.selectedItemKey, listState.openItemsKeys)
+
     const itemAction = (action: Action, itemKey: string) => {
         switch (action) {
             case Action.setSelected:
-                console.log("setting selected key " + itemKey)
                 setListState({ ...listState, selectedItemKey: itemKey })
                 break
             case Action.toggleVisibility:
@@ -37,9 +38,6 @@ export const DisclosureList = (props: { list: DisclosureListModel }) => {
                 else { openItems.push(itemKey) }
                 setListState({ ...listState, openItemsKeys: openItems })
                 break
-            case Action.unhighlight:
-                const item = props.list.getItem(itemKey)
-                if (item) { item.isNew = false }
             default: break
         }
     }
@@ -75,51 +73,30 @@ export const DisclosureList = (props: { list: DisclosureListModel }) => {
             document.removeEventListener('mousedown', onTapOutside)
         }
     })
-    
+
     return (
-        <div ref={wrapperRef}>
-            <RecursiveDisclosureList items={props.list.items}
-                                 selectedItemKey={listState.selectedItemKey}
-                                 openItemsKeys={listState.openItemsKeys}
-                                 actionHandler={itemAction} />
+        <div ref={wrapperRef} >
+            <RecursiveDisclosureList items={props.list.items} actionHandler={itemAction} />
         </div>
     )
 }
 
-const RecursiveDisclosureList = (props: { items: DisclosureItemModel[],
-                                 selectedItemKey: string,
-                                 openItemsKeys: string[],
-                                 actionHandler: KeyAction }) => {
-    // Setup transient vars
-    props.items.forEach(item => {
-        item.isSelected = item.key === props.selectedItemKey
-        item.isOpen = props.openItemsKeys.indexOf(item.key) !== -1
-    })
+const RecursiveDisclosureList = (props: { items: DisclosureItemModel[], actionHandler: KeyAction }) => {
     return (
         <>
-            {props.items.map(item => <RecursiveDisclosureItem key={item.key} 
-                                                              item={item}
-                                                              selectedItemKey={props.selectedItemKey}
-                                                              openItemsKeys={props.openItemsKeys}
-                                                              actionHandler={props.actionHandler} />)}
+            {props.items.map(item => <RecursiveDisclosureItem key={item.key} item={item} actionHandler={props.actionHandler} />)}
         </>
     )
 }
 
-const RecursiveDisclosureItem = (props: { item: DisclosureItemModel,
-                                          selectedItemKey: string,
-                                          openItemsKeys: string[],
-                                          actionHandler: KeyAction }) => {
+const RecursiveDisclosureItem = (props: { item: DisclosureItemModel, actionHandler: KeyAction }) => {
     if (props.item.hasSubItems && props.item.isOpen) {
         return (
             <div className="ListItem">
                 <DisclosureItem item={props.item}
                                 actionHandler={props.actionHandler} />
                 <ul>
-                    <RecursiveDisclosureList items={props.item.subItems}
-                                             selectedItemKey={props.selectedItemKey}
-                                             openItemsKeys={props.openItemsKeys}
-                                             actionHandler={props.actionHandler} />
+                    <RecursiveDisclosureList items={props.item.subItems} actionHandler={props.actionHandler} />
                 </ul>
             </div>
         )
@@ -145,10 +122,9 @@ const DisclosureItem = (props: { item: DisclosureItemModel, actionHandler: KeyAc
         )
     }
     
-    let backgroundColor = props.item.isSelected ? { backgroundColor: '#257AFD' } : { }
-    const selectedStyle = props.item.isSelected ? { ...backgroundColor , color: '#FFF' } : { color: '#B6B6B6' }
+    const className = props.item.isSelected ? "SelectedLeafSingleListItem" : "LeafSingleListItem"
     return (
-        <div className="LeafSingleListItem" onClick={() => props.actionHandler(Action.setSelected, props.item.key)} style={selectedStyle}>
+        <div className={className} onClick={() => props.actionHandler(Action.setSelected, props.item.key)}>
             <img src={itemImage}/>{props.item.label}
         </div>
     )
@@ -159,29 +135,53 @@ const DisclosureItem = (props: { item: DisclosureItemModel, actionHandler: KeyAc
  * for outside touches
  */
 const ToggleDisclosureItem = (props: { item: DisclosureItemModel, image: string, actionHandler: KeyAction }) => {
-    if (props.item.isNew) {
-        setTimeout(() => {
-            props.actionHandler(Action.unhighlight, props.item.key)
-        }, 1000)
-    }
-    
     const visibilityHandler = (event: React.MouseEvent) => {
         props.actionHandler(Action.toggleVisibility, props.item.key)
         event.stopPropagation()
     }
     
-    const backgroundColor = props.item.isNew ? { backgroundColor: '#FFF' } : props.item.isSelected ? { backgroundColor: '#257AFD' } : { }
-    const selectedStyle = props.item.isSelected ? { ...backgroundColor, color: '#FFF' } : { color: '#B6B6B6', ...backgroundColor }
     const selectedDisclosureIconColor = props.item.isSelected ? props.item.isOpen ? { borderTopColor: '#FFF' } : { borderLeftColor: '#FFF' } : { }
     const buttonClass = props.item.isOpen ? "DiscloseOpenIcon" : "DiscloseClosedIcon"
     
+    const discloseClassName = props.item.isSelected ? "DiscloseFinalItemSelected" : props.item.isHighlighted ? "DiscloseFinalItemHighlighted" : "DiscloseFinalItem"
     return (
-        <div className="DiscloseFinalItem" style={selectedStyle} onClick={() => props.actionHandler(Action.setSelected, props.item.key)}>
+        <div className={discloseClassName} onClick={() => props.actionHandler(Action.setSelected, props.item.key)}>
             <button className={buttonClass} style={selectedDisclosureIconColor} onClick={(e) => visibilityHandler(e)}/>
             <img src={props.image}/>
             {props.item.label}
         </div>
     )
+}
+
+function setupTransientItems(list: DisclosureListModel, selectedItemKey: string, openItemsKeys: string[]) {
+    const flattenList = list.flatten([], true)
+    // TODO: Explain why is it separate (the second loop depends on this one)
+    flattenList.forEach(item => {
+        item.isOpen = openItemsKeys.includes(item.key)
+    })
+
+    const newHighlightedItems = getHighlightedItems(list.items)
+
+    flattenList.forEach(item => {
+        item.isSelected = item.key === selectedItemKey
+        item.isHighlighted = newHighlightedItems.includes(item.key)
+    })
+}
+
+function getHighlightedItems(items: DisclosureItemModel[]): string[] {
+    var highlightedItemsKeys: string[] = []
+    items.forEach(item => {
+        if (!item.isOpen && item.hasNotVisibleChild(item.isOpen)) {
+            highlightedItemsKeys.push(item.key)
+        } else if (item.subItems.length === 0 && item.isNew) {
+            highlightedItemsKeys.push(item.key)
+        } else {
+            const newItems = getHighlightedItems(item.subItems)
+            highlightedItemsKeys = highlightedItemsKeys.concat(newItems)
+        }
+    })
+
+    return highlightedItemsKeys
 }
 
 function onKeyboardInput(event: KeyboardEvent, 
@@ -217,7 +217,7 @@ function onKeyboardInput(event: KeyboardEvent,
 }
 
 function nextItem(item: DisclosureItemModel, openItemsKeys: string[], list: DisclosureListModel): DisclosureItemModel | null {
-    const flattenItems = flattenList(list.items, openItemsKeys, [])
+    const flattenItems = list.flatten(openItemsKeys, false)
 
     const nextItemIndex = flattenItems.indexOf(item) + 1
     if (nextItemIndex < flattenItems.length) { return flattenItems[nextItemIndex] }
@@ -225,23 +225,9 @@ function nextItem(item: DisclosureItemModel, openItemsKeys: string[], list: Disc
 }
 
 function previousItem(item: DisclosureItemModel, openItemsKeys: string[], list: DisclosureListModel): DisclosureItemModel | null {
-    const flattenItems = flattenList(list.items, openItemsKeys, [])
+    const flattenItems = list.flatten(openItemsKeys, false)
 
     const previousItemIndex = flattenItems.indexOf(item) - 1
     if (previousItemIndex >= 0) { return flattenItems[previousItemIndex] }
     return null
-}
-
-function flattenList(items: DisclosureItemModel[], openItemsKeys: string[], flattenArray: DisclosureItemModel[]): DisclosureItemModel[] {
-    const result: DisclosureItemModel[] = flattenArray
-    items.forEach(item => {
-        result.push(item)
-        const isOpen = openItemsKeys.indexOf(item.key) !== -1
-        if (isOpen) {
-            const recursiveResult = flattenList(item.subItems, openItemsKeys, result)
-            result.concat(recursiveResult)
-        }
-    })
-
-    return result
 }

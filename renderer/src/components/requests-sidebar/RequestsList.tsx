@@ -5,7 +5,7 @@ import { NetworkRequest } from '../../../../shared/models/request';
 import { DisclosureItemModel } from '../disclosure-list/models/DisclosureItemModel';
 import { DisclosureListModel } from '../disclosure-list/models/DisclosureListModel';
 
-const DisclosureRequestsList = ({ requests }: { requests: NetworkRequest[] }) => {
+const RequestsList = ({ requests }: { requests: NetworkRequest[] }) => {
   const listItems = buildDisclosureItems(requests)
   const list = new DisclosureListModel("", listItems)
   return (
@@ -39,20 +39,16 @@ function buildDisclosureItems(requests: NetworkRequest[]): DisclosureItemModel[]
   // We assign an incremental key for each DisclosureItem
   let currentKey = 0
   const baseItems = filteredBaseUrls.map(baseUrl => {
-    let item = new DisclosureItemModel(currentKey.toString(), baseUrl, true, [], false)
+    let item = new DisclosureItemModel(currentKey.toString(), baseUrl, true, [])
     currentKey += 1
     return item
   })
-  
-  // To make a cleaner code, encapsulate the key into an object to send as reference
-  // to setup function - since it is recursive. It will avoids a bunch o key returns
-  let key: { value: number } = { value: currentKey + 1 }
 
   // For each baseUrl, use `setup` function to recursively build its subItems
   requests.forEach(request => {
-    const relatedItem = baseItems.find(item => item.label === request.domain)
-    relatedItem!.isNew = request.isNewRequest
-    setup(request.url, relatedItem!, key)
+    const relatedItem = baseItems.find(item => item.label === request.domain)!
+    relatedItem.isNew = requests.find(request => request.domain === relatedItem.label && request.isNewRequest) !== undefined
+    setup(request.url, relatedItem, relatedItem.key)
   })
   
   return baseItems
@@ -64,14 +60,15 @@ function buildDisclosureItems(requests: NetworkRequest[]): DisclosureItemModel[]
  * @param item The item that represents current `urlSegment`
  * @param key Key object
  */
-function setup(urlSegment: string, item: DisclosureItemModel, key: { value: number }) {
+function setup(urlSegment: string, item: DisclosureItemModel, keyPrefix: String) {
   // Special scenario where the first URL segment is just a slash ('/'). This scenario means a
   // request on a URL base, like GET www.google.com. We must handle this as a DisclosureItem.Model
   // Other standalone slashes must be ignored, because the `urlSegment` is something like /path/to/page/,
   // and the /page already represents the final segment
   if (urlSegment === "/") {
-      key.value++
-      const subItem = new DisclosureItemModel(key.value.toString(), urlSegment, false, [], item.isNew)
+      const itemKey = `${keyPrefix}${item.subItems.length}`
+      const subItem = new DisclosureItemModel(itemKey, urlSegment, false, [])
+      subItem.isNew = item.isNew
       item.subItems.push(subItem)
       return
   }
@@ -89,24 +86,26 @@ function setup(urlSegment: string, item: DisclosureItemModel, key: { value: numb
   if (splitUrl.length > 1) {
     const firstFragment = splitUrl[0]
     const remainingFragments = formattedUrl.substring(1).replace(firstFragment, "")
-    const existingItem = item.subItems.find(item => item.label === firstFragment)
+    const existingItemIndex = item.subItems.findIndex(item => item.label === firstFragment)
 
-    if (existingItem) {
-      setup(remainingFragments, existingItem, key)
+    if (existingItemIndex !== -1) {
+      setup(remainingFragments, item.subItems[existingItemIndex], `${keyPrefix}${existingItemIndex}`)
     } else {
-      key.value++
-      const subItem = new DisclosureItemModel(key.value.toString(), firstFragment, false, [], item.isNew)
+      const itemKey = `${keyPrefix}${item.subItems.length}`
+      const subItem = new DisclosureItemModel(itemKey, firstFragment, false, [])
+      subItem.isNew = item.isNew
       item.subItems.push(subItem)
-      setup(remainingFragments, subItem, key)
+      setup(remainingFragments, subItem, itemKey)
     }
   // It's a single-segment, like /page
   } else {
     formattedUrl = formattedUrl.substring(1)
     if (formattedUrl === "") { return }
-    key.value++
-    const subItem = new DisclosureItemModel(key.value.toString(), formattedUrl, false, [], item.isNew)
+    const itemKey = `${keyPrefix}${item.subItems.length}`
+    const subItem = new DisclosureItemModel(itemKey, formattedUrl, false, [])
+    subItem.isNew = item.isNew
     item.subItems.push(subItem)
   }
 }
 
-export default DisclosureRequestsList
+export default RequestsList
