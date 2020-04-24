@@ -37,7 +37,7 @@ function buildDisclosureItems(requests: NetworkRequest[]): DisclosureItemModel[]
   const filteredBaseUrls = baseUrls.filter((item, index) => baseUrls.indexOf(item) === index) // Remove duplicates
 
   // We assign an incremental key for each DisclosureItem
-  let currentKey = 0
+  let currentKey = 1000000
   const baseItems = filteredBaseUrls.map(baseUrl => {
     let item = new DisclosureItemModel(currentKey.toString(), baseUrl, true, [])
     currentKey += 1

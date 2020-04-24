@@ -44,3 +44,7 @@ app.on('ready', () => {
     startWindow()
     setupProxyListeners()
 })
+
+app.on('quit', () => {
+    proxyServer.stopProxyServer()
+})
