@@ -1,6 +1,6 @@
 import React from 'react';
 import SplitPane from 'react-split-pane'
-import RequestsSidebar from './components/requests-sidebar/RequestsSidebar';
+import RequestsSidebar from './screens/requests-list/RequestsSidebar';
 import './App.css'
 
 const App = () => {
