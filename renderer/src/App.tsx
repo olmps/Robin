@@ -1,58 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { NetworkRequest, networkRequest } from './models/request';
-import DisclosureRequestsList from './components/disclosure-list/DisclosureRequestsList';
-const { ipcRenderer } = window.require('electron');
+import React from 'react';
+import SplitPane from 'react-split-pane'
+import RequestsSidebar from './components/requests-sidebar/RequestsSidebar';
+import './App.css'
 
-const Home = () => {
-  const homeState = useHomeState()
-  return (
-    <>
-      <h1>Requests</h1>
-      <DisclosureRequestsList requests={homeState.requests} />
-    </>
-  )
+const App = () => {
+    return (
+        <SplitPane split="vertical" minSize={300} defaultSize={500}>
+            <RequestsSidebar />
+            <div />
+        </SplitPane>
+    )
 }
-
-class InitialHomeState {
-  requests: NetworkRequest[]
-
-  constructor(requests: NetworkRequest[]) {
-    this.requests = requests
-  }
-}
-
-const useHomeState = () => {
-  const [homeState, setHomeState] = useState(new InitialHomeState([]))
-  useEffect(() => {
-    function proxyRequestHandler(requestPayload: any) {
-      setHomeState(state => {
-        const newRequest = new NetworkRequest(requestPayload.hostname, requestPayload.url, networkRequest(requestPayload.method))
-        const requests = state.requests
-        requests.push(newRequest)
-        return { ...state, requests }
-      })
-    } 
-    console.log("REGISTERING")
-    ipcRenderer.on('proxy-new-request', (evt: any, payload: any) => {
-      console.log(evt)
-      proxyRequestHandler(payload)
-    })
-
-    return function unsubscribeProxyListener() {
-      console.log("UNSUBSCRIBING")
-      ipcRenderer.removeListener('proxy-new-request', proxyRequestHandler)
-    }
-  }, [])
-
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //       setHomeState(state => ({ ...state, hasLoaded: true }))
-  //     }, 2000);
-  // }, [])
-
-  return homeState
-}
-
-const App = () => <Home/>
 
 export default App

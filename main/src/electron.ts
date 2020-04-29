@@ -1,15 +1,17 @@
-import { BrowserWindow, app } from 'electron' ; 
-import * as isDev from "electron-is-dev" ; 
+import { BrowserWindow, app } from 'electron';
+import * as isDev from "electron-is-dev";
 import * as path from 'path'
-import * as fs from 'fs'
-import * as hoxy from 'hoxy'
+import createProxyHandler from './proxy/proxy';
 
 let mainWindow: BrowserWindow
+let proxyServer = createProxyHandler({ listenPort: 8080, excludedExtensions: [] })
+let didSetupListener: boolean = false
 
 function startWindow() {
-    mainWindow = new BrowserWindow({ 
-        width: 900, 
+    mainWindow = new BrowserWindow({
+        width: 900,
         height: 680,
+        backgroundColor: '#FFFFFF',
         webPreferences: {
             nodeIntegration: true,
         }
@@ -25,23 +27,24 @@ function startWindow() {
     mainWindow.on("closed", () => mainWindow.destroy())
 }
 
-function startProxy() {
-    const proxy = hoxy.createServer({
-        certAuthority: {
-            key: fs.readFileSync(`${__dirname}/my-private-root-ca.key.pem`),
-            cert: fs.readFileSync(`${__dirname}/my-private-root-ca.crt.pem`)
-          }
-    }).listen(8080)
-
+function setupProxyListeners() {
     mainWindow.webContents.on('did-finish-load', () => {
-        proxy.intercept('request', (req, res, cycle) => {
-            mainWindow.webContents.send('proxy-new-request', { headers: req.headers, protocol: req.protocol, hostname: req.hostname, method: req.method, url: req.url });
-        });
-    });
+        // 'did-finish-load' may be called multiple times when debugging with React Hot Reload
+        if (!didSetupListener) {
+            didSetupListener = true
+            proxyServer.on('new-request', (requestPayload: any) => {
+                mainWindow.webContents.send('proxy-new-request', requestPayload)
+            })
+        }
+    })
 }
 
 app.allowRendererProcessReuse = true
 app.on('ready', () => {
     startWindow()
-    startProxy()
+    setupProxyListeners()
+})
+
+app.on('quit', () => {
+    proxyServer.stopProxyServer()
 })
