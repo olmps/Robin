@@ -5,10 +5,12 @@ import createProxyHandler from './proxy/proxy';
 
 let mainWindow: BrowserWindow
 let proxyServer = createProxyHandler({ listenPort: 8080, excludedExtensions: [] })
-let didSetupListener: boolean = false
+let didSetupListeners: boolean = false
 
 function startWindow() {
     mainWindow = new BrowserWindow({
+        minWidth: 800,
+        minHeight: 600,
         width: 900,
         height: 680,
         backgroundColor: '#FFFFFF',
@@ -30,10 +32,13 @@ function startWindow() {
 function setupProxyListeners() {
     mainWindow.webContents.on('did-finish-load', () => {
         // 'did-finish-load' may be called multiple times when debugging with React Hot Reload
-        if (!didSetupListener) {
-            didSetupListener = true
+        if (!didSetupListeners) {
+            didSetupListeners = true
             proxyServer.on('new-request', (requestPayload: any) => {
                 mainWindow.webContents.send('proxy-new-request', requestPayload)
+            })
+            proxyServer.on('new-response', (responsePayload: any) => {
+                mainWindow.webContents.send('proxy-new-response', responsePayload)
             })
         }
     })

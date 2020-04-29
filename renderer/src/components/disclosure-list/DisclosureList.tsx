@@ -1,10 +1,10 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react'
 
 // Actions
-import { setupTransientItems, Action, onKeyboardInput, KeyAction } from './DisclosureListActions';
+import { setupTransientItems, Action, onKeyboardInput, KeyAction } from './DisclosureListActions'
 
 // Models
-import { DisclosureListModel, DisclosureItemModel } from './models';
+import { DisclosureListModel, DisclosureItemModel } from './models'
 
 // Images
 import websiteIcon from '../../resources/assets/website_icon.svg'
@@ -56,8 +56,9 @@ export const DisclosureList = (props: { list: DisclosureListModel }) => {
         if (!wrapperRef.current) { return }
         const targetNode: any = event.target
         
-        // TODO: This is probably not the right way of doing it
-        if (!wrapperRef.current.contains(targetNode) && targetNode.className == "RequestsSidebar") {
+        // Detects a tap on the RequestsSidebar but not on the list component. The expected behavior is to unselect
+        // the selected item.
+        if (!wrapperRef.current.contains(targetNode) && targetNode.className === "RequestsSidebar") {
             setListState({ ...listState, selectedItemKey: "" })
         }
     }

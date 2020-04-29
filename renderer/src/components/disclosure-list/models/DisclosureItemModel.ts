@@ -1,6 +1,10 @@
 export class DisclosureItemModel {
+    public key: string
+    public label: string
+    public isRoot: boolean
+    public subItems: DisclosureItemModel[]
 
-    // Transient vars
+    // Transient properties
     public isHighlighted: boolean = false
     public isOpen: boolean = false
     public isNew: boolean = false
@@ -8,11 +12,18 @@ export class DisclosureItemModel {
 
     get hasSubItems(): boolean { return this.subItems.length > 0 }
     
-    constructor(public key: string,
-                public label: string,
-                public isRoot: boolean,
-                public subItems: DisclosureItemModel[]) { }
+    constructor(key: string, label: string, isRoot: boolean, subItems: DisclosureItemModel[]) {
+        this.key = key
+        this.label = label
+        this.isRoot = isRoot
+        this.subItems = subItems
+    }
 
+    /**
+     * Fetch item with `key` on items tree.
+     * 
+     * Recursively search for a subitem which key matches the received one
+     */
     getItem(key: string): DisclosureItemModel | null {
         if (this.key === key) { return this }
 
@@ -26,22 +37,22 @@ export class DisclosureItemModel {
         return searchedItem
     }
 
-    hasNotVisibleChild(visible: boolean): boolean {
+    /**
+     * Recursively run the items tree and indicates if exists at least
+     * one new child that is not visible.
+     * A child is not visible if the current item is not open
+     * 
+     * @param visible Indicates if the current item is open.
+     */
+    hasNewChildrenNotVisible(visible: boolean): boolean {
         let hasNotVisibleChild: boolean = false
 
         for (const item of this.subItems) {
             if (!visible && item.isNew) { return true }
-            hasNotVisibleChild = item.hasNotVisibleChild(item.isOpen)
+            hasNotVisibleChild = item.hasNewChildrenNotVisible(item.isOpen)
             if (hasNotVisibleChild) { return hasNotVisibleChild }
         }
 
         return hasNotVisibleChild
-    }
-
-    removeNewChilds() {
-        for (const item of this.subItems) {
-            item.isNew = false
-            item.removeNewChilds()
-        }
     }
 }
