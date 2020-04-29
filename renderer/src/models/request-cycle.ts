@@ -30,8 +30,13 @@ export class RequestCycle {
         return new RequestCycle(id, request, duration, response)
     }
 
-    size() {
-        let requestSize = 0
-
+    /**
+     * Calculates the size - in bytes - of the entire request cycle.
+     * If the cycle has no response yet, return just the request size.
+     */
+    size(): number {
+        let size = this.request.size()
+        if (this.response) { size += this.response.size() }
+        return size
     }
 }
