@@ -1,7 +1,5 @@
 export class Response {
-    /**
-     * HTTP status code being sent to the client.
-     */
+    /** HTTP status code being sent to the client. */
     statusCode: number
 
     /**
@@ -10,9 +8,7 @@ export class Response {
      */
     headers: Map<string, string>
 
-    /**
-     * Response body parsed as string.
-     */
+    /** Response body parsed as string. */
     body: string
 
     constructor(statusCode: number, headers: Map<string, string>, body: string) {
@@ -22,8 +18,21 @@ export class Response {
     }
 
     static fromJson(responseJson: any): Response {
-        const { statusCode, headers, json } = responseJson
+        const { statusCode, headers, body } = responseJson
+        
+        let formattedHeaders = new Map<string, string>()
+        Object.keys(headers).forEach(key => {
+            formattedHeaders.set(key, headers[key])
+        })
 
-        return new Response(statusCode, headers, json)
+        return new Response(statusCode, formattedHeaders, body)
+    }
+
+    size(): number {
+        let size = 0
+        size += this.statusCode.toString().length
+        if (this.body) { size += this.body.length }
+
+        return size
     }
 }
