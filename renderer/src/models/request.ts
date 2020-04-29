@@ -1,40 +1,84 @@
-enum NetworkRequestMethod {
-    get, put, post
+enum Method {
+    get, put, post, patch, delete
 }
 
-export function createNetworkRequestMethod(request: string): NetworkRequestMethod {
+export function createRequestMethod(request: string): Method {
     switch (request) {
-        case "GET": return NetworkRequestMethod.get
-        case "POST": return NetworkRequestMethod.post
-        case "PUT": return NetworkRequestMethod.put
+        case "GET": return Method.get
+        case "POST": return Method.post
+        case "PUT": return Method.put
+        case "DELETE": return Method.delete
+        case "PATCH": return Method.patch
     }
 
-    return NetworkRequestMethod.get
+    return Method.get
 }
 
-export class NetworkRequest {
-    domain: string
+export class Request {
+    /**
+     * Protocol of the request
+     */
+    protocol: string
+
+    /**
+     * Destination server hostname, sans port
+     */
+    hostname: string
+
+    /**
+     * Destination server port
+     */
+    port: number
+
+    /**
+     * All-caps HTTP method used. Lowercase values are converted to uppercase
+     */
+    method: Method
+
+    /**
+     * HTTP request header name/value JS object. These are all-lowercase, e.g. accept-encoding
+     */
+    headers: Map<string, string>
+
+    /**
+     * Root-relative request URL, including body string, like /foo/bar?baz=qux
+     */
     url: string
-    method: NetworkRequestMethod
-    createdAt: Date
+
+    /**
+     * An object representing querystring params in the URL.
+     * For example if the URL is /foo/bar?baz=qux, then this
+     * object will look like { baz: 'qux' }.
+     */
+    query: Map<string, string>
+
+    /**
+     * Request body parsed as String.
+     */
+    body: string
     
-    get fullUrl(): string { return `${this.domain}${this.url}` }
+    get fullUrl(): string { return `${this.hostname}${this.url}` }
 
     // Transient properties
     isNewRequest: boolean = true
 
-    constructor(domain: string, url: string, method: NetworkRequestMethod, createdAt: Date) {
-        this.domain = domain
-        this.url = url
+    private constructor(protocol: string, hostname: string, 
+                        port: number, method: Method,
+                        headers: Map<string, string>, url: string, 
+                        query: Map<string, string>, body: string) {
+        this.protocol = protocol
+        this.hostname = hostname
+        this.port = port
         this.method = method
-        this.createdAt = createdAt
+        this.headers = headers
+        this.url = url
+        this.query = query
+        this.body = body
     }
 
-    static fromJson(json: any): NetworkRequest {
-        const { domain, url, method, createdAt } = json
-        const formattedMethod = createNetworkRequestMethod(method)
-        const formattedCreatedAt = new Date(createdAt)
+    static fromJson(requestJson: any): Request {
+        const { protocol, hostname, port, method, headers, url, query, json } = requestJson
 
-        return new NetworkRequest(domain, url, formattedMethod, formattedCreatedAt)
+        return new Request(protocol, hostname, port, method, headers, url, query, json)
     }
 }

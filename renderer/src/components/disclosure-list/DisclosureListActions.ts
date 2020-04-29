@@ -6,25 +6,32 @@ enum Action {
 
 export type KeyAction = ((action: Action, itemKey: string) => void)
 
-function setupTransientItems(list: DisclosureListModel, selectedItemKey: string, openItemsKeys: string[]) {
+function setupTransientProperties(list: DisclosureListModel, selectedItemKey: string, openItemsKeys: string[]) {
     const flattenList = list.flatten([], true)
-    // TODO: Explain why is it separate (the second loop depends on this one)
+    
     flattenList.forEach(item => {
+        item.isSelected = item.key === selectedItemKey
         item.isOpen = openItemsKeys.includes(item.key)
     })
 
     const newHighlightedItems = getHighlightedItems(list.items)
 
+    // `isHighlighted` property mut be set before `isOpen` because it needs to know if
+    // the item is open to determine if it's highlighted or not.
     flattenList.forEach(item => {
-        item.isSelected = item.key === selectedItemKey
         item.isHighlighted = newHighlightedItems.includes(item.key)
     })
 }
 
+/**
+ * Recursively iterates through the items and returns those that are highlighted.
+ * An item is highlighted if itself is a new item or if it has a child that is
+ * a new item but it's not visible.
+ */
 function getHighlightedItems(items: DisclosureItemModel[]): string[] {
     var highlightedItemsKeys: string[] = []
     items.forEach(item => {
-        if (!item.isOpen && item.hasNotVisibleChild(item.isOpen)) {
+        if (!item.isOpen && item.hasNewChildrenNotVisible(item.isOpen)) {
             highlightedItemsKeys.push(item.key)
         } else if (item.subItems.length === 0 && item.isNew) {
             highlightedItemsKeys.push(item.key)
@@ -37,6 +44,9 @@ function getHighlightedItems(items: DisclosureItemModel[]): string[] {
     return highlightedItemsKeys
 }
 
+/**
+ * Handles keyboard input events
+ */
 function onKeyboardInput(event: KeyboardEvent, 
                          item: DisclosureItemModel,
                          openItemsKeys: string[],
@@ -69,6 +79,12 @@ function onKeyboardInput(event: KeyboardEvent,
     }
 }
 
+/**
+ * Finds the next item on the DisclosureList.
+ * 
+ * This function considers a flatten version of the list, and it's used to navigate through the list using
+ * the Arrow keys from the keyboard
+ */
 function nextItem(item: DisclosureItemModel, openItemsKeys: string[], list: DisclosureListModel): DisclosureItemModel | null {
     const flattenItems = list.flatten(openItemsKeys, false)
 
@@ -85,4 +101,4 @@ function previousItem(item: DisclosureItemModel, openItemsKeys: string[], list: 
     return null
 }
 
-export { Action, setupTransientItems, getHighlightedItems, onKeyboardInput, nextItem, previousItem }
+export { Action, setupTransientProperties as setupTransientItems, getHighlightedItems, onKeyboardInput, nextItem, previousItem }

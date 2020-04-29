@@ -1,13 +1,13 @@
-import React from 'react';
-import { DisclosureList } from './disclosure-list/DisclosureList';
+import React from 'react'
+import { DisclosureList } from '../../../components/disclosure-list/DisclosureList'
 
-import { NetworkRequest } from '../../models/request';
-import { DisclosureItemModel } from './disclosure-list/models/DisclosureItemModel';
-import { DisclosureListModel } from './disclosure-list/models/DisclosureListModel';
+// Models
+import { RequestCycle } from '../../../models'
+import { DisclosureListModel, DisclosureItemModel } from '../../../components/disclosure-list/models'
 
-const RequestsList = ({ requests }: { requests: NetworkRequest[] }) => {
+const RequestsList = ({ requests }: { requests: RequestCycle[] }) => {
   const listItems = buildDisclosureItems(requests)
-  const list = new DisclosureListModel("", listItems)
+  const list = new DisclosureListModel(listItems)
   return (
     <>
       <ul style={{paddingLeft: 0}}>
@@ -29,11 +29,11 @@ const RequestsList = ({ requests }: { requests: NetworkRequest[] }) => {
  *          - DisclosureItem { label: "/another", isRoot: false, subItems: <BELOW> }
  *            - DisclosureItem { label: "/page", isRoot: false, subItems: [] }
  * 
- * @param requests List of intercepted requests
+ * @param cycles List of completed cycles
  */
-function buildDisclosureItems(requests: NetworkRequest[]): DisclosureItemModel[] {
+function buildDisclosureItems(cycles: RequestCycle[]): DisclosureItemModel[] {
   // Builds the root lever, i.e, the items representing the domains urls (like www.google.com, www.apple.com, etc)
-  const baseUrls = requests.map(request => request.domain)
+  const baseUrls = cycles.map(cycle => cycle.hostname)
   const filteredBaseUrls = baseUrls.filter((item, index) => baseUrls.indexOf(item) === index) // Remove duplicates
 
   // We assign an incremental key for each DisclosureItem
@@ -45,10 +45,10 @@ function buildDisclosureItems(requests: NetworkRequest[]): DisclosureItemModel[]
   })
 
   // For each baseUrl, use `setup` function to recursively build its subItems
-  requests.forEach(request => {
-    const relatedItem = baseItems.find(item => item.label === request.domain)!
-    relatedItem.isNew = requests.find(request => request.domain === relatedItem.label && request.isNewRequest) !== undefined
-    setup(request.url, relatedItem, relatedItem.key)
+  cycles.forEach(cycle => {
+    const relatedItem = baseItems.find(item => item.label === cycle.hostname)!
+    relatedItem.isNew = cycles.find(cycle => cycle.hostname === relatedItem.label && cycle.request.isNewRequest) !== undefined
+    setup(cycle.url, relatedItem, relatedItem.key)
   })
   
   return baseItems
@@ -72,7 +72,6 @@ function setup(urlSegment: string, item: DisclosureItemModel, keyPrefix: String)
       item.subItems.push(subItem)
       return
   }
-
 
   let formattedUrl = urlSegment
   const lastElement = urlSegment.slice(-1)

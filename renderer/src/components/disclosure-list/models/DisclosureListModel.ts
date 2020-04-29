@@ -1,7 +1,7 @@
 import { DisclosureItemModel } from "./DisclosureItemModel"
 
 export class DisclosureListModel {
-    constructor(public selectedItemKey: string, public items: DisclosureItemModel[]) { }
+    constructor(public items: DisclosureItemModel[]) { }
 
     getItem(key: string): DisclosureItemModel | null {
         let searchedItem: DisclosureItemModel | null = null
@@ -14,7 +14,15 @@ export class DisclosureListModel {
         return searchedItem
     }
 
-    // TODO: DESCRIBE
+    /**
+     * Creates a flatten version of the list.
+     * 
+     * It's useful to visualize the list as an array structure instead a tree vision.
+     * If `includeHidden` is false, subitems from items that are not open are not included.
+     * 
+     * @param openItemsKeys List of open items keys
+     * @param includeHidden If true, subitems from items that are not open are not included in the flatten list
+     */
     flatten(openItemsKeys: string[], includeHidden: boolean): DisclosureItemModel[] {
         return this.recursiveFlattenList(this.items, openItemsKeys, includeHidden, [])
     }

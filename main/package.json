@@ -7,15 +7,19 @@
   },
   "author": "Guilherme Girotto",
   "dependencies": {
-    "hoxy": "^3.3.1"
+    "@types/uuidv4": "^5.0.0",
+    "hoxy": "^3.3.1",
+    "http-proxy": "^1.18.0",
+    "uuidv4": "^6.0.7"
   },
   "devDependencies": {
     "@types/electron": "^1.6.10",
     "@types/hoxy": "^3.3.0",
+    "@types/http-proxy": "^1.17.4",
     "@types/node": "^13.13.0",
-    "electron": "^8",
     "concurrently": "^5",
     "cross-env": "^7",
+    "electron": "^8",
     "electron-is-dev": "^1.1.0",
     "nodemon": "^2",
     "typescript": "^3",

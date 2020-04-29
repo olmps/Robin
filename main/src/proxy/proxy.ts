@@ -1,4 +1,5 @@
 import * as hoxy from 'hoxy'
+import { uuid } from 'uuidv4'
 import * as fs from 'fs'
 import * as events from 'events'
 import { ProxyConfig } from './proxy-config'
@@ -6,10 +7,14 @@ import { exec } from 'child_process'
 
 class ProxyHandler extends events.EventEmitter {
     config: ProxyConfig
+
+    // TODO: Docs
+    ongoingRequests: Map<string, number>
   
     constructor(config: ProxyConfig) {
         super()
         this.config = config
+        this.ongoingRequests = new Map<string, number>()
         this.startProxyServer()
   }
 
@@ -28,14 +33,15 @@ class ProxyHandler extends events.EventEmitter {
       if (error.code === 'ENOTFOUND') return
     })
 
-    proxyServer.log('error warn debug', (evt: any) => {
+    proxyServer.log('error warn', (evt: any) => {
       console.error('Hoxy Error')
       console.error(evt)
     })
 
     proxyServer.listen(8080)
 
-    proxyServer.intercept('request', (req) => this._onInterceptRequest(req))
+    proxyServer.intercept({ phase: 'request', as: 'string'}, (req) => this._onInterceptRequest(req))
+    proxyServer.intercept({ phase: 'response', as: 'string'}, (req, res) => this._onInterceptResponse(req, res))
   }
 
   stopProxyServer() {
@@ -54,16 +60,26 @@ class ProxyHandler extends events.EventEmitter {
     }
   }
 
-  // Sanitize the received request
-  async _onInterceptRequest(request: hoxy.Request) {
-    const formattedRequest = {
-      domain: request.hostname,
-      url: request.url,
-      method: request.method,
-      createdAt: new Date().toDateString()
-    }
+  // Intercept the request before it's sent to the destination.
+  // The user may modify the request content before it's sent.
+  _onInterceptRequest(request: any) {
+    request.id = uuid()
+    request.started = new Date().getTime()
+
+    const { protocol, hostname, port, method, headers, url, query } = request
+    const formattedRequest = { id: request.id, protocol, hostname, port, method, headers, url, query, body: request.string! }
     
     this.emit('new-request', formattedRequest)
+  }
+
+  _onInterceptResponse(request: any, response: hoxy.Response) {
+    const requestId = request.id
+    const cycleDuration = new Date().getTime() - request.started
+
+    const { statusCode, headers } = response
+    const formattedResponse = { id: requestId, duration: cycleDuration, statusCode, headers, body: response.string! }
+    
+    this.emit('new-response', formattedResponse)
   }
 }
 
