@@ -9,10 +9,10 @@ let didSetupListeners: boolean = false
 
 function startWindow() {
     mainWindow = new BrowserWindow({
-        minWidth: 800,
-        minHeight: 600,
         width: 900,
         height: 680,
+        minWidth: 850,
+        minHeight: 600,
         backgroundColor: '#FFFFFF',
         webPreferences: {
             nodeIntegration: true,

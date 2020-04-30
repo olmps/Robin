@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import RequestsList from './requests-list/RequestsList'
+import RequestsList from './RequestsList'
 
 // Models
 import { RequestCycle } from '../../models'
@@ -11,14 +11,14 @@ class SidebarState {
   constructor(public requestsFilter: string | undefined = undefined) { }
 }
 
-const RequestsSidebar = ({ requests }: { requests: RequestCycle[] }) => {
+const RequestsSidebar = ({ cycles }: { cycles: RequestCycle[] }) => {
   const [sidebarState, setSidebarState] = useState(new SidebarState())
 
   const filterHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSidebarState({ ...sidebarState, requestsFilter: event.target.value })
   }
 
-  const filteredRequests = filterRequests(requests, sidebarState.requestsFilter)
+  const filteredRequests = filterRequests(cycles, sidebarState.requestsFilter)
 
   return (
     <div className="RequestsSidebar">

@@ -21,8 +21,10 @@
     }
   },
   "dependencies": {
+    "chart.js": "^2.9.3",
     "electron-is-dev": "^1.1.0",
     "react": "^16.8.6",
+    "react-chartjs-2": "^2.9.0",
     "react-dom": "^16.8.6",
     "react-scripts": "3.0.1",
     "react-split-pane": "^0.1.91",

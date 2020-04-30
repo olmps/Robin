@@ -1,11 +1,28 @@
-.CardsCollection {
-    text-align: center;
+.ContentColumn {
+    box-sizing: border-box;
+    overflow-y: scroll;
+    height: 100%;
+    width: 100%;
 }
 
-.CardsCollectionWrapper {
-    padding: 40px 40px 0px 40px;
+.ContentColumnWrapper {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: nowrap;
+    justify-content: space-evenly;
+}
+
+.CardsCollection {
+    padding: 40px 40px 40px 40px;
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
     justify-content: space-evenly;
+}
+
+.DoughnutChart {
+    padding: 40px 0px 40px 0px;
+    position: relative;
+    width: 800px;
+    margin: auto;
 }

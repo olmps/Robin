@@ -1,9 +1,9 @@
 import React from 'react'
-import { DisclosureList } from '../../../components/disclosure-list/DisclosureList'
+import { DisclosureList } from '../../components/disclosure-list/DisclosureList'
 
 // Models
-import { RequestCycle } from '../../../models'
-import { DisclosureListModel, DisclosureItemModel } from '../../../components/disclosure-list/models'
+import { RequestCycle } from '../../models'
+import { DisclosureListModel, DisclosureItemModel } from '../../components/disclosure-list/models'
 
 const RequestsList = ({ requests }: { requests: RequestCycle[] }) => {
   const listItems = buildDisclosureItems(requests)

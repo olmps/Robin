@@ -1,4 +1,4 @@
-enum Method {
+export enum Method {
     get, put, post, patch, delete
 }
 
