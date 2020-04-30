@@ -6,6 +6,7 @@
 }
 
 .ContentColumnWrapper {
+    padding: 20px 40px 20px 40px;
     display: flex;
     flex-direction: column;
     flex-wrap: nowrap;
@@ -13,11 +14,23 @@
 }
 
 .CardsCollection {
-    padding: 40px 40px 40px 40px;
+    padding: 20px 0px 40px 0px;
     display: flex;
     flex-direction: row;
     flex-wrap: nowrap;
     justify-content: space-evenly;
+}
+
+.CardsCollection > * {
+    margin: 0 10px;
+}
+
+.CardsCollection > :first-child {
+    margin-left: 0px;
+}
+
+.CardsCollection > :last-child {
+    margin-right: 0px;
 }
 
 .DoughnutChart {

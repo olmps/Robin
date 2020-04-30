@@ -25,14 +25,16 @@ const RequestsDetails = ({ cycles }: { cycles: RequestCycle[] }) => {
         <>
             <div className="ContentColumn">
                 <div className="ContentColumnWrapper">
+                    <h1>Requests Overview</h1>
                     <div className="CardsCollection">
                         <RequestCard iconPath={requestIcon} title={requestsAmount} subtitle="Requests" />
                         <RequestCard iconPath={clockIcon} title={averageDuration} subtitle="Average Time" />
                         <RequestCard iconPath={memoryIcon} title={totalSize} subtitle="Data Transferred" />
                     </div>
-                <div className="DoughnutChart">
-                    <Doughnut data={doughnutChartData(cycles)} options={doughnutChartOptions()} />
-                </div>
+                    <h2>Requests Distribution</h2>
+                    <div className="DoughnutChart">
+                        <Doughnut data={doughnutChartData(cycles)} options={doughnutChartOptions()} />
+                    </div>
                 </div>
             </div>
         </>

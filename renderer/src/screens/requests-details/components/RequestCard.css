@@ -8,7 +8,6 @@
 
     /* All cards have the same size */
     flex: 1 1 0px;
-    margin: 0px 10px 0px 10px;
 }
 
 .CardWrapper:hover {
