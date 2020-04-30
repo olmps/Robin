@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react'
 import SplitPane from 'react-split-pane'
 
 // Components 
-import RequestsSidebar from './screens/requests-sidebar/requests-list/RequestsSidebar'
+import RequestsSidebar from './screens/requests-sidebar/RequestsSidebar'
 import RequestsDetails from './screens/requests-details/RequestsDetails'
 
 // Models
