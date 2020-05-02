@@ -5,15 +5,16 @@ import { Doughnut } from 'react-chartjs-2'
 import { RequestCycle } from '../../models'
 
 // Components
-import RequestCard from './components/RequestCard'
+import RequestCard from './components/card/RequestCard'
+import RequestsStats from './components/stats/RequestsStats'
 
 // Utils
 import { requestsStats, doughnutChartData, doughnutChartOptions } from './RequestsDetailsUtils'
 
 // Assets
-import requestIcon from '../../resources/assets/compare_arrows.svg'
-import clockIcon from '../../resources/assets/clock.svg'
-import memoryIcon from '../../resources/assets/memory.svg'
+import requestIcon from '../../resources/assets/requests-details/cards/compare_arrows.svg'
+import clockIcon from '../../resources/assets/requests-details/cards/clock.svg'
+import memoryIcon from '../../resources/assets/requests-details/cards/memory.svg'
 
 // Style
 import './RequestsDetails.css'
@@ -24,18 +25,18 @@ const RequestsDetails = ({ cycles }: { cycles: RequestCycle[] }) => {
     return (
         <>
             <div className="ContentColumn">
-                <div className="ContentColumnWrapper">
-                    <h1>Requests Overview</h1>
-                    <div className="CardsCollection">
-                        <RequestCard iconPath={requestIcon} title={requestsAmount} subtitle="Requests" />
-                        <RequestCard iconPath={clockIcon} title={averageDuration} subtitle="Average Time" />
-                        <RequestCard iconPath={memoryIcon} title={totalSize} subtitle="Data Transferred" />
-                    </div>
-                    <h2>Requests Distribution</h2>
-                    <div className="DoughnutChart">
-                        <Doughnut data={doughnutChartData(cycles)} options={doughnutChartOptions()} />
-                    </div>
+                <h1>Requests Overview</h1>
+                <div className="CardsCollection">
+                    <RequestCard iconPath={requestIcon} title={requestsAmount} subtitle="Requests" />
+                    <RequestCard iconPath={clockIcon} title={averageDuration} subtitle="Average Time" />
+                    <RequestCard iconPath={memoryIcon} title={totalSize} subtitle="Data Transferred" />
                 </div>
+                <h2>Distribution</h2>
+                <div className="DoughnutChart">
+                    <Doughnut data={doughnutChartData(cycles)} options={doughnutChartOptions()} />
+                </div>
+                <h2>Stats</h2>
+                <RequestsStats cycles={cycles} />
             </div>
         </>
     )
