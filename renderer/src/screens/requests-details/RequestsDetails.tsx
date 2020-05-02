@@ -1,41 +1,25 @@
 import React from 'react'
-import { Doughnut } from 'react-chartjs-2'
 
 // Models
 import { RequestCycle } from '../../models'
 
 // Components
-import RequestCard from './components/card/RequestCard'
 import RequestsStats from './components/stats/RequestsStats'
 import RequestsMap from './components/map/RequestsMap'
-
-// Utils
-import { requestsStats, doughnutChartData, doughnutChartOptions } from './RequestsDetailsUtils'
-
-// Assets
-import requestIcon from '../../resources/assets/requests-details/cards/compare_arrows.svg'
-import clockIcon from '../../resources/assets/requests-details/cards/clock.svg'
-import memoryIcon from '../../resources/assets/requests-details/cards/memory.svg'
+import RequestsDistribution from './components/distribution/RequestsDistribution'
 
 // Style
 import './RequestsDetails.css'
+import RequestsCardsCollection from './components/cards-collection/RequestsCardsCollection'
 
 const RequestsDetails = ({ cycles }: { cycles: RequestCycle[] }) => {
-    const [requestsAmount, averageDuration, totalSize] = requestsStats(cycles)
-
     return (
         <>
             <div className="ContentColumn">
                 <h1>Requests Overview</h1>
-                <div className="CardsCollection">
-                    <RequestCard iconPath={requestIcon} title={requestsAmount} subtitle="Requests" />
-                    <RequestCard iconPath={clockIcon} title={averageDuration} subtitle="Average Time" />
-                    <RequestCard iconPath={memoryIcon} title={totalSize} subtitle="Data Transferred" />
-                </div>
+                <RequestsCardsCollection cycles={cycles} />
                 <h2>Distribution</h2>
-                <div className="DoughnutChart">
-                    <Doughnut data={doughnutChartData(cycles)} options={doughnutChartOptions()} />
-                </div>
+                <RequestsDistribution cycles={cycles} />
                 <h2>Stats</h2>
                 <RequestsStats cycles={cycles} />
                 <h2>Connections Map</h2>

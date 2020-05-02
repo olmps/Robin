@@ -31,16 +31,11 @@ class ProxyHandler extends events.EventEmitter {
     proxyServer.on('error', (error: any) => {
       // Fallback for DNS resolve issues.
       // ENOTFOUND means the target URL was not found -> it may not exists or DNS couldn't resolve it
-      if (error.code === 'ENOTFOUND') return
+      if (error.code === 'ENOTFOUND ENOTFOUND') return
       // Fallback to "socket hang up" error
       // The socket cannot was interrupted for an unknown reason. This doesn't affect the application behavior
       if (error.code === 'ECONNRESET') return
       console.error('hoxy error: ', error)
-    })
-
-    proxyServer.log('error warn', (evt: any) => {
-      console.error('Hoxy Error')
-      console.error(evt)
     })
 
     proxyServer.listen(8080)
@@ -77,8 +72,11 @@ class ProxyHandler extends events.EventEmitter {
     let geoLocation: any = { }
 
     try {
-      geoLocation.source = await GeoIpHandler.getCurrentLocation()
-      geoLocation.destination = await GeoIpHandler.geoLocation(hostname)
+      const source = await GeoIpHandler.getCurrentLocation()
+      const destination = await GeoIpHandler.geoLocation(hostname)
+
+      geoLocation.source = source
+      geoLocation.destination = destination
     } catch { } // We don't care for errors because there's nothing we can do as a fallback
 
     const payload = {

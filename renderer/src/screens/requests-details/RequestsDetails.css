@@ -5,30 +5,3 @@
     width: 100%;
     padding: 20px 40px 20px 40px;
 }
-
-.CardsCollection {
-    padding: 20px 0px 40px 0px;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: space-evenly;
-}
-
-.CardsCollection>* {
-    margin: 0 10px;
-}
-
-.CardsCollection> :first-child {
-    margin-left: 0px;
-}
-
-.CardsCollection> :last-child {
-    margin-right: 0px;
-}
-
-.DoughnutChart {
-    padding: 40px 0px 40px 0px;
-    position: relative;
-    width: 800px;
-    margin: auto;
-}
