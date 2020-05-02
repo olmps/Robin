@@ -41,7 +41,6 @@ function requestsStates(cycles: RequestCycle[]): string[] {
   
   for (const cycle of cycles) {
     if (!cycle.isComplete) {
-      console.log(cycle.fullUrl)
       statsAmount[0] += 1
       continue
     }

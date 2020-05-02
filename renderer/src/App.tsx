@@ -6,14 +6,14 @@ import RequestsSidebar from './screens/requests-sidebar/RequestsSidebar'
 import RequestsDetails from './screens/requests-details/RequestsDetails'
 
 // Models
-import { RequestCycle } from './models/request-cycle'
+import { RequestCycle, GeoLocation } from './models/request-cycle'
 import { Request } from './models/request'
 import { Response } from './models/response'
 
 // Style
 import './App.css'
 
-const { ipcRenderer } = window.require('electron');
+const { ipcRenderer } = window.require('electron')
 
 class AppState {
     constructor(public cycles: RequestCycle[] = []) { }
@@ -68,10 +68,11 @@ const SetupIpcListeners = (newCycleHandler: NewCycleHandler, updateCycleHandler:
         // Ensure that ipcRenderer is not already registered. It may happening while
         // debugging for example, when React hot reload.
         if (ipcRenderer.rawListeners('proxy-new-request').length === 0) {
-            ipcRenderer.on('proxy-new-request', (_: any, requestPayload: any) => {
-                const request = Request.fromJson(requestPayload)
-                const cycleId = requestPayload.id
-                const newCycle = new RequestCycle(cycleId, request, 0, undefined)
+            ipcRenderer.on('proxy-new-request', (_: any, payload: any) => {
+                const request = Request.fromJson(payload.requestPayload)
+                const cycleId = payload.id
+                const geoLocation = GeoLocation.fromJson(payload.geoLocation)
+                const newCycle = new RequestCycle(cycleId, request, 0, geoLocation, undefined)
                 newCycleHandler(newCycle)
             })
         }

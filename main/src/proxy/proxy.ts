@@ -4,6 +4,7 @@ import * as fs from 'fs'
 import * as events from 'events'
 import { ProxyConfig } from './proxy-config'
 import { exec } from 'child_process'
+import GeoIpHandler from '../geoip/geoip'
 
 class ProxyHandler extends events.EventEmitter {
     config: ProxyConfig
@@ -26,11 +27,12 @@ class ProxyHandler extends events.EventEmitter {
             cert: fs.readFileSync(`src/resources/certificates/proxy-cert.crt.pem`)
           }
     })
+
     proxyServer.on('error', (error: any) => {
-      console.error('hoxy error: ', error)
       // Fallback to "socket hang up" error
       // ENOTFOUND means the target URL was not found -> it may not exists and DNS couldn't resolve it
       if (error.code === 'ENOTFOUND') return
+      console.error('hoxy error: ', error)
     })
 
     proxyServer.log('error warn', (evt: any) => {
@@ -62,14 +64,27 @@ class ProxyHandler extends events.EventEmitter {
 
   // Intercept the request before it's sent to the destination.
   // The user may modify the request content before it's sent.
-  _onInterceptRequest(request: any) {
+  async _onInterceptRequest(request: any) {
     request.id = uuid()
     request.started = new Date().getTime()
 
     const { protocol, hostname, port, method, headers, url, query } = request
     const formattedRequest = { id: request.id, protocol, hostname, port, method, headers, url, query, body: request.string! }
     
-    this.emit('new-request', formattedRequest)
+    let geoLocation: any = { }
+
+    try {
+      geoLocation.source = await GeoIpHandler.getCurrentLocation()
+      geoLocation.destination = await GeoIpHandler.geoLocation(hostname)
+    } catch { } // We don't care for errors because there's nothing we can do as a fallback
+
+    const payload = {
+      id: request.id,
+      requestPayload: formattedRequest,
+      geoLocation
+    }
+
+    this.emit('new-request', payload)
   }
 
   _onInterceptResponse(request: any, response: hoxy.Response) {
