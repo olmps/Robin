@@ -1,5 +1,5 @@
-import { Request } from './request'
+import { Request, Method } from './request'
 import { Response } from './response'
 import { RequestCycle } from './request-cycle'
 
-export { Request, Response, RequestCycle }
+export { Request, Method, Response, RequestCycle }

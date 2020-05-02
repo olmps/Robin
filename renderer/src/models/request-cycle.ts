@@ -1,4 +1,4 @@
-import { Request, Response } from "./index"
+import { Request, Method, Response } from "./index"
 
 /**
  * Represents an entire Request-Response cycle.
@@ -13,6 +13,7 @@ export class RequestCycle {
     get fullUrl(): string { return `${this.request.hostname}${this.request.url}` }
     get url(): string { return this.request.url }
     get hostname(): string { return this.request.hostname }
+    get method(): Method { return this.request.method }
     get isComplete(): boolean { return this.response !== undefined }
 
     constructor(id: string, request: Request, duration: number, response?: Response) {

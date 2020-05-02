@@ -1,6 +1,14 @@
 import React from 'react'
-import { RequestCycle } from '../../models/request-cycle'
+import { Doughnut } from 'react-chartjs-2'
+
+// Models
+import { RequestCycle } from '../../models'
+
+// Components
 import RequestCard from './components/RequestCard'
+
+// Utils
+import { requestsStats, doughnutChartData, doughnutChartOptions } from './RequestsDetailsUtils'
 
 // Assets
 import requestIcon from '../../resources/assets/compare_arrows.svg'
@@ -15,44 +23,22 @@ const RequestsDetails = ({ cycles }: { cycles: RequestCycle[] }) => {
 
     return (
         <>
-            <div className="CardsCollection">
-                <div className="CardsCollectionWrapper">
-                    <RequestCard iconPath={requestIcon} title={requestsAmount} subtitle="Requests" />
-                    <RequestCard iconPath={clockIcon} title={averageDuration} subtitle="Average Time" />
-                    <RequestCard iconPath={memoryIcon} title={totalSize} subtitle="Data Transferred" />
+            <div className="ContentColumn">
+                <div className="ContentColumnWrapper">
+                    <h1>Requests Overview</h1>
+                    <div className="CardsCollection">
+                        <RequestCard iconPath={requestIcon} title={requestsAmount} subtitle="Requests" />
+                        <RequestCard iconPath={clockIcon} title={averageDuration} subtitle="Average Time" />
+                        <RequestCard iconPath={memoryIcon} title={totalSize} subtitle="Data Transferred" />
+                    </div>
+                    <h2>Requests Distribution</h2>
+                    <div className="DoughnutChart">
+                        <Doughnut data={doughnutChartData(cycles)} options={doughnutChartOptions()} />
+                    </div>
                 </div>
             </div>
         </>
     )
-}
-
-/**
- * Retrieve and formats the stats - amount, average duration and total size - from 
- * all **complete** cycles.
- */
-function requestsStats(cycles: RequestCycle[]): [string, string, string] {
-    if (cycles.length === 0) { return ["0", "0", "0"] }
-    
-    const completeCycles = cycles.filter(cycle => cycle.isComplete)
-
-    const averageDuration = completeCycles.reduce((a,b) => a + b.duration, 0) / cycles.length
-    const formattedDuration = averageDuration >= 1000 ? `${new Date(averageDuration).getSeconds().toFixed(0)} s` :
-                                                        `${averageDuration.toFixed(0)} ms`
-
-    const totalSize = completeCycles.reduce((a, b) => a + b.size(), 0)
-
-    return [completeCycles.length.toString(), formattedDuration, formatBytes(totalSize)]
-}
-
-function formatBytes(bytes: number) {
-    if (bytes === 0) return '0 Bytes'
-
-    const k = 1024
-    const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(0)) + ' ' + sizes[i];
 }
 
 export default RequestsDetails
