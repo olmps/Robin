@@ -1,4 +1,5 @@
 import { Request, Method, Response } from "./index"
+import HttpStatusCode from "./status-code"
 
 /**
  * Represents an entire Request-Response cycle.
@@ -14,7 +15,14 @@ export class RequestCycle {
     get url(): string { return this.request.url }
     get hostname(): string { return this.request.hostname }
     get method(): Method { return this.request.method }
-    get isComplete(): boolean { return this.response !== undefined }
+    get statusCode(): number | undefined {
+        if (!this.response) { return undefined }
+        return this.response.statusCode
+    }
+    get isComplete(): boolean {
+        // TODO: FIND A BETTER WAY TO HANDLE SOCKET CONNECTIONS
+        return this.response !== undefined || this.fullUrl.includes('socket')
+    }
 
     constructor(id: string, request: Request, duration: number, response?: Response) {
         this.id = id
