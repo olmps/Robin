@@ -7,15 +7,17 @@
   },
   "author": "Guilherme Girotto",
   "dependencies": {
+    "@types/geoip-lite": "^1.1.31",
+    "@types/public-ip": "^3.1.0",
     "@types/uuidv4": "^5.0.0",
+    "geoip-lite": "^1.4.1",
     "hoxy": "^3.3.1",
-    "http-proxy": "^1.18.0",
+    "public-ip": "^4.0.1",
     "uuidv4": "^6.0.7"
   },
   "devDependencies": {
     "@types/electron": "^1.6.10",
     "@types/hoxy": "^3.3.0",
-    "@types/http-proxy": "^1.17.4",
     "@types/node": "^13.13.0",
     "concurrently": "^5",
     "cross-env": "^7",

@@ -1,7 +1,8 @@
-import { BrowserWindow, app } from 'electron';
-import * as isDev from "electron-is-dev";
+import { BrowserWindow, app, ipcMain } from 'electron'
+import * as isDev from "electron-is-dev"
 import * as path from 'path'
-import createProxyHandler from './proxy/proxy';
+import createProxyHandler from './proxy/proxy'
+import GeoIpHandler from './geoip/geoip'
 
 let mainWindow: BrowserWindow
 let proxyServer = createProxyHandler({ listenPort: 8080, excludedExtensions: [] })
@@ -29,25 +30,28 @@ function startWindow() {
     mainWindow.on("closed", () => mainWindow.destroy())
 }
 
-function setupProxyListeners() {
+function setupListeners() {
     mainWindow.webContents.on('did-finish-load', () => {
-        // 'did-finish-load' may be called multiple times when debugging with React Hot Reload
         if (!didSetupListeners) {
+            setupProxyListeners()
             didSetupListeners = true
-            proxyServer.on('new-request', (requestPayload: any) => {
-                mainWindow.webContents.send('proxy-new-request', requestPayload)
-            })
-            proxyServer.on('new-response', (responsePayload: any) => {
-                mainWindow.webContents.send('proxy-new-response', responsePayload)
-            })
         }
+    })
+}
+
+function setupProxyListeners() {
+    proxyServer.on('new-request', (requestPayload: any) => {
+        mainWindow.webContents.send('proxy-new-request', requestPayload)
+    })
+    proxyServer.on('new-response', (responsePayload: any) => {
+        mainWindow.webContents.send('proxy-new-response', responsePayload)
     })
 }
 
 app.allowRendererProcessReuse = true
 app.on('ready', () => {
     startWindow()
-    setupProxyListeners()
+    setupListeners()
 })
 
 app.on('quit', () => {
