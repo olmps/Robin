@@ -29,9 +29,12 @@ class ProxyHandler extends events.EventEmitter {
     })
 
     proxyServer.on('error', (error: any) => {
-      // Fallback to "socket hang up" error
-      // ENOTFOUND means the target URL was not found -> it may not exists and DNS couldn't resolve it
+      // Fallback for DNS resolve issues.
+      // ENOTFOUND means the target URL was not found -> it may not exists or DNS couldn't resolve it
       if (error.code === 'ENOTFOUND') return
+      // Fallback to "socket hang up" error
+      // The socket cannot was interrupted for an unknown reason. This doesn't affect the application behavior
+      if (error.code === 'ECONNRESET') return
       console.error('hoxy error: ', error)
     })
 
