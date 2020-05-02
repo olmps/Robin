@@ -1,11 +1,7 @@
-.CardsCollection {
-    text-align: center;
-}
-
-.CardsCollectionWrapper {
-    padding: 40px 40px 0px 40px;
-    display: flex;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    justify-content: space-evenly;
+.ContentColumn {
+    box-sizing: border-box;
+    overflow-y: scroll;
+    height: 100%;
+    width: 100%;
+    padding: 20px 40px 20px 40px;
 }

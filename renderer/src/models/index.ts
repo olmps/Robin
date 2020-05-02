@@ -1,5 +1,6 @@
-import { Request } from './request'
+import { Request, Method } from './request'
 import { Response } from './response'
 import { RequestCycle } from './request-cycle'
+import HttpStatusCode from './status-code'
 
-export { Request, Response, RequestCycle }
+export { Request, Method, Response, RequestCycle, HttpStatusCode }

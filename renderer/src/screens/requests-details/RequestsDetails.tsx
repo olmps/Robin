@@ -1,44 +1,32 @@
 import React from 'react'
-import { RequestCycle } from '../../models/request-cycle'
-import RequestCard from './components/RequestCard'
 
-// Assets
-import requestIcon from '../../resources/assets/compare_arrows.svg'
-import clockIcon from '../../resources/assets/clock.svg'
-import memoryIcon from '../../resources/assets/memory.svg'
+// Models
+import { RequestCycle } from '../../models'
+
+// Components
+import RequestsStats from './components/stats/RequestsStats'
+import RequestsMap from './components/map/RequestsMap'
+import RequestsDistribution from './components/distribution/RequestsDistribution'
 
 // Style
 import './RequestsDetails.css'
+import RequestsCardsCollection from './components/cards-collection/RequestsCardsCollection'
 
 const RequestsDetails = ({ cycles }: { cycles: RequestCycle[] }) => {
-    const [requestsAmount, averageDuration, totalSize] = requestsStats(cycles)
-
     return (
         <>
-            <div className="CardsCollection">
-                <div className="CardsCollectionWrapper">
-                    <RequestCard iconPath={requestIcon} title={requestsAmount} subtitle="Requests" />
-                    <RequestCard iconPath={clockIcon} title={averageDuration} subtitle="Average Time" />
-                    <RequestCard iconPath={memoryIcon} title={totalSize} subtitle="Data Transferred" />
-                </div>
+            <div className="ContentColumn">
+                <h1>Requests Overview</h1>
+                <RequestsCardsCollection cycles={cycles} />
+                <h2>Distribution</h2>
+                <RequestsDistribution cycles={cycles} />
+                <h2>Stats</h2>
+                <RequestsStats cycles={cycles} />
+                <h2>Connections Map</h2>
+                <RequestsMap cycles={cycles} />
             </div>
         </>
     )
-}
-
-/**
- * Retrieve and formats the stats - amount, average duration and total size - from 
- * all **complete** cycles.
- */
-function requestsStats(cycles: RequestCycle[]): [string, string, string] {
-    if (cycles.length === 0) { return ["0", "0", "0"] }
-    
-    const completeCycles = cycles.filter(cycle => cycle.isComplete)
-    const averageDuration = completeCycles.reduce((a,b) => a + b.duration, 0) / cycles.length
-    const formattedDuration = averageDuration >= 1000 ? `${new Date(averageDuration).getSeconds().toFixed(0)} s` :
-                                                        `${averageDuration.toFixed(0)} ms`
-
-    return [completeCycles.length.toString(), formattedDuration, "0 Bytes"]
 }
 
 export default RequestsDetails
