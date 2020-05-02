@@ -3,14 +3,7 @@
     overflow-y: scroll;
     height: 100%;
     width: 100%;
-}
-
-.ContentColumnWrapper {
     padding: 20px 40px 20px 40px;
-    display: flex;
-    flex-direction: column;
-    flex-wrap: nowrap;
-    justify-content: space-evenly;
 }
 
 .CardsCollection {
@@ -21,15 +14,15 @@
     justify-content: space-evenly;
 }
 
-.CardsCollection > * {
+.CardsCollection>* {
     margin: 0 10px;
 }
 
-.CardsCollection > :first-child {
+.CardsCollection> :first-child {
     margin-left: 0px;
 }
 
-.CardsCollection > :last-child {
+.CardsCollection> :last-child {
     margin-right: 0px;
 }
 

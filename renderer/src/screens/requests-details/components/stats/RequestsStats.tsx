@@ -20,21 +20,18 @@ import serverErrorIcon from '../../../../resources/assets/requests-details/stats
 
 // Style
 import './RequestsStats.css'
-// import { InformationalResponses, SuccessResponses, RedirectResponses, ClientErrorResponses, ServerErrorResponses } from '../../../../models/status-code'
 
 const RequestsStats = ({ cycles }: { cycles: RequestCycle[] }) => {
     const [incomplete, informational, success, redirects, clientErrors, serverErrors] = requestsStates(cycles)
 
     return (
         <div className="StatsWrapper">
-          <ul className="StatsList">
-            <li><img src={informationIcon} />{informational} Informational</li>
-            <li><img src={successIcon} />{success} Successful</li>
-            <li><img src={redirectIcon} />{redirects} Redirects</li>
-            <li><img src={clientErrorIcon} />{clientErrors} Client Errors</li>
-            <li><img src={serverErrorIcon} />{serverErrors} Server Errors</li>
-            <li><img src={syncIcon} />{incomplete} Incomplete</li>
-          </ul>
+            <div className="StatsItem"><img src={informationIcon} />{informational} Informational</div>
+            <div className="StatsItem"><img src={successIcon} />{success} Successful</div>
+            <div className="StatsItem"><img src={redirectIcon} />{redirects} Redirects</div>
+            <div className="StatsItem"><img src={clientErrorIcon} />{clientErrors} Client Errors</div>
+            <div className="StatsItem"><img src={serverErrorIcon} />{serverErrors} Server Errors</div>
+            <div className="StatsItem"><img src={syncIcon} />{incomplete} Incomplete</div>
         </div>
     )
 }
@@ -44,6 +41,7 @@ function requestsStates(cycles: RequestCycle[]): string[] {
   
   for (const cycle of cycles) {
     if (!cycle.isComplete) {
+      console.log(cycle.fullUrl)
       statsAmount[0] += 1
       continue
     }
