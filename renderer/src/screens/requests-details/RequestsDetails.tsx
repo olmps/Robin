@@ -7,10 +7,10 @@ import { RequestCycle } from '../../models'
 import RequestsStats from './components/stats/RequestsStats'
 import RequestsMap from './components/map/RequestsMap'
 import RequestsDistribution from './components/distribution/RequestsDistribution'
+import { RequestsCardsCollection } from '../../components/cards-collection/RequestsCardsCollection'
 
 // Style
 import './RequestsDetails.css'
-import RequestsCardsCollection from './components/cards-collection/RequestsCardsCollection'
 
 const RequestsDetails = ({ cycles }: { cycles: RequestCycle[] }) => {
     return (
