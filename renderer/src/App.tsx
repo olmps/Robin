@@ -4,6 +4,7 @@ import SplitPane from 'react-split-pane'
 // Components 
 import RequestsSidebar from './screens/requests-sidebar/RequestsSidebar'
 import RequestsDetails from './screens/requests-details/RequestsDetails'
+import SingleRequestDetails from './screens/single-request-details/SingleRequestDetails'
 
 // Models
 import { RequestCycle, GeoLocation } from './models/request-cycle'
@@ -52,7 +53,8 @@ const App = () => {
     return (
         <SplitPane split="vertical" minSize={300} defaultSize={300}>
             <RequestsSidebar cycles={appState.cycles} />
-            <RequestsDetails cycles={appState.cycles} />
+            { appState.cycles.length > 0 ? <SingleRequestDetails selectedCycle={appState.cycles[0]} /> : <></> }
+            {/* <RequestsDetails cycles={appState.cycles} /> */}
         </SplitPane>
     )
 }
