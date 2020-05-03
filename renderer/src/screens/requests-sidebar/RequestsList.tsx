@@ -1,17 +1,32 @@
 import React from 'react'
+
+// Components
 import { DisclosureList } from '../../components/disclosure-list/DisclosureList'
 
 // Models
 import { RequestCycle } from '../../models'
 import { DisclosureListModel, DisclosureItemModel } from '../../components/disclosure-list/models'
 
-const RequestsList = ({ requests }: { requests: RequestCycle[] }) => {
-  const listItems = buildDisclosureItems(requests)
+// Extensions
+import '../../extensions/array+string'
+
+type SelectCycleHandler = (selectedCycleId: string, associatedRequestsIds: string[]) => void
+
+const RequestsList = ( props: { requests: RequestCycle[], selectionHandler: SelectCycleHandler }) => {
+  const listItems = buildDisclosureItems(props.requests)
   const list = new DisclosureListModel(listItems)
+
+  // Remove duplicates from the requests ids list
+  const selectionHandler = (selectedCycleId: string, associatedRequestsIds: string[]) => {
+    let filteredAssociateIds = associatedRequestsIds.unique()
+    filteredAssociateIds = filteredAssociateIds.filter(id => id !== selectedCycleId)
+    props.selectionHandler(selectedCycleId, filteredAssociateIds)
+  }
+
   return (
     <>
-      <ul style={{paddingLeft: 0}}>
-        <DisclosureList list={list}/>
+      <ul style={{ paddingLeft: 0 }}>
+        <DisclosureList list={list} selectionHandler={selectionHandler} />
       </ul>
     </>
   )
@@ -22,33 +37,41 @@ const RequestsList = ({ requests }: { requests: RequestCycle[] }) => {
  * Each `DisclosureItem` represents a segment of the url.
  * Example: www.google.com/path/to/page AND www.google/path/to/another/page builds:
  * 
- *    - DisclosureItem { label: "www.google.com", isRoot: true, subItems: <BELOW> }
- *      - DisclosureItem { label: "/path", isRoot: false, subItems: <BELOW> }
- *        - DisclosureItem { label: "/to", isRoot: false, subItems: <BELOW> }
- *          - DisclosureItem { label: "/page", isRoot: false, subItems: [] }
- *          - DisclosureItem { label: "/another", isRoot: false, subItems: <BELOW> }
- *            - DisclosureItem { label: "/page", isRoot: false, subItems: [] }
+ *    - DisclosureItem { key: 1, label: "www.google.com", isRoot: true, subItems: <BELOW> }
+ *      - DisclosureItem { key: 11, label: "/path", isRoot: false, subItems: <BELOW> }
+ *        - DisclosureItem { key: 111, label: "/to", isRoot: false, subItems: <BELOW> }
+ *          - DisclosureItem { key: 1111, label: "/page", isRoot: false, subItems: [] }
+ *          - DisclosureItem { key: 1112, label: "/another", isRoot: false, subItems: <BELOW> }
+ *            - DisclosureItem { key: 11121, label: "/page", isRoot: false, subItems: [] }
  * 
  * @param cycles List of completed cycles
  */
 function buildDisclosureItems(cycles: RequestCycle[]): DisclosureItemModel[] {
   // Builds the root lever, i.e, the items representing the domains urls (like www.google.com, www.apple.com, etc)
-  const baseUrls = cycles.map(cycle => cycle.hostname)
-  const filteredBaseUrls = baseUrls.filter((item, index) => baseUrls.indexOf(item) === index) // Remove duplicates
+  let filteredCycles: RequestCycle[] = []
+  cycles.forEach(cycle => { 
+    if (!filteredCycles.find(target => target.hostname === cycle.hostname)) { 
+      filteredCycles.push(cycle)
+    } 
+  })
 
-  // We assign an incremental key for each DisclosureItem
+  // All items keys represent the item levels path. See the function description keys for a clear illustration
+  // about how the keys represent the items.
+  // We start from a great number to avoid duplications, since starting from 1 for example, we couldn't differ if "11"
+  // is first subitem from first item or if it's the 11th item.
   let currentKey = 1000000
-  const baseItems = filteredBaseUrls.map(baseUrl => {
-    let item = new DisclosureItemModel(currentKey.toString(), baseUrl, true, [])
+
+  const baseItems = filteredCycles.map(cycle => {
+    let item = new DisclosureItemModel(currentKey.toString(), cycle.id, cycle.hostname, true, [])
     currentKey += 1
     return item
   })
 
-  // For each baseUrl, use `setup` function to recursively build its subItems
+  // For each cycle, use `setup` function to recursively build its subItems
   cycles.forEach(cycle => {
     const relatedItem = baseItems.find(item => item.label === cycle.hostname)!
     relatedItem.isNew = cycles.find(cycle => cycle.hostname === relatedItem.label && cycle.request.isNewRequest) !== undefined
-    setup(cycle.url, relatedItem, relatedItem.key)
+    setup(cycle.url, relatedItem, relatedItem.key, cycle.id)
   })
   
   return baseItems
@@ -58,16 +81,17 @@ function buildDisclosureItems(cycles: RequestCycle[]): DisclosureItemModel[] {
  * Recursively build DisclosureListItems and its subItems
  * @param urlSegment Segment of URL being built.
  * @param item The item that represents current `urlSegment`
- * @param key Key object
+ * @param keyPrefix The prefix to be used before the key identifier
+ * @param sourceRequestId The identifier from the original request
  */
-function setup(urlSegment: string, item: DisclosureItemModel, keyPrefix: String) {
+function setup(urlSegment: string, item: DisclosureItemModel, keyPrefix: String, sourceRequestId: string) {
   // Special scenario where the first URL segment is just a slash ('/'). This scenario means a
   // request on a URL base, like GET www.google.com. We must handle this as a DisclosureItem.Model
   // Other standalone slashes must be ignored, because the `urlSegment` is something like /path/to/page/,
   // and the /page already represents the final segment
   if (urlSegment === "/") {
       const itemKey = `${keyPrefix}${item.subItems.length}`
-      const subItem = new DisclosureItemModel(itemKey, urlSegment, false, [])
+      const subItem = new DisclosureItemModel(itemKey, sourceRequestId, urlSegment, false, [])
       subItem.isNew = item.isNew
       item.subItems.push(subItem)
       return
@@ -88,20 +112,20 @@ function setup(urlSegment: string, item: DisclosureItemModel, keyPrefix: String)
     const existingItemIndex = item.subItems.findIndex(item => item.label === firstFragment)
 
     if (existingItemIndex !== -1) {
-      setup(remainingFragments, item.subItems[existingItemIndex], `${keyPrefix}${existingItemIndex}`)
+      setup(remainingFragments, item.subItems[existingItemIndex], `${keyPrefix}${existingItemIndex}`, sourceRequestId)
     } else {
       const itemKey = `${keyPrefix}${item.subItems.length}`
-      const subItem = new DisclosureItemModel(itemKey, firstFragment, false, [])
+      const subItem = new DisclosureItemModel(itemKey, sourceRequestId, firstFragment, false, [])
       subItem.isNew = item.isNew
       item.subItems.push(subItem)
-      setup(remainingFragments, subItem, itemKey)
+      setup(remainingFragments, subItem, itemKey, sourceRequestId)
     }
   // It's a single-segment, like /page
   } else {
     formattedUrl = formattedUrl.substring(1)
     if (formattedUrl === "") { return }
     const itemKey = `${keyPrefix}${item.subItems.length}`
-    const subItem = new DisclosureItemModel(itemKey, formattedUrl, false, [])
+    const subItem = new DisclosureItemModel(itemKey, sourceRequestId, formattedUrl, false, [])
     subItem.isNew = item.isNew
     item.subItems.push(subItem)
   }

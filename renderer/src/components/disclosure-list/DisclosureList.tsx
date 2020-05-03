@@ -21,7 +21,9 @@ class DisclosureListState {
     constructor(public selectedItemKey: string = "",  public openItemsKeys: string[] = []) { }
 }
 
-export const DisclosureList = (props: { list: DisclosureListModel }) => {
+type SelectCycleHandler = (selectedCycleId: string, associatedRequestsIds: string[]) => void
+
+export const DisclosureList = (props: { list: DisclosureListModel, selectionHandler: SelectCycleHandler }) => {
     const [listState, setListState] = useState(new DisclosureListState())
     
     setupTransientItems(props.list, listState.selectedItemKey, listState.openItemsKeys)
@@ -29,6 +31,9 @@ export const DisclosureList = (props: { list: DisclosureListModel }) => {
     const itemAction = (action: Action, itemKey: string) => {
         switch (action) {
             case Action.setSelected:
+                const selectedItem = props.list.getItem(itemKey)!
+                const underneathRequestsKeys = selectedItem.underneathOriginalRequestKeys()
+                props.selectionHandler(selectedItem.originalRequestKey, underneathRequestsKeys)
                 setListState({ ...listState, selectedItemKey: itemKey })
                 break
             case Action.toggleVisibility:
@@ -59,6 +64,7 @@ export const DisclosureList = (props: { list: DisclosureListModel }) => {
         // Detects a tap on the RequestsSidebar but not on the list component. The expected behavior is to unselect
         // the selected item.
         if (!wrapperRef.current.contains(targetNode) && targetNode.className === "RequestsSidebar") {
+            props.selectionHandler("", [])
             setListState({ ...listState, selectedItemKey: "" })
         }
     }
