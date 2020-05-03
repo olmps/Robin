@@ -13,20 +13,25 @@ import { Response } from './models/response'
 
 // Style
 import './App.css'
+import { stringify } from 'querystring'
 
 const { ipcRenderer } = window.require('electron')
 
 class AppState {
-    constructor(public cycles: RequestCycle[] = []) { }
+    constructor(
+        public cycles: RequestCycle[] = [], 
+        public selectedCycle: RequestCycle | undefined = undefined,
+        public associatedCycles: RequestCycle[] = []) { }
 }
 
 type NewCycleHandler = (cycle: RequestCycle) => void
 type UpdateCycleHandler = (cycleId: string, duration: number, response: Response) => void
+type SelectCycleHandler = (selectedCycleId: string, associatedRequestsIds: string[]) => void
 
 const App = () => {
     const [appState, setAppState] = useState(new AppState())
 
-    const newRequestHandler = (cycle: RequestCycle) => {
+    const newCycleHandler = (cycle: RequestCycle) => {
         setAppState(state => {
             const cycles = state.cycles
             state.cycles.forEach(cycle => cycle.request.isNewRequest = false)
@@ -47,14 +52,29 @@ const App = () => {
             return { ...state, cycles }
         })
     }
+    const selectedCycleHandler = (selectedCycleId: string, associatedRequestsIds: string[]) => {
+        const selectedCycle = appState.cycles.find(cycle => cycle.id === selectedCycleId)
+        const associatedCycles = appState.cycles.filter(cycle => associatedRequestsIds.includes(cycle.id))
+
+        setAppState(state => {
+            return { ...state, selectedCycle, associatedCycles }
+        })
+    }
       
-    SetupIpcListeners(newRequestHandler, updateCycleHandler)
+    SetupIpcListeners(newCycleHandler, updateCycleHandler)
+
+    const hasSelectedRequest: boolean = appState.selectedCycle !== undefined
+    const isSingleRequest: boolean = appState.selectedCycle !== undefined && appState.associatedCycles.length === 0
 
     return (
         <SplitPane split="vertical" minSize={300} defaultSize={300}>
-            <RequestsSidebar cycles={appState.cycles} />
-            { appState.cycles.length > 0 ? <SingleRequestDetails selectedCycle={appState.cycles[0]} /> : <></> }
-            {/* <RequestsDetails cycles={appState.cycles} /> */}
+            <RequestsSidebar cycles={appState.cycles} selectionHandler={selectedCycleHandler} />
+            { isSingleRequest ?
+                <SingleRequestDetails selectedCycle={appState.selectedCycle!} /> :
+                hasSelectedRequest ? 
+                    <RequestsDetails cycles={appState.associatedCycles.concat([appState.selectedCycle!])} /> : 
+                    <RequestsDetails cycles={appState.cycles} />
+            }
         </SplitPane>
     )
 }
