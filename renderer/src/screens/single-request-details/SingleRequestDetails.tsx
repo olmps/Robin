@@ -10,10 +10,12 @@ import { SingleRequestCardsCollection } from '../../components/cards-collection/
 import './SingleRequestDetails.css'
 
 const SingleRequestDetails = ({ selectedCycle }: { selectedCycle: RequestCycle }) => {
+    const formattedTitle = selectedCycle.fullUrl.length > 32 ? `${selectedCycle.fullUrl.substring(0, 32)}...` : selectedCycle.fullUrl
+
     return (
         <>
             <div className="ContentColumn">
-                <h1>{selectedCycle.fullUrl.substring(24)}</h1>
+                <h1>{formattedTitle}</h1>
                 <SingleRequestCardsCollection cycle={selectedCycle} />
             </div>
         </>
