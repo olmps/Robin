@@ -1,0 +1,44 @@
+.ContentWrapper {
+    box-sizing: border-box;
+    word-wrap: break-word;
+    width: 100%;
+    background-color: #303030;
+    opacity: 0.9;
+    border-radius: 3px;
+    padding: 30px 18px 30px 18px;
+    margin-top: 30px;
+}
+
+@font-face {
+    font-family: 'FiraMono-Regular';
+    src: local('FiraMono-Regular'), url(../../../../resources/fonts/FiraMono-Regular.ttf) format('ttf');
+}
+
+.Title {
+    word-wrap: break-word;
+    word-break: break-all;
+    font-family: 'FiraMono-Regular';
+    overflow: hidden;
+}
+
+.Header {
+    word-wrap: break-word;
+    word-break: break-all;
+    font-family: 'FiraMono-Regular';
+    overflow: hidden;
+}
+
+.Key {
+    color: #BC3821;
+}
+
+.Content {
+    color: #F6F5F5;
+}
+
+.Body {
+    word-wrap: break-word;
+    word-break: break-all;
+    font-family: 'FiraMono-Regular';
+    overflow: hidden;
+}
