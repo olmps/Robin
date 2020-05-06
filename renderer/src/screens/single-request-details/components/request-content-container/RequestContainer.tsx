@@ -1,8 +1,9 @@
 import React from 'react'
 
 import './RequestContainer.css'
+import { syntaxHighlighted } from './ContentFormatter'
 
-export const RequestContainer = (props: { title: string, headers: Map<string, string>, body?: string }) => { 
+export const RequestContainer = (props: { title: string, headers: Map<string, string>, body?: string }) => {
   return (
     <div className="ContentWrapper">
       <p className="Title">{props.title}</p>
@@ -12,7 +13,7 @@ export const RequestContainer = (props: { title: string, headers: Map<string, st
           </p>
         )
       }
-      { props.body ? <p className="Body">{props.body}</p> : <></> }
+      { props.body ? <pre className="Body">{syntaxHighlighted(props.body)}</pre> : <></> }
     </div>
   )
 }

@@ -36,9 +36,29 @@
     color: #F6F5F5;
 }
 
+
+/* BODY FORMATTERS */
+
 .Body {
+    white-space: pre-wrap;
     word-wrap: break-word;
     word-break: break-all;
     font-family: 'FiraMono-Regular';
     overflow: hidden;
+}
+
+.JsonKey {
+    color: orange;
+}
+
+.FormKey {
+    color: orange;
+}
+
+.FormValue {
+    color: #7DEB5B;
+}
+
+.XmlTag {
+    color: #E54072;
 }
