@@ -13,7 +13,6 @@ import { Response } from './models/response'
 
 // Style
 import './App.css'
-import { stringify } from 'querystring'
 
 const { ipcRenderer } = window.require('electron')
 

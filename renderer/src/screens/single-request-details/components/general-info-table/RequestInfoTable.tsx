@@ -6,7 +6,7 @@ import './RequestInfoTable.css'
 import { rawMethod } from '../../../../models/request'
 
 export const RequestInfoTable = (props: { request: RequestCycle }) => {
-  const formattedStatusCode = props.request.statusCode != undefined ? 
+  const formattedStatusCode = props.request.statusCode !== undefined ? 
                                 `${props.request.statusCode} - ${HttpStatusCode[props.request.statusCode]}` :
                                 "Waiting Response"
   return (

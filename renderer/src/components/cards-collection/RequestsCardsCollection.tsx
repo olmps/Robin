@@ -64,7 +64,7 @@ function requestsStats(cycles: RequestCycle[]): [string, string, string] {
 
   const totalSize = completeCycles.reduce((a, b) => a + b.size(), 0)
 
-  return [completeCycles.length.toString(), formattedDuration, formatBytes(totalSize)]
+  return [cycles.length.toString(), formattedDuration, formatBytes(totalSize)]
 }
 
 function formatBytes(bytes: number) {
