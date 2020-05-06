@@ -36,6 +36,13 @@
     color: #F6F5F5;
 }
 
+.CenteredContent {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 500px;
+}
+
 
 /* BODY FORMATTERS */
 

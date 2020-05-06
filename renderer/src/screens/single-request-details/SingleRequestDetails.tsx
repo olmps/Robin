@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import BounceLoader from "react-spinners/BounceLoader"
 
 import { RequestCycle } from '../../models'
 import { rawMethod } from '../../models/request'
@@ -42,9 +43,13 @@ const SingleRequestDetails = (props: { selectedCycle: RequestCycle }) => {
 const InformationContainer = (props: { cycle: RequestCycle, selectedIndex: number }) => {
     if (props.selectedIndex === 0) { // General Information tab
         return <RequestInfoTable request={props.cycle} />
-    } else if (props.selectedIndex === 1) {
+    } else if (props.selectedIndex === 1) { // Request Tab
         const title = `${rawMethod(props.cycle.method)} ${props.cycle.url}`
         return <RequestContainer title={title} headers={props.cycle.request.headers} body={props.cycle.request.body} />
+    } else if (props.selectedIndex === 2) { // Response tab
+        if (props.cycle.response === undefined) { return <div className="CenteredContent"><BounceLoader color="#FFF" /></div> }
+        const title = `${rawMethod(props.cycle.method)} ${props.cycle.url}`
+        return <RequestContainer title={title} headers={props.cycle.response.headers} body={props.cycle.response.body} />
     }
     
     return <></>
