@@ -9,51 +9,52 @@ let proxyServer = createProxyHandler({ listenPort: 8080, excludedExtensions: [] 
 let didSetupListeners: boolean = false
 
 function startWindow() {
-    mainWindow = new BrowserWindow({
-        width: 900,
-        height: 680,
-        minWidth: 850,
-        minHeight: 600,
-        backgroundColor: '#FFFFFF',
-        webPreferences: {
-            nodeIntegration: true,
-        }
-    })
-    mainWindow.loadURL(
-        isDev
-            ? "http://localhost:3000"
-            : `file://${path.join(__dirname, "../build/index.html")}`
-    )
+  mainWindow = new BrowserWindow({
+    width: 900,
+    height: 680,
+    minWidth: 850,
+    minHeight: 600,
+    backgroundColor: '#FFFFFF',
+    webPreferences: {
+      nodeIntegration: true,
+    }
+  })
+  mainWindow.loadURL(
+    isDev
+      ? "http://localhost:3000"
+      : `file://${path.join(__dirname, "../build/index.html")}`
+  )
 
-    if (isDev) { mainWindow.webContents.openDevTools() }
+  if (isDev) { mainWindow.webContents.openDevTools() }
 
-    mainWindow.on("closed", () => mainWindow.destroy())
+  mainWindow.on("closed", () => mainWindow.destroy())
 }
 
 function setupListeners() {
-    mainWindow.webContents.on('did-finish-load', () => {
-        if (!didSetupListeners) {
-            setupProxyListeners()
-            didSetupListeners = true
-        }
-    })
+  mainWindow.webContents.on('did-finish-load', () => {
+    if (!didSetupListeners) {
+      setupProxyListeners()
+      didSetupListeners = true
+    }
+  })
 }
 
 function setupProxyListeners() {
-    proxyServer.on('new-request', (requestPayload: any) => {
-        mainWindow.webContents.send('proxy-new-request', requestPayload)
-    })
-    proxyServer.on('new-response', (responsePayload: any) => {
-        mainWindow.webContents.send('proxy-new-response', responsePayload)
-    })
+  proxyServer.on('new-request', (requestPayload: any) => {
+    mainWindow.webContents.send('proxy-new-request', requestPayload)
+  })
+  proxyServer.on('new-response', (responsePayload: any) => {
+    mainWindow.webContents.send('proxy-new-response', responsePayload)
+  })
 }
 
 app.allowRendererProcessReuse = true
+
 app.on('ready', () => {
-    startWindow()
-    setupListeners()
+  startWindow()
+  setupListeners()
 })
 
 app.on('quit', () => {
-    proxyServer.stopProxyServer()
+  proxyServer.stopProxyServer()
 })

@@ -1,7 +1,7 @@
 .ContentColumn {
-    box-sizing: border-box;
-    overflow-y: scroll;
-    height: 100%;
-    width: 100%;
-    padding: 20px 40px 20px 40px;
+  box-sizing: border-box;
+  overflow-y: scroll;
+  height: 100%;
+  width: 100%;
+  padding: 20px 40px 20px 40px;
 }
