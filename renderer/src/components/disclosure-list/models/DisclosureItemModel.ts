@@ -1,5 +1,6 @@
 export class DisclosureItemModel {
     public key: string
+    public originalRequestKey: string
     public label: string
     public isRoot: boolean
     public subItems: DisclosureItemModel[]
@@ -12,8 +13,9 @@ export class DisclosureItemModel {
 
     get hasSubItems(): boolean { return this.subItems.length > 0 }
     
-    constructor(key: string, label: string, isRoot: boolean, subItems: DisclosureItemModel[]) {
+    constructor(key: string, originalRequestKey: string, label: string, isRoot: boolean, subItems: DisclosureItemModel[]) {
         this.key = key
+        this.originalRequestKey = originalRequestKey
         this.label = label
         this.isRoot = isRoot
         this.subItems = subItems
@@ -54,5 +56,20 @@ export class DisclosureItemModel {
         }
 
         return hasNotVisibleChild
+    }
+    
+    /**
+     * Recursively collect all `originalRequestKey` from subitems. It indicates
+     * all requests ids that are represented by this item and its subitems.
+     */
+    underneathOriginalRequestKeys(): string[] {
+        let requestsKeys = [this.originalRequestKey]
+
+        for (const subItem of this.subItems) {
+            const subItemKeys = subItem.underneathOriginalRequestKeys()
+            requestsKeys = requestsKeys.concat(subItemKeys)
+        }
+
+        return requestsKeys
     }
 }
