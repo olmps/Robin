@@ -1,0 +1,24 @@
+.Toolbar {
+  display: flex;
+  align-items: center;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  width: 100%;
+  background-color: #3D3D3D;
+  border-bottom: 100px;
+  border-bottom-color: black;
+}
+
+.ToolbarButtonIcon {
+  height: 16px;
+  width: 16px;
+}
+
+.ToolbarFingerprintEnabled {
+  height: 16px;
+  width: 16px;
+}
+
+.ToolbarFingerprintEnabled g {
+  fill: red;
+}
