@@ -2,10 +2,9 @@ import { BrowserWindow, app, ipcMain } from 'electron'
 import * as isDev from "electron-is-dev"
 import * as path from 'path'
 import createProxyHandler from './proxy/proxy'
-import GeoIpHandler from './geoip/geoip'
 
 let mainWindow: BrowserWindow
-let proxyServer = createProxyHandler({ listenPort: 8080, excludedExtensions: [] })
+let proxyServer = createProxyHandler({ isProxyEnabled: true, listenPort: 8080, excludedExtensions: [] })
 let didSetupListeners: boolean = false
 
 function startWindow() {
@@ -34,17 +33,26 @@ function setupListeners() {
   mainWindow.webContents.on('did-finish-load', () => {
     if (!didSetupListeners) {
       setupProxyListeners()
+      setupAppListeners()
       didSetupListeners = true
     }
   })
 }
 
+/// Setup Listeners for the proxy module
 function setupProxyListeners() {
   proxyServer.on('new-request', (requestPayload: any) => {
     mainWindow.webContents.send('proxy-new-request', requestPayload)
   })
   proxyServer.on('new-response', (responsePayload: any) => {
     mainWindow.webContents.send('proxy-new-response', responsePayload)
+  })
+}
+
+/// Setup Listeners for the React module
+function setupAppListeners() {
+  ipcMain.on('proxy-options-updated', (_, payload: any) => {
+    proxyServer.proxyConfigUpdated(payload)
   })
 }
 

@@ -43,6 +43,10 @@ const SetupIpcCommunication = (setAppState: SetAppState) => {
   }, [])
 }
 
+function sendUpdatedProxyOptions(isFingerprintEnabled: boolean) {
+  ipcRenderer.send('proxy-options-updated', { proxyEnabled: isFingerprintEnabled })
+}
+
 function ipcHandlers(setAppState: SetAppState): [NewCycleHandler, UpdateCycleHandler] {
   // Handles a new cycle received from main module
   const newCycleHandler = (cycle: RequestCycle) => {
@@ -73,3 +77,4 @@ function ipcHandlers(setAppState: SetAppState): [NewCycleHandler, UpdateCycleHan
 }
 
 export default SetupIpcCommunication
+export { sendUpdatedProxyOptions }

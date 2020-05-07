@@ -6,7 +6,7 @@ import RequestsSidebar from './requests-sidebar/RequestsSidebar'
 import RequestsDetails from './requests-details/RequestsDetails'
 import SingleRequestDetails from './single-request-details/SingleRequestDetails'
 
-import SetupIpcCommunication from './AppIpcCommunication'
+import SetupIpcCommunication, { sendUpdatedProxyOptions } from './AppIpcCommunication'
 
 import { RequestCycle } from '../models'
 
@@ -72,13 +72,15 @@ function setupAppHandlers(appState: AppState, setAppState: SetAppState): [Select
         setAppState(state => {
           return { ...state, cycles: [], selectedCycle: undefined, associatedCycles: [] }
         })
+        break
       case ToolbarAction.fingerprintToggled:
-        // TODO: WARN ELECTRON THAT FINGERPRINT HAS STOPPED
         const options = appState.options
         options.isFingerprintEnabled = !options.isFingerprintEnabled
+        sendUpdatedProxyOptions(options.isFingerprintEnabled)
         setAppState(state => {
           return { ...state, options }
         })
+        break
     }
   }
 
@@ -86,5 +88,5 @@ function setupAppHandlers(appState: AppState, setAppState: SetAppState): [Select
 }
 
 export default App
-export { AppState }
+export { AppState, AppOptions }
 export type SetAppState = React.Dispatch<React.SetStateAction<AppState>>

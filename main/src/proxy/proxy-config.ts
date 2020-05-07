@@ -1,14 +1,10 @@
 enum FileExtension {
-    png, jpg, gif, css, js, ico
+  png, jpg, gif, css, js, ico
 }
 
 export class ProxyConfig {
-    listenPort: number
-    excludedExtensions: FileExtension[]
-
-    constructor(listenPort: number, excludedExtensions: FileExtension[]) {
-        this.listenPort = listenPort
-        this.excludedExtensions = excludedExtensions
-
-    }
+  constructor(
+    public isProxyEnabled: boolean = true, 
+    public listenPort: number, 
+    public excludedExtensions: FileExtension[]) { }
 }

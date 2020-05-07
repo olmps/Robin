@@ -7,51 +7,74 @@ import { exec } from 'child_process'
 import GeoIpHandler from '../geoip/geoip'
 
 class ProxyHandler extends events.EventEmitter {
-    config: ProxyConfig
+  config: ProxyConfig
+  proxyServer: hoxy.Proxy
 
-    // TODO: Docs
-    ongoingRequests: Map<string, number>
-  
-    constructor(config: ProxyConfig) {
-        super()
-        this.config = config
-        this.ongoingRequests = new Map<string, number>()
-        this.startProxyServer()
+  constructor(config: ProxyConfig) {
+    super()
+    this.config = config
+    this.proxyServer = hoxy.createServer({
+      certAuthority: {
+        key: fs.readFileSync(`src/resources/certificates/proxy-cert-key.key.pem`),
+        cert: fs.readFileSync(`src/resources/certificates/proxy-cert.crt.pem`)
+      }
+    })
+
+    if (config.isProxyEnabled) { this.startProxyServer() }
   }
 
-  startProxyServer() {
-    this._turnProxySettingsOn(this.config.listenPort)
-    const proxyServer = hoxy.createServer({
-        certAuthority: {
-            key: fs.readFileSync(`src/resources/certificates/proxy-cert-key.key.pem`),
-            cert: fs.readFileSync(`src/resources/certificates/proxy-cert.crt.pem`)
-          }
-    })
+  proxyConfigUpdated(newOptions: any) {
+    if (this.config.isProxyEnabled !== newOptions.proxyEnabled) {
+      this.config.isProxyEnabled = newOptions.proxyEnabled
+      this.toggleProxyStatus()
+    }
+  }
 
-    proxyServer.on('error', (error: any) => {
-      // Fallback for DNS resolve issues.
-      // ENOTFOUND means the target URL was not found -> it may not exists or DNS couldn't resolve it
-      if (error.code === 'ENOTFOUND ENOTFOUND') return
-      // Fallback to "socket hang up" error
-      // The socket cannot was interrupted for an unknown reason. This doesn't affect the application behavior
-      if (error.code === 'ECONNRESET') return
-      console.error('hoxy error: ', error)
-    })
-
-    proxyServer.listen(8080)
-
-    proxyServer.intercept({ phase: 'request', as: 'string'}, (req) => this._onInterceptRequest(req))
-    proxyServer.intercept({ phase: 'response', as: 'string'}, (req, res) => this._onInterceptResponse(req, res))
+  private toggleProxyStatus() {
+    if (this.config.isProxyEnabled) {
+      this.startProxyServer()
+    } else {
+      this.stopProxyServer()
+    }
   }
 
   stopProxyServer() {
+    this.proxyServer.close()
     if (process.platform === 'darwin') {
       exec(`networksetup -setwebproxystate Wi-Fi off`)
       exec(`networksetup -setsecurewebproxystate Wi-Fi off`)
     }
   }
 
-  _turnProxySettingsOn(port: number) {
+  private startProxyServer() {
+    this.turnProxySettingsOn(this.config.listenPort)
+
+    this.proxyServer.on('error', (error: any) => {
+      // Fallback for DNS resolve issues.
+      // ENOTFOUND means the target URL was not found -> it may not exists or DNS couldn't resolve it
+      if (error.code === 'ENOTFOUND ENOTFOUND') return
+      // Fallback to "socket hang up" error
+      // The socket cannot was interrupted for an unknown reason. This doesn't affect the application behavior
+      if (error.code === 'ECONNRESET') return
+      console.error("Hoxy Error: ", JSON.stringify(error))
+    })
+
+    try {
+      this.proxyServer.listen(this.config.listenPort)
+    } catch (error) {
+      // This shouldn't be happening, but hoxy has a bug on `.close()` function
+      // and this error happens when trying to start the proxy again. We have
+      // a task to create our own proxy module, so this buggy hoxy errors handling
+      // will be removed in the future
+      if (error.code === "ERR_SERVER_ALREADY_LISTEN") return
+      console.error("Hoxy Error: ", JSON.stringify(error))
+    }
+
+    this.proxyServer.intercept({ phase: 'request', as: 'string' }, (req) => this.onInterceptRequest(req))
+    this.proxyServer.intercept({ phase: 'response', as: 'string' }, (req, res) => this.onInterceptResponse(req, res))
+  }
+
+  private turnProxySettingsOn(port: number) {
     if (process.platform === 'darwin') {
       exec(`networksetup -setwebproxy Wi-Fi 127.0.0.1 ${port}`)
       exec(`networksetup -setsecurewebproxy Wi-Fi 127.0.0.1 ${port}`)
@@ -62,14 +85,14 @@ class ProxyHandler extends events.EventEmitter {
 
   // Intercept the request before it's sent to the destination.
   // The user may modify the request content before it's sent.
-  async _onInterceptRequest(request: any) {
+  private async onInterceptRequest(request: any) {
     request.id = uuid()
     request.started = new Date().getTime()
 
     const { protocol, hostname, port, method, headers, url, query } = request
     const formattedRequest = { id: request.id, protocol, hostname, port, method, headers, url, query, body: request.string! }
-    
-    let geoLocation: any = { }
+
+    let geoLocation: any = {}
 
     try {
       const source = await GeoIpHandler.getCurrentLocation()
@@ -88,13 +111,13 @@ class ProxyHandler extends events.EventEmitter {
     this.emit('new-request', payload)
   }
 
-  _onInterceptResponse(request: any, response: hoxy.Response) {
+  private onInterceptResponse(request: any, response: hoxy.Response) {
     const requestId = request.id
     const cycleDuration = new Date().getTime() - request.started
 
     const { statusCode, headers } = response
     const formattedResponse = { id: requestId, duration: cycleDuration, statusCode, headers, body: response.string! }
-    
+
     this.emit('new-response', formattedResponse)
   }
 }
