@@ -1,3 +1,4 @@
+/* eslint-disable no-extend-native */
 // @ts-ignore
 interface Array<T> {
   unique(): Array<T>

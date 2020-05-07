@@ -20,11 +20,13 @@ export function syntaxHighlighted(body: string) {
  * based on the request body
  */
 function contentType(body: string) {
+  // eslint-disable-next-line no-useless-escape
   const formRegex = new RegExp("((\w+)=(\w*))+(&((\w+)=(\w*))+)*")
   if (body.match(formRegex)) { return ContentType.form }
 
   // Note that on this regex we are also matching HTML content-format. But we don't mind
   // since we are formatting XML and HTML in the same way
+  // eslint-disable-next-line no-useless-escape
   const xmlRegex = new RegExp("(\<(.+)\>)(.*)(\<\/(.+)\>)")
   if (body.match(xmlRegex)) { return ContentType.xml }
 
