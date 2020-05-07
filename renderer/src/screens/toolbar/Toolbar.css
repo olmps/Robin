@@ -8,3 +8,17 @@
   border-bottom: 100px;
   border-bottom-color: black;
 }
+
+.ToolbarButtonIcon {
+  height: 16px;
+  width: 16px;
+}
+
+.ToolbarFingerprintEnabled {
+  height: 16px;
+  width: 16px;
+}
+
+.ToolbarFingerprintEnabled g {
+  fill: red;
+}

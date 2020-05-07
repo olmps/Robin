@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import SplitPane from 'react-split-pane'
 
 import Toolbar, { ToolbarAction } from './toolbar/Toolbar'
@@ -6,74 +6,41 @@ import RequestsSidebar from './requests-sidebar/RequestsSidebar'
 import RequestsDetails from './requests-details/RequestsDetails'
 import SingleRequestDetails from './single-request-details/SingleRequestDetails'
 
-import { RequestCycle, GeoLocation } from '../models/request-cycle'
-import { Request } from '../models/request'
-import { Response } from '../models/response'
+import SetupIpcCommunication from './AppIpcCommunication'
+
+import { RequestCycle } from '../models'
 
 import './App.css'
 
-const { ipcRenderer } = window.require('electron')
+class AppOptions {
+  constructor(
+    public isFingerprintEnabled: boolean = true) { }
+}
 
 class AppState {
   constructor(
     public cycles: RequestCycle[] = [],
     public selectedCycle: RequestCycle | undefined = undefined,
-    public associatedCycles: RequestCycle[] = []) { }
+    // Associated cycles contains all requests under `selectedCycle` path
+    public associatedCycles: RequestCycle[] = [],
+    public options: AppOptions = new AppOptions()) { }
 }
 
-type NewCycleHandler = (cycle: RequestCycle) => void
-type UpdateCycleHandler = (cycleId: string, duration: number, response: Response) => void
+type SelectCycleHandler = (selectedCycleId: string, associatedRequestsIds: string[]) => void
+type ToolbarActionHandler = (action: ToolbarAction) => void
 
 const App = () => {
   const [appState, setAppState] = useState(new AppState())
+  const [selectedCycleHandler, toolbarActionHandler] = setupAppHandlers(appState, setAppState)
 
-  const newCycleHandler = (cycle: RequestCycle) => {
-    setAppState(state => {
-      const cycles = state.cycles
-      state.cycles.forEach(cycle => cycle.request.isNewRequest = false)
-      cycles.push(cycle)
-      return { ...state, cycles }
-    })
-  }
-  const updateCycleHandler = (cycleId: string, duration: number, response: Response) => {
-    setAppState(state => {
-      const cycles = state.cycles
-      state.cycles.forEach(cycle => cycle.request.isNewRequest = false)
-
-      const updatedCycle = cycles.find(cycle => cycle.id === cycleId)
-      if (updatedCycle) {
-        updatedCycle.response = response
-        updatedCycle.duration = duration
-      }
-      return { ...state, cycles }
-    })
-  }
-  const selectedCycleHandler = (selectedCycleId: string, associatedRequestsIds: string[]) => {
-    const selectedCycle = appState.cycles.find(cycle => cycle.id === selectedCycleId)
-    const associatedCycles = appState.cycles.filter(cycle => associatedRequestsIds.includes(cycle.id))
-
-    setAppState(state => {
-      return { ...state, selectedCycle, associatedCycles }
-    })
-  }
-
-  const toolbarActionHandler = (action: ToolbarAction) => {
-    switch (action) {
-      case ToolbarAction.clear:
-        setAppState(() => {
-          return { cycles: [], selectedCycle: undefined, associatedCycles: [] }
-        })
-    }
-  }
-
-  SetupIpcListeners(newCycleHandler, updateCycleHandler)
+  SetupIpcCommunication(setAppState)
 
   const hasSelectedRequest: boolean = appState.selectedCycle !== undefined
   const isSingleRequest: boolean = appState.selectedCycle !== undefined && appState.associatedCycles.length === 0
 
   return (
     <>
-      <Toolbar handler={toolbarActionHandler} />
+      <Toolbar isFingerprintEnabled={appState.options.isFingerprintEnabled} handler={toolbarActionHandler} />
       <SplitPane split="vertical" minSize={300} defaultSize={300}>
         <RequestsSidebar cycles={appState.cycles} selectionHandler={selectedCycleHandler} />
         {isSingleRequest ?
@@ -87,38 +54,37 @@ const App = () => {
   )
 }
 
-/**
- * Setup listeners that handle new requests and complete cycles.
- * 
- * @param newCycleHandler A handler that handle new cycles. Happens when a new request is made.
- * @param updateCycleHandler A handles that updates an existing cycle with a received response
- */
-const SetupIpcListeners = (newCycleHandler: NewCycleHandler, updateCycleHandler: UpdateCycleHandler) => {
-  useEffect(() => {
-    // Ensure that ipcRenderer is not already registered. It may happening while
-    // debugging for example, when React hot reload.
-    if (ipcRenderer.rawListeners('proxy-new-request').length === 0) {
-      ipcRenderer.on('proxy-new-request', (_: any, payload: any) => {
-        const request = Request.fromJson(payload.requestPayload)
-        const cycleId = payload.id
-        const geoLocation = GeoLocation.fromJson(payload.geoLocation)
-        const newCycle = new RequestCycle(cycleId, request, 0, geoLocation, undefined)
-        newCycleHandler(newCycle)
-      })
-    }
+function setupAppHandlers(appState: AppState, setAppState: SetAppState): [SelectCycleHandler, ToolbarActionHandler] {
+  // Handles when a cycle is selected on requests list sidebar
+  const selectedCycleHandler = (selectedCycleId: string, associatedRequestsIds: string[]) => {
+    const selectedCycle = appState.cycles.find(cycle => cycle.id === selectedCycleId)
+    const associatedCycles = appState.cycles.filter(cycle => associatedRequestsIds.includes(cycle.id))
 
-    if (ipcRenderer.rawListeners('proxy-new-response').length === 0) {
-      ipcRenderer.on('proxy-new-response', (_: any, responsePayload: any) => {
-        const response = Response.fromJson(responsePayload)
-        updateCycleHandler(responsePayload.id, responsePayload.duration, response)
-      })
-    }
+    setAppState(state => {
+      return { ...state, selectedCycle, associatedCycles }
+    })
+  }
 
-    return function unsubscribeProxyListener() {
-      ipcRenderer.removeListener('proxy-new-request', newCycleHandler)
-      ipcRenderer.removeListener('proxy-new-response', updateCycleHandler)
+  // Handles when a toolbar action is triggered
+  const toolbarActionHandler = (action: ToolbarAction) => {
+    switch (action) {
+      case ToolbarAction.clear:
+        setAppState(state => {
+          return { ...state, cycles: [], selectedCycle: undefined, associatedCycles: [] }
+        })
+      case ToolbarAction.fingerprintToggled:
+        // TODO: WARN ELECTRON THAT FINGERPRINT HAS STOPPED
+        const options = appState.options
+        options.isFingerprintEnabled = !options.isFingerprintEnabled
+        setAppState(state => {
+          return { ...state, options }
+        })
     }
-  }, [])
+  }
+
+  return [selectedCycleHandler, toolbarActionHandler]
 }
 
 export default App
+export { AppState }
+export type SetAppState = React.Dispatch<React.SetStateAction<AppState>>

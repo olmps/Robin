@@ -9,8 +9,3 @@
 .ToolbarButton:active {
   background-color: #8D8E8F;
 }
-
-.ToolbarButton img {
-  height: 16px;
-  width: 16px;
-}
