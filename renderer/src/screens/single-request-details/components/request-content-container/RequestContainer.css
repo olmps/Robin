@@ -5,8 +5,9 @@
     background-color: #303030;
     opacity: 0.9;
     border-radius: 3px;
-    padding: 30px 18px 30px 18px;
+    /* padding: 30px 18px 30px 18px; */
     margin-top: 30px;
+    counter-reset: line;
 }
 
 @font-face {
@@ -52,6 +53,23 @@
     word-break: break-all;
     font-family: 'FiraMono-Regular';
     overflow: hidden;
+}
+
+.line {
+    display: flex;
+}
+
+.line:before {
+    background-color: #232323;
+    color: #6f6f6f;
+    counter-increment: line;
+    content: counter(line);
+    width: 30px;
+    display: flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: space-around;
+    margin-right: 8px;
 }
 
 .JsonKey {

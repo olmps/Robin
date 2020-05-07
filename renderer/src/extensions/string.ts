@@ -1,3 +1,4 @@
+/* eslint-disable no-extend-native */
 // @ts-ignore
 interface String {
   clippedTo(chars: number): String
