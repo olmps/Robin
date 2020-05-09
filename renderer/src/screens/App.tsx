@@ -1,16 +1,15 @@
 import React, { useState } from 'react'
-import SplitPane from 'react-split-pane'
 
 import Toolbar, { ToolbarAction } from './toolbar/Toolbar'
 import RequestsSidebar from './requests-sidebar/RequestsSidebar'
 import RequestsDetails from './requests-details/RequestsDetails'
 import SingleRequestDetails from './single-request-details/SingleRequestDetails'
+import SplitPane from '../components/split-pane/SplitPane'
 
 import SetupIpcCommunication, { sendUpdatedProxyOptions } from './AppIpcCommunication'
 
 import { RequestCycle } from '../models'
 
-import './App.css'
 
 class AppOptions {
   constructor(
@@ -41,7 +40,7 @@ const App = () => {
   return (
     <>
       <Toolbar isFingerprintEnabled={appState.options.isFingerprintEnabled} handler={toolbarActionHandler} />
-      <SplitPane split="vertical" minSize={300} defaultSize={300}>
+      <SplitPane initialWidth={300} minWidth={300} maxWidth={500}>
         <RequestsSidebar cycles={appState.cycles} selectionHandler={selectedCycleHandler} />
         {isSingleRequest ?
           <SingleRequestDetails selectedCycle={appState.selectedCycle!} /> :
