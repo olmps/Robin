@@ -54,6 +54,7 @@ export class Request {
     body?: string
     
     get fullUrl(): string { return `${this.hostname}${this.url}` }
+    get rawMethod(): string { return rawMethod(this.method) }
 
     // Transient properties
     isNewRequest: boolean = true

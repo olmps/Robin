@@ -1,0 +1,8 @@
+.ContentWrapper {
+  margin-top: 30px;
+  height: 70%;
+}
+
+.CodeMirror {
+  min-height: 100%;
+}
