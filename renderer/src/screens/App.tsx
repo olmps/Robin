@@ -9,8 +9,8 @@ import InterceptedRequestDetails from './intercepted-request/InterceptedRequestD
 
 import { RequestCycle } from '../models'
 
-import SetupIpcCommunication, { sendUpdatedProxyOptions, sendUpdatedContent } from './AppIpcCommunication'
-import { RequestContent, ResponseContent, InterceptResult, InterceptAction, ContentType, AnyContent } from '../shared/modules'
+import SetupIpcCommunication, { sendUpdatedProxyOptions, didUpdateContent } from './AppIpcCommunication'
+import { RequestContent, ResponseContent, InterceptResult, InterceptAction, ContentType, AnyContent, UpdatedContent } from '../shared/modules'
 
 class AppOptions {
   constructor(
@@ -51,7 +51,11 @@ const App = () => {
 }
 
 /**
- * Defines based on the `AppState` which will be shown on the right pane of the application
+ * Defines based on the `AppState` which will be shown on the right pane of the application.
+ * The importance order is defined as:
+ *  1. Intercepted Request or Response
+ *  2. A result based on a selection on the requests lists left pane
+ *  3. A general overview from all requests
  */
 const RequestDetailsPane = (props: { appState: AppState, interceptHandler: InterceptResult }) => {
   const hasInterceptedContent = props.appState.interceptedRequests.length > 0
@@ -110,12 +114,13 @@ function setupAppHandlers(appState: AppState, setAppState: SetAppState): [Select
   }
 
   const interceptHandler = (action: InterceptAction, contentType: ContentType, updatedContent: RequestContent | ResponseContent) => {
-    const payload = {
+    const payload: UpdatedContent = {
       action: InterceptAction[action],
-      contentType: ContentType[contentType],
+      type: ContentType[contentType],
       updatedContent
     }
-    sendUpdatedContent(payload, setAppState)
+    
+    didUpdateContent(payload, setAppState)
   }
 
   return [selectedCycleHandler, toolbarActionHandler, interceptHandler]

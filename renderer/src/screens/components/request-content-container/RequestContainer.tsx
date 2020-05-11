@@ -15,33 +15,35 @@ type ResponseContentHandler = (result: ResponseContent) => void
 
 interface ContainerProps {
   content: RequestContent | ResponseContent
+  type: ContentType
   readOnly: boolean
   handler?: RequestContentHandler | ResponseContentHandler
 }
 
 const RequestContainer: React.FunctionComponent<ContainerProps> = (props) => {
 
-  let content = ""
-  let type: ContentType
-
-  if ('method' in props.content) { // It's a request
-    content = `${props.content.method} ${props.content.path} HTTP/1.1\n` // TODO: GET HTTP MODE FROM REQUEST
-    type = ContentType.request
-  } else {
-    content = `HTTP/1.1 ${props.content.status} ${props.content.statusCode}\n` // TODO: GET HTTP MODE FROM REQUEST
-    type = ContentType.response
+  let rawContent = ""
+  
+  switch (props.type) {
+    case ContentType.request:
+      const requestContent = props.content as RequestContent
+      rawContent = `${requestContent.method} ${requestContent.path} HTTP/1.1\n` // TODO: GET HTTP MODE FROM REQUEST
+      break
+    case ContentType.response:
+      const responseContent = props.content as ResponseContent
+      rawContent = `HTTP/1.1 ${responseContent.status} ${responseContent.statusCode}\n` // TODO: GET HTTP MODE FROM REQUEST
   }
 
   props.content.headers.forEach((value, key) => {
-    content += `${key}: ${value}\n`
+    rawContent += `${key}: ${value}\n`
   })
-  if (props.content.body) { content += props.content.body }
+  if (props.content.body) { rawContent += props.content.body }
 
   return (
     <div className="ContentWrapper">
       <CodeMirror
         className="CodeMirror"
-        value={content}
+        value={rawContent}
         options={{
           readOnly: props.readOnly,
           mode: 'http',
@@ -49,7 +51,7 @@ const RequestContainer: React.FunctionComponent<ContainerProps> = (props) => {
           lineWrapping: true,
           lineNumbers: true
         }}
-        onChange={(editor, data, value) => { if (props.handler) { handleChanges(value, props.content.cycleId, type, props.handler) } }}
+        onChange={(editor, data, value) => { if (props.handler) { handleChanges(value, props.content.cycleId, props.type, props.handler) } }}
       />
     </div>
   )

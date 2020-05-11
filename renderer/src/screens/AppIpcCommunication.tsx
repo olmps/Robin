@@ -3,7 +3,8 @@ import { useEffect } from 'react'
 import { SetAppState, AppOptions } from './App'
 
 import { RequestCycle, Request, Response, GeoLocation } from '../models'
-import { UpdatedContent, RequestContent, ResponseContent } from '../shared/modules'
+
+import { IPCMessageChannel, UpdatedContent, RequestContent, ResponseContent } from '../shared'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -19,17 +20,17 @@ const SetupIpcCommunication = (setAppState: SetAppState, appOptions: AppOptions)
   useEffect(() => {
     // Ensure that ipcRenderer is not already registered. It may happening while
     // debugging for example, when React hot reload.
-    if (ipcRenderer.rawListeners('proxy-new-request').length === 0) {
-      ipcRenderer.on('proxy-new-request', (_: any, payload: any) => newCycleHandler(payload, appOptions.isInterceptEnabled))
+    if (ipcRenderer.rawListeners(IPCMessageChannel.proxyNewRequest).length === 0) {
+      ipcRenderer.on(IPCMessageChannel.proxyNewRequest, (_: any, payload: any) => newCycleHandler(payload, appOptions.isInterceptEnabled))
     }
 
-    if (ipcRenderer.rawListeners('proxy-new-response').length === 0) {
-      ipcRenderer.on('proxy-new-response', (_: any, payload: any) => updateCycleHandler(payload, appOptions.isInterceptEnabled))
+    if (ipcRenderer.rawListeners(IPCMessageChannel.proxyNewResponse).length === 0) {
+      ipcRenderer.on(IPCMessageChannel.proxyNewResponse, (_: any, payload: any) => updateCycleHandler(payload, appOptions.isInterceptEnabled))
     }
 
     return function unsubscribeProxyListener() {
-      ipcRenderer.removeListener('proxy-new-request', newCycleHandler)
-      ipcRenderer.removeListener('proxy-new-response', updateCycleHandler)
+      ipcRenderer.removeListener(IPCMessageChannel.proxyNewRequest, newCycleHandler)
+      ipcRenderer.removeListener(IPCMessageChannel.proxyNewResponse, updateCycleHandler)
     }
   }, [])
 }
@@ -93,7 +94,7 @@ function sendUpdatedProxyOptions(setAppState: SetAppState, isFingerprintEnabled:
     proxyEnabled: isFingerprintEnabled,
     interceptEnabled: isInterceptEnabled
   }
-  ipcRenderer.send('proxy-options-updated', payload)
+  ipcRenderer.send(IPCMessageChannel.proxyOptionsUpdated, payload)
 }
 
 function releaseInterceptedRequests(setAppState: SetAppState) {
@@ -102,53 +103,58 @@ function releaseInterceptedRequests(setAppState: SetAppState) {
     interceptedContents.forEach(content => {
       const updatedContent: UpdatedContent = {
         action: 'send',
-        contentType: 'method' in content ? 'request' : 'response',
+        type: 'method' in content ? 'request' : 'response',
         updatedContent: content
       }
 
-      switch (updatedContent.contentType) {
-        case 'request':
-          ipcRenderer.send(`updated-request-${updatedContent.updatedContent.cycleId}`, updatedContent)
-          break
-        case 'response':
-          ipcRenderer.send(`updated-response-${updatedContent.updatedContent.cycleId}`, updatedContent)
-          break
-      }
+      sendUpdatedContent(updatedContent)
     })
 
     return { ...state, interceptedRequests: [] }
   })
 }
 
-function sendUpdatedContent(updatedContent: UpdatedContent, setAppState: SetAppState) {
-  const contentType = updatedContent.contentType
-
+function didUpdateContent(content: UpdatedContent, setAppState: SetAppState) {
+  sendUpdatedContent(content)
+  
   setAppState(state => {
     const cycles = state.cycles
-    const updatedCycle = cycles.find(cycle => cycle.id === updatedContent.updatedContent.cycleId)
+    const updatedCycle = cycles.find(cycle => cycle.id === content.updatedContent.cycleId)
     if (updatedCycle) {
-      updateCycle(updatedCycle, updatedContent)
+      updateCycle(updatedCycle, content)
     }
 
     const interceptedRequests = state.interceptedRequests
-    const contentIndex = interceptedRequests.findIndex(content => content.cycleId === updatedContent.updatedContent.cycleId)
+    const contentIndex = interceptedRequests.findIndex(interceptedContent => interceptedContent.cycleId === content.updatedContent.cycleId)
     if (contentIndex !== -1) { interceptedRequests.splice(contentIndex, 1) }
 
     return { ...state, cycles, interceptedRequests }
   })
+}
 
-  switch (contentType) {
-    case "request": 
-      ipcRenderer.send(`updated-request-${updatedContent.updatedContent.cycleId}`, updatedContent)
+/**
+ * Send the modified content to the Electron proxy module
+ */
+function sendUpdatedContent(content: UpdatedContent) {
+  const { type, updatedContent } = content
+
+  switch (type) {
+    case 'request':
+      ipcRenderer.send(IPCMessageChannel.updatedRequest(updatedContent.cycleId), updatedContent)
       break
-    case "response": 
-      ipcRenderer.send(`updated-response-${updatedContent.updatedContent.cycleId}`, updatedContent)
+    case 'response':
+      ipcRenderer.send(IPCMessageChannel.updatedResponse(updatedContent.cycleId), updatedContent)
       break
   }
 }
 
+/**
+ * Updates an existing cycle on AppState with the modified content
+ * @param cycle Cycle to be updated
+ * @param content Updated request/response content
+ */
 function updateCycle(cycle: RequestCycle, content: UpdatedContent) {
-  switch (content.contentType) {
+  switch (content.type) {
     case "request":
       const requestContent = content.updatedContent as RequestContent
       
@@ -167,4 +173,4 @@ function updateCycle(cycle: RequestCycle, content: UpdatedContent) {
 }
 
 export default SetupIpcCommunication
-export { sendUpdatedProxyOptions, sendUpdatedContent }
+export { sendUpdatedProxyOptions, didUpdateContent }

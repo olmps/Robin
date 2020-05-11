@@ -29,9 +29,8 @@ const InterceptedRequestDetails = (props: { content: AnyContent, handler: Interc
     <>
       <div className="ContentColumn">
         <h1>{formattedTitle}</h1>
-        <InformationContainer content={props.content} setState={setState} />
+        <InformationContainer content={props.content} type={contentType} setState={setState} />
         <div className="ButtonsContainer">
-          {/* <button onClick={() => actionHandler(InterceptAction.drop)} className="DenyButton">DROP</button> */}
           <button onClick={() => actionHandler(InterceptAction.send)} className="SendButton">SEND</button>
         </div>
       </div>
@@ -39,13 +38,14 @@ const InterceptedRequestDetails = (props: { content: AnyContent, handler: Interc
   )
 }
 
-const InformationContainer = (props: { content: AnyContent, setState: SetInterceptState }) => {
-  if ('method' in props.content) { // RequestContent 
-    const requestHandler = (updatedContent: AnyContent) => { requestUpdateHandler(updatedContent, props.setState) }
-    return <RequestContainer content={props.content} readOnly={false} handler={requestHandler} />
-  } else {
-    const responseHandler = (updatedContent: AnyContent) => { responseUpdateHandler(updatedContent, props.setState) }
-    return <RequestContainer content={props.content} readOnly={false} handler={responseHandler} />
+const InformationContainer = (props: { content: AnyContent, type: ContentType, setState: SetInterceptState }) => {
+  switch (props.type) {
+    case ContentType.request:
+      const requestHandler = (updatedContent: AnyContent) => { requestUpdateHandler(updatedContent, props.setState) }
+      return <RequestContainer content={props.content} type={props.type} readOnly={false} handler={requestHandler} />
+    case ContentType.response:
+      const responseHandler = (updatedContent: AnyContent) => { responseUpdateHandler(updatedContent, props.setState) }
+      return <RequestContainer content={props.content} type={props.type} readOnly={false} handler={responseHandler} />
   }
 }
 

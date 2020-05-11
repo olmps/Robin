@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import BounceLoader from "react-spinners/BounceLoader"
 
 import { RequestCycle } from '../../models'
+import { ContentType } from '../../shared'
 
 import { SingleRequestCardsCollection } from '../../components/cards-collection/RequestsCardsCollection'
 import SegmentedControl from '../../components/segmented-control/SegmentedControl'
@@ -45,13 +46,13 @@ const InformationContainer = (props: { cycle: RequestCycle, selectedIndex: numbe
   } else if (props.selectedIndex === 1) { // Request Tab
     const { cycleId, rawMethod, url, headers, body } = props.cycle.request
     const requestContent = { cycleId, method: rawMethod, path: url, headers, body }
-    return <RequestContainer content={requestContent} readOnly={true} />
+    return <RequestContainer content={requestContent} type={ContentType.request} readOnly={true} />
   } else if (props.selectedIndex === 2) { // Response tab
     if (props.cycle.response === undefined) { return <div className="CenteredContent"><BounceLoader color="#FFF" /></div> }
 
     const { cycleId, status, statusCode, headers } = props.cycle.response
     const responseContent = { cycleId, status, statusCode, headers }
-    return <RequestContainer content={responseContent} readOnly={true} />
+    return <RequestContainer content={responseContent} type={ContentType.response} readOnly={true} />
   }
 
   return <></>

@@ -2,7 +2,7 @@ import { BrowserWindow, app, ipcMain, ipcRenderer } from 'electron'
 import * as isDev from "electron-is-dev"
 import * as path from 'path'
 import createProxyHandler, { ProxyHandler } from './proxy/proxy'
-import { UpdatedContent } from './shared/modules'
+import { UpdatedContent, IPCMessageChannel } from './shared'
 
 let mainWindow: BrowserWindow
 let proxyServer: ProxyHandler
@@ -47,20 +47,22 @@ function setupOneTimeModules() {
 function setupProxy() {
   const requestHandler = (requestPayload: any) => {
     return new Promise<UpdatedContent>((resolve, _) => {
-      ipcMain.on(`updated-request-${requestPayload.id}`, (_, payload: UpdatedContent) => {
-        ipcMain.removeAllListeners(`updated-request-${requestPayload.id}`)
+      const updatedRequestChannel = IPCMessageChannel.updatedRequest(requestPayload.id)
+      ipcMain.on(updatedRequestChannel, (_, payload: UpdatedContent) => {
+        ipcMain.removeAllListeners(updatedRequestChannel)
         resolve(payload)
       })
-      mainWindow.webContents.send('proxy-new-request', requestPayload)
+      mainWindow.webContents.send(IPCMessageChannel.proxyNewRequest, requestPayload)
     })
   }
   const responseHandler = (responsePayload: any) => {
+    const updatedResponseChannel = IPCMessageChannel.updatedResponse(responsePayload.id)
     return new Promise<UpdatedContent>((resolve, _) => {
-      ipcMain.on(`updated-response-${responsePayload.id}`, (_, payload: UpdatedContent) => {
-        ipcMain.removeAllListeners(`updated-response-${responsePayload.id}`)
+      ipcMain.on(updatedResponseChannel, (_, payload: UpdatedContent) => {
+        ipcMain.removeAllListeners(updatedResponseChannel)
         resolve(payload)
       })
-      mainWindow.webContents.send('proxy-new-response', responsePayload)
+      mainWindow.webContents.send(IPCMessageChannel.proxyNewResponse, responsePayload)
     })
   }
   const proxyOptions = {
@@ -74,7 +76,7 @@ function setupProxy() {
 }
 
 function setupAppListeners() {
-  ipcMain.on('proxy-options-updated', (_, payload: any) => {
+  ipcMain.on(IPCMessageChannel.proxyOptionsUpdated, (_, payload: any) => {
     proxyServer.proxyConfigUpdated(payload)
   })
 }
