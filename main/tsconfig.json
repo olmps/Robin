@@ -17,8 +17,8 @@
       "resolveJsonModule": true,
       "isolatedModules": false,
       "jsx": "preserve",
-      "outDir": "dist"
+      "outDir": "./dist",
+      "rootDir": "./src"
     },
-    "include": ["src"],
-    "exclude": ["node_modules", "**/node_modules/*"]
+    "include": ["src"]
   }

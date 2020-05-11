@@ -1,110 +1,117 @@
 export enum Method {
-    get, put, post, patch, delete
+  get, put, post, patch, delete
 }
 
-export function createRequestMethod(rawMethod: string): Method {
-    switch (rawMethod) {
-        case "GET": return Method.get
-        case "POST": return Method.post
-        case "PUT": return Method.put
-        case "DELETE": return Method.delete
-        case "PATCH": return Method.patch
-    }
+function createRequestMethod(rawMethod: string): Method {
+  switch (rawMethod) {
+    case "GET": return Method.get
+    case "POST": return Method.post
+    case "PUT": return Method.put
+    case "DELETE": return Method.delete
+    case "PATCH": return Method.patch
+  }
 
-    return Method.get
+  return Method.get
 }
 
-export function rawMethod(method: Method): string {
-    switch (method) {
-        case Method.get: return "GET"
-        case Method.post: return "POST"
-        case Method.put: return "PUT"
-        case Method.delete: return "DELETE"
-        case Method.patch: return "PATCH"
-    }
+function rawMethod(method: Method): string {
+  switch (method) {
+    case Method.get: return "GET"
+    case Method.post: return "POST"
+    case Method.put: return "PUT"
+    case Method.delete: return "DELETE"
+    case Method.patch: return "PATCH"
+  }
 }
 
 export class Request {
-    /** Protocol of the request */
-    protocol: string
+  /** Id from the wrapper cycle */
+  cycleId: string
 
-    /** Destination server hostname, sans port */
-    hostname: string
+  /** Protocol of the request */
+  protocol: string
 
-    /** Destination server port */
-    port: number
+  /** Destination server hostname, sans port */
+  hostname: string
 
-    /** All-caps HTTP method used. Lowercase values are converted to uppercase */
-    method: Method
+  /** Destination server port */
+  port: number
 
-    /** HTTP request header name/value JS object. These are all-lowercase, e.g. accept-encoding */
-    headers: Map<string, string>
+  /** All-caps HTTP method used. Lowercase values are converted to uppercase */
+  method: Method
 
-    /** Root-relative request URL, including body string, like /foo/bar?baz=qux */
-    url: string
+  /** HTTP request header name/value JS object. These are all-lowercase, e.g. accept-encoding */
+  headers: Map<string, string>
 
-    /**
-     * An object representing querystring params in the URL.
-     * For example if the URL is /foo/bar?baz=qux, then this
-     * map will look like { baz: 'qux' }.
-     */
-    query: Map<string, string>
+  /** Root-relative request URL, including body string, like /foo/bar?baz=qux */
+  url: string
 
-    /** Request body parsed as String. */
-    body?: string
-    
-    get fullUrl(): string { return `${this.hostname}${this.url}` }
-    get rawMethod(): string { return rawMethod(this.method) }
+  /**
+   * An object representing querystring params in the URL.
+   * For example if the URL is /foo/bar?baz=qux, then this
+   * map will look like { baz: 'qux' }.
+   */
+  query: Map<string, string>
 
-    // Transient properties
-    isNewRequest: boolean = true
+  /** Request body parsed as String. */
+  body?: string
 
-    private constructor(protocol: string, hostname: string, 
-                        port: number, method: Method,
-                        headers: Map<string, string>, url: string, 
-                        query: Map<string, string>, body?: string) {
-        this.protocol = protocol
-        this.hostname = hostname
-        this.port = port
-        this.method = method
-        this.headers = headers
-        this.url = url
-        this.query = query
-        this.body = body
-    }
+  get fullUrl(): string { return `${this.hostname}${this.url}` }
+  get rawMethod(): string { return rawMethod(this.method) }
 
-    static fromJson(requestJson: any): Request {
-        const { protocol, hostname, port, method, headers, url, query, body } = requestJson
-        
-        let formattedHeaders = new Map<string, string>()
-        Object.keys(headers).forEach(key => {
-            formattedHeaders.set(key, headers[key])
-        })
-        
-        let formattedQueries = new Map<string, string>()
-        Object.keys(query).forEach(key => {
-            formattedHeaders.set(key, query[key])
-        })
+  // Transient properties
+  isNewRequest: boolean = true
 
-        return new Request(protocol, hostname, port, createRequestMethod(method), formattedHeaders, url, formattedQueries, body)
-    }
+  private constructor(cycleId: string, protocol: string, hostname: string,
+                      port: number, method: Method, headers: Map<string, string>,
+                      url: string, query: Map<string, string>, body?: string) {
+    this.cycleId = cycleId
+    this.protocol = protocol
+    this.hostname = hostname
+    this.port = port
+    this.method = method
+    this.headers = headers
+    this.url = url
+    this.query = query
+    this.body = body
+  }
 
-    size(): number {
-        let size = 0
-        size += this.protocol.length
-        size += this.hostname.length
-        size += rawMethod(this.method).length
-        this.headers.forEach((key, value) => {
-            size += key.length
-            size += value.length
-        })
-        size += this.url.length
-        this.query.forEach((key, value) => {
-            size += key.length
-            size += value.length
-        })
-        if (this.body) { size += this.body.length }
+  static fromJson(requestJson: any): Request {
+    const { cycleId, protocol, hostname, port, method, headers, url, query, body } = requestJson
 
-        return size
-    }
+    let formattedHeaders = new Map<string, string>()
+    Object.keys(headers).forEach(key => {
+      formattedHeaders.set(key, headers[key])
+    })
+
+    let formattedQueries = new Map<string, string>()
+    Object.keys(query).forEach(key => {
+      formattedHeaders.set(key, query[key])
+    })
+
+    return new Request(cycleId, protocol, hostname, port, createRequestMethod(method), formattedHeaders, url, formattedQueries, body)
+  }
+
+  size(): number {
+    let size = 0
+    size += this.protocol.length
+    size += this.hostname.length
+    size += rawMethod(this.method).length
+    this.headers.forEach((key, value) => {
+      size += key.length
+      size += value.length
+    })
+    size += this.url.length
+    this.query.forEach((key, value) => {
+      size += key.length
+      size += value.length
+    })
+    if (this.body) { size += this.body.length }
+
+    return size
+  }
+
+  setRequestMethod(method: string) {
+    this.method = createRequestMethod(method)
+  }
 }

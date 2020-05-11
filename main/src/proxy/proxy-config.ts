@@ -4,7 +4,8 @@ enum FileExtension {
 
 export class ProxyConfig {
   constructor(
-    public isProxyEnabled: boolean = true, 
+    public isProxyEnabled: boolean = true,
+    public isInterceptEnabled: boolean = false,
     public listenPort: number, 
     public excludedExtensions: FileExtension[]) { }
 }

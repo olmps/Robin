@@ -1,6 +1,8 @@
 import React from 'react'
 import { UnControlled as CodeMirror } from 'react-codemirror2'
 
+import { RequestContent, ResponseContent, ContentType } from '../../../shared/modules'
+
 import './RequestContainer.css'
 
 require('codemirror/lib/codemirror.css')
@@ -8,17 +10,8 @@ require('codemirror/theme/material.css')
 require('codemirror/theme/seti.css')
 require('codemirror/mode/http/http.js')
 
-// Request Types
-interface RequestContent { rawMethod: string, path: string, headers: Map<string, string>, body?: string }
 type RequestContentHandler = (result: RequestContent) => void
-
-// Response Types
-interface ResponseContent { status: string, statusCode: number, headers: Map<string, string>, body?: string }
 type ResponseContentHandler = (result: ResponseContent) => void
-
-enum ContentType {
-  request, response
-}
 
 interface ContainerProps {
   content: RequestContent | ResponseContent
@@ -31,8 +24,8 @@ const RequestContainer: React.FunctionComponent<ContainerProps> = (props) => {
   let content = ""
   let type: ContentType
 
-  if ('rawMethod' in props.content) { // It's a request
-    content = `${props.content.rawMethod} ${props.content.path} HTTP/1.1\n` // TODO: GET HTTP MODE FROM REQUEST
+  if ('method' in props.content) { // It's a request
+    content = `${props.content.method} ${props.content.path} HTTP/1.1\n` // TODO: GET HTTP MODE FROM REQUEST
     type = ContentType.request
   } else {
     content = `HTTP/1.1 ${props.content.status} ${props.content.statusCode}\n` // TODO: GET HTTP MODE FROM REQUEST
@@ -56,16 +49,20 @@ const RequestContainer: React.FunctionComponent<ContainerProps> = (props) => {
           lineWrapping: true,
           lineNumbers: true
         }}
-        onChange={(editor, data, value) => { if (props.handler) { handleChanges(value, type, props.handler) } }}
+        onChange={(editor, data, value) => { if (props.handler) { handleChanges(value, props.content.cycleId, type, props.handler) } }}
       />
     </div>
   )
 }
 
-function handleChanges(newValue: string, type: ContentType, handler: RequestContentHandler | ResponseContentHandler) {
+function handleChanges(newValue: string, cycleId: string, type: ContentType, handler: RequestContentHandler | ResponseContentHandler) {
   switch (type) {
-    case ContentType.request: handleRequestChanges(newValue, handler as RequestContentHandler)
-    case ContentType.response: handleResponseChanges(newValue, handler as ResponseContentHandler)
+    case ContentType.request:
+      handleRequestChanges(newValue, cycleId, handler as RequestContentHandler)
+      break
+    case ContentType.response: 
+      handleResponseChanges(newValue, cycleId, handler as ResponseContentHandler)
+      break
   }
 }
 
@@ -81,7 +78,7 @@ function handleChanges(newValue: string, type: ContentType, handler: RequestCont
  *    
  * Any changes to this content format will - and must - create an invalid request.
  */
-function handleRequestChanges(newValue: string, handler: RequestContentHandler) {
+function handleRequestChanges(newValue: string, cycleId: string, handler: RequestContentHandler) {
   let requestLines = newValue.split('\n')
 
   const requestMethodAndPath = requestLines[0]
@@ -89,12 +86,13 @@ function handleRequestChanges(newValue: string, handler: RequestContentHandler) 
   const path = requestMethodAndPath.split(' ')[1]
   requestLines.shift() // Removes first line
 
+  const headerRegex = new RegExp('([\w-]+): (.*)')
   let headers = new Map<string, string>()
   let isReadingBody = false
   let body = ""
 
   for (const line of requestLines) {
-    if (line === "") {
+    if (line === "" || !line.match(headerRegex)) {
       isReadingBody = true
       continue
     }
@@ -107,7 +105,7 @@ function handleRequestChanges(newValue: string, handler: RequestContentHandler) 
     body += `\n${line}`
   }
 
-  const newContent = { rawMethod, path, headers, body }
+  const newContent = { cycleId, type: 'request', method: rawMethod, path, headers, body }
   handler(newContent)
 }
 
@@ -121,7 +119,7 @@ function handleRequestChanges(newValue: string, handler: RequestContentHandler) 
  *    
  * Any changes to this content format will - and must - create an invalid response.
  */
-function handleResponseChanges(newValue: string, handler: ResponseContentHandler) {
+function handleResponseChanges(newValue: string, cycleId: string, handler: ResponseContentHandler) {
   let responseLines = newValue.split('\n')
 
   const splitStatusLine = responseLines[0].split(' ')
@@ -142,7 +140,7 @@ function handleResponseChanges(newValue: string, handler: ResponseContentHandler
     headers.set(key, value)
   }
 
-  const newContent = { status, statusCode, headers }
+  const newContent = { cycleId, type: 'response', status, statusCode, headers }
   handler(newContent)
 }
 

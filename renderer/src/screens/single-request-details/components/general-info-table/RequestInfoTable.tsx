@@ -3,7 +3,6 @@ import React from 'react'
 import { RequestCycle, HttpStatusCode } from '../../../../models'
 
 import './RequestInfoTable.css'
-import { rawMethod } from '../../../../models/request'
 
 export const RequestInfoTable = (props: { request: RequestCycle }) => {
   const formattedStatusCode = props.request.statusCode !== undefined ?
@@ -27,7 +26,7 @@ export const RequestInfoTable = (props: { request: RequestCycle }) => {
           </tr>
           <tr>
             <th>Method</th>
-            <td>{rawMethod(props.request.method)}</td>
+            <td>{props.request.request.rawMethod}</td>
           </tr>
         </tbody>
       </table>

@@ -2,7 +2,6 @@ import React, { useState } from 'react'
 import BounceLoader from "react-spinners/BounceLoader"
 
 import { RequestCycle } from '../../models'
-import { rawMethod } from '../../models/request'
 
 import { SingleRequestCardsCollection } from '../../components/cards-collection/RequestsCardsCollection'
 import SegmentedControl from '../../components/segmented-control/SegmentedControl'
@@ -44,18 +43,16 @@ const InformationContainer = (props: { cycle: RequestCycle, selectedIndex: numbe
   if (props.selectedIndex === 0) { // General Information tab
     return <RequestInfoTable request={props.cycle} />
   } else if (props.selectedIndex === 1) { // Request Tab
-    const { rawMethod, url, headers, body } = props.cycle.request
-    const requestContent = { rawMethod, path: url, headers, body }
+    const { cycleId, rawMethod, url, headers, body } = props.cycle.request
+    const requestContent = { cycleId, method: rawMethod, path: url, headers, body }
     return <RequestContainer content={requestContent} readOnly={true} />
   } else if (props.selectedIndex === 2) { // Response tab
     if (props.cycle.response === undefined) { return <div className="CenteredContent"><BounceLoader color="#FFF" /></div> }
 
-    const { status, statusCode, headers } = props.cycle.response
-    const responseContent = { status, statusCode, headers }
+    const { cycleId, status, statusCode, headers } = props.cycle.response
+    const responseContent = { cycleId, status, statusCode, headers }
     return <RequestContainer content={responseContent} readOnly={true} />
   }
-
-  return <></>
 
   return <></>
 }

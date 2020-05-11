@@ -1,6 +1,9 @@
 import HttpStatusCode from "./status-code"
 
 export class Response {
+  /** Id from the wrapper cycle */
+  cycleId: string
+
   /** HTTP status code being sent to the client. */
   statusCode: number
 
@@ -15,21 +18,22 @@ export class Response {
 
   get status(): string { return HttpStatusCode[this.statusCode] }
 
-  constructor(statusCode: number, headers: Map<string, string>, body: string) {
+  constructor(cycleId: string, statusCode: number, headers: Map<string, string>, body: string) {
+    this.cycleId = cycleId
     this.statusCode = statusCode
     this.headers = headers
     this.body = body
   }
 
   static fromJson(responseJson: any): Response {
-    const { statusCode, headers, body } = responseJson
+    const { cycleId, statusCode, headers, body } = responseJson
 
     let formattedHeaders = new Map<string, string>()
     Object.keys(headers).forEach(key => {
       formattedHeaders.set(key, headers[key])
     })
 
-    return new Response(statusCode, formattedHeaders, body)
+    return new Response(cycleId, statusCode, formattedHeaders, body)
   }
 
   size(): number {

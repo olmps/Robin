@@ -14,11 +14,11 @@
   width: 16px;
 }
 
-.ToolbarFingerprintEnabled {
+.ToolbarButtonIconEnabled {
   height: 16px;
   width: 16px;
 }
 
-.ToolbarFingerprintEnabled g {
+.ToolbarButtonIconEnabled g {
   fill: red;
 }

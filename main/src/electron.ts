@@ -1,11 +1,16 @@
-import { BrowserWindow, app, ipcMain } from 'electron'
+import { BrowserWindow, app, ipcMain, ipcRenderer } from 'electron'
 import * as isDev from "electron-is-dev"
 import * as path from 'path'
-import createProxyHandler from './proxy/proxy'
+import createProxyHandler, { ProxyHandler } from './proxy/proxy'
+
+// TODO: REMOVE THIS WORKAROUND
+interface RequestContent { method: string, path: string, headers: Map<string, string>, body?: string }
+interface ResponseContent { status: string, statusCode: number, headers: Map<string, string>, body?: string }
+interface UpdatedContent { action: string, contentType: string, updatedContent: RequestContent | ResponseContent }
 
 let mainWindow: BrowserWindow
-let proxyServer = createProxyHandler({ isProxyEnabled: true, listenPort: 8080, excludedExtensions: [] })
-let didSetupListeners: boolean = false
+let proxyServer: ProxyHandler
+let didSetup: boolean = false
 
 function startWindow() {
   mainWindow = new BrowserWindow({
@@ -29,24 +34,43 @@ function startWindow() {
   mainWindow.on("closed", () => mainWindow.destroy())
 }
 
-function setupListeners() {
+function setupProxyAndListeners() {
   mainWindow.webContents.on('did-finish-load', () => {
-    if (!didSetupListeners) {
-      setupProxyListeners()
+    if (!didSetup) {
+      setupProxy()
       setupAppListeners()
-      didSetupListeners = true
+      didSetup = true
     }
   })
 }
 
-/// Setup Listeners for the proxy module
-function setupProxyListeners() {
-  proxyServer.on('new-request', (requestPayload: any) => {
-    mainWindow.webContents.send('proxy-new-request', requestPayload)
-  })
-  proxyServer.on('new-response', (responsePayload: any) => {
-    mainWindow.webContents.send('proxy-new-response', responsePayload)
-  })
+function setupProxy() {
+  const requestHandler = (requestPayload: any) => {
+    return new Promise<UpdatedContent>((resolve, _) => {
+      ipcMain.on(`updated-request-${requestPayload.id}`, (_, payload: UpdatedContent) => {
+        ipcMain.removeAllListeners(`updated-request-${requestPayload.id}`)
+        resolve(payload)
+      })
+      mainWindow.webContents.send('proxy-new-request', requestPayload)
+    })
+  }
+  const responseHandler = (responsePayload: any) => {
+    return new Promise<UpdatedContent>((resolve, _) => {
+      ipcMain.on(`updated-response-${responsePayload.id}`, (_, payload: UpdatedContent) => {
+        ipcMain.removeAllListeners(`updated-response-${responsePayload.id}`)
+        resolve(payload)
+      })
+      mainWindow.webContents.send('proxy-new-response', responsePayload)
+    })
+  }
+  const proxyOptions = {
+    isProxyEnabled: true, 
+    isInterceptEnabled: false, 
+    listenPort: 8080,
+    excludedExtensions: []
+  }
+  
+  proxyServer = createProxyHandler(proxyOptions, requestHandler, responseHandler)
 }
 
 /// Setup Listeners for the React module
@@ -60,7 +84,7 @@ app.allowRendererProcessReuse = true
 
 app.on('ready', () => {
   startWindow()
-  setupListeners()
+  setupProxyAndListeners()
 })
 
 app.on('quit', () => {
