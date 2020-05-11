@@ -75,9 +75,9 @@ function formatBytes(bytes: number) {
 }
 
 function formatDuration(duration: number): string {
-  return duration >= 1000 ? 
-        `${new Date(duration).getSeconds().toFixed(0)} s` :
-        `${duration.toFixed(0)} ms`
+  return duration >= 1000 ?
+    `${new Date(duration).getSeconds().toFixed(0)} s` :
+    `${duration.toFixed(0)} ms`
 }
 
 function statusCodeIcon(statusCode: number | undefined): string {
