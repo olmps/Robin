@@ -4,6 +4,7 @@ import { UnControlled as CodeMirror } from 'react-codemirror2'
 import { RequestContent, ResponseContent, ContentType } from '../../../shared/modules'
 
 import './RequestContainer.css'
+import { HttpStatusCode } from '../../../models'
 
 require('codemirror/lib/codemirror.css')
 require('codemirror/theme/material.css')
@@ -31,13 +32,14 @@ const RequestContainer: React.FunctionComponent<ContainerProps> = (props) => {
       break
     case ContentType.response:
       const responseContent = props.content as ResponseContent
-      rawContent = `HTTP/1.1 ${responseContent.status} ${responseContent.statusCode}\n` // TODO: GET HTTP MODE FROM REQUEST
+      const statusCode = responseContent.statusCode
+      rawContent = `HTTP/1.1 ${statusCode} ${HttpStatusCode[statusCode]}\n` // TODO: GET HTTP MODE FROM REQUEST
   }
 
   props.content.headers.forEach((value, key) => {
     rawContent += `${key}: ${value}\n`
   })
-  if (props.content.body) { rawContent += props.content.body }
+  if (props.content.body) { rawContent += `\n${props.content.body}` }
 
   return (
     <div className="ContentWrapper">
@@ -88,23 +90,23 @@ function handleRequestChanges(newValue: string, cycleId: string, handler: Reques
   const path = requestMethodAndPath.split(' ')[1]
   requestLines.shift() // Removes first line
 
-  const headerRegex = new RegExp('([\w-]+): (.*)')
-  let headers = new Map<string, string>()
+  const headerRegex = new RegExp('([a-zA-Z0-9-_]+):(.*)')
+  const headers = new Map<string, string>()
   let isReadingBody = false
   let body = ""
 
   for (const line of requestLines) {
-    if (line === "" || !line.match(headerRegex)) {
+    if (line === "" || !headerRegex.test(line)) {
       isReadingBody = true
       continue
     }
     if (!isReadingBody) {
       const key = line.split(':')[0]
-      const value = line.split(':')[1]
+      const value = line.split(':')[1].trim()
       headers.set(key, value)
+    } else {
+      body += `\n${line}`
     }
-
-    body += `\n${line}`
   }
 
   const newContent = { cycleId, type: 'request', method: rawMethod, path, headers, body }
@@ -126,11 +128,8 @@ function handleResponseChanges(newValue: string, cycleId: string, handler: Respo
 
   const splitStatusLine = responseLines[0].split(' ')
   splitStatusLine.shift() // Ignore protocol
-
+  
   const statusCode = Number(splitStatusLine[0])
-  splitStatusLine.shift()
-
-  const status = splitStatusLine.reduce((accumulator, current) => accumulator + ` ${current}`, "")
 
   responseLines.shift()
 
@@ -142,7 +141,7 @@ function handleResponseChanges(newValue: string, cycleId: string, handler: Respo
     headers.set(key, value)
   }
 
-  const newContent = { cycleId, type: 'response', status, statusCode, headers }
+  const newContent = { cycleId, type: 'response', statusCode, headers }
   handler(newContent)
 }
 

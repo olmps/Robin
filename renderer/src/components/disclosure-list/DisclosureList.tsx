@@ -32,6 +32,7 @@ export const DisclosureList = (props: { list: DisclosureListModel, selectionHand
         switch (action) {
             case Action.setSelected:
                 if (itemKey === "") {
+                  props.selectionHandler("", [])
                   setListState({ ...listState, selectedItemKey: "" })
                   return
                 }
