@@ -4,11 +4,7 @@ import * as fs from 'fs'
 import { ProxyConfig } from './proxy-config'
 import { exec } from 'child_process'
 import GeoIpHandler from '../geoip/geoip'
-
-// TODO: Remove this workaround
-interface RequestContent { method: string, path: string, headers: Map<string, string>, body?: string }
-interface ResponseContent { status: string, statusCode: number, headers: Map<string, string>, body?: string }
-interface UpdatedContent { action: string, contentType: string, updatedContent: RequestContent | ResponseContent }
+import { UpdatedContent, RequestContent, ResponseContent } from '../shared/modules'
 
 type RequestHandler = (payload: any) => Promise<UpdatedContent>
 

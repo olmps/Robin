@@ -1,0 +1,17 @@
+{
+  "name": "robin",
+  "version": "1.0.0",
+  "description": "A Web Security Tool",
+  "main": "index.js",
+  "scripts": {
+    "copy-shared": "copyfiles --flat shared/*.ts main/src/shared/ && copyfiles --flat shared/*.ts renderer/src/shared/",
+    "start-react": "cd renderer && npm run start",
+    "start-electron": "cd main && npm run start",
+    "start-modules": "concurrently --kill-others \"npm run start-react\" \"npm run start-electron\"",
+    "start": "npm run copy-shared && npm run start-modules"
+  },
+  "devDependencies": {
+    "concurrently": "^5.2.0",
+    "copyfiles": "^2.2.0"
+  }
+}

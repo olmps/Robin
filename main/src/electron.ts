@@ -2,11 +2,8 @@ import { BrowserWindow, app, ipcMain, ipcRenderer } from 'electron'
 import * as isDev from "electron-is-dev"
 import * as path from 'path'
 import createProxyHandler, { ProxyHandler } from './proxy/proxy'
+import { UpdatedContent } from './shared/modules'
 
-// TODO: REMOVE THIS WORKAROUND
-interface RequestContent { method: string, path: string, headers: Map<string, string>, body?: string }
-interface ResponseContent { status: string, statusCode: number, headers: Map<string, string>, body?: string }
-interface UpdatedContent { action: string, contentType: string, updatedContent: RequestContent | ResponseContent }
 
 let mainWindow: BrowserWindow
 let proxyServer: ProxyHandler
