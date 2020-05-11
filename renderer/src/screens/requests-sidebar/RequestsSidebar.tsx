@@ -30,8 +30,7 @@ const RequestsSidebar = ( props: { cycles: RequestCycle[], selectionHandler: Sel
 
 function filterRequests(requests: RequestCycle[], filter: string | undefined): RequestCycle[] {
   if (filter === undefined) { return requests }
-
-  return requests.filter(request => request.url.includes(filter))
+  return requests.filter(request => request.fullUrl.includes(filter))
 }
 
 export default RequestsSidebar
