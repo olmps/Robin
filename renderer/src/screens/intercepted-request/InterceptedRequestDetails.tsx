@@ -19,7 +19,7 @@ const InterceptedRequestDetails = (props: { content: AnyContent, handler: Interc
   
   const [state, setState] = useState(new InterceptedState(props.content))
 
-  const formattedTitle = props.content instanceof Request ? "Intercepted Request" : "Intercepted Response"
+  const formattedTitle = contentType === ContentType.request ? "Intercepted Request" : "Intercepted Response"
 
   const actionHandler = (action: InterceptAction) => {
     props.handler(action, contentType, state.updatedContent)

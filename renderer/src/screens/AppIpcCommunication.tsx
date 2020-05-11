@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { SetAppState, AppOptions, AppState } from './App'
+import { SetAppState, AppOptions } from './App'
 
 import { RequestCycle, Request, Response, GeoLocation } from '../models'
 import { UpdatedContent, RequestContent, ResponseContent } from '../shared/modules'
@@ -52,8 +52,6 @@ function ipcHandlers(setAppState: SetAppState): [CycleUpdateHandler, CycleUpdate
         const { rawMethod, url, headers, body } = request
         const requestContent = { cycleId, method: rawMethod, path: url, headers, body }
         interceptedRequests.push(requestContent)
-
-        console.log("Stacking " + interceptedRequests.length)
       }
 
       return { ...state, cycles, interceptedRequests }
@@ -79,7 +77,6 @@ function ipcHandlers(setAppState: SetAppState): [CycleUpdateHandler, CycleUpdate
         const { cycleId, status, statusCode, headers } = response
         const updatedContent = { cycleId, status, statusCode, headers }
         interceptedRequests.push(updatedContent)
-        console.log("Stacking " + interceptedRequests.length)
       }
 
       return { ...state, cycles, interceptedRequests }
@@ -134,8 +131,8 @@ function sendUpdatedContent(updatedContent: UpdatedContent, setAppState: SetAppS
     }
 
     const interceptedRequests = state.interceptedRequests
-    const contentIndex = interceptedRequests.indexOf(updatedContent.updatedContent)
-    if (contentIndex !== -1) { delete interceptedRequests[contentIndex] }
+    const contentIndex = interceptedRequests.findIndex(content => content.cycleId === updatedContent.updatedContent.cycleId)
+    if (contentIndex !== -1) { interceptedRequests.splice(contentIndex, 1) }
 
     return { ...state, cycles, interceptedRequests }
   })

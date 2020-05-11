@@ -4,10 +4,9 @@ import * as path from 'path'
 import createProxyHandler, { ProxyHandler } from './proxy/proxy'
 import { UpdatedContent } from './shared/modules'
 
-
 let mainWindow: BrowserWindow
 let proxyServer: ProxyHandler
-let didSetup: boolean = false
+let oneTimeSetup: boolean = false
 
 function startWindow() {
   mainWindow = new BrowserWindow({
@@ -31,12 +30,16 @@ function startWindow() {
   mainWindow.on("closed", () => mainWindow.destroy())
 }
 
-function setupProxyAndListeners() {
+/**
+ * Setup modules that can only be setup once. Proxy modules and IPC listeners are
+ * examples of one-time modules
+ */
+function setupOneTimeModules() {
   mainWindow.webContents.on('did-finish-load', () => {
-    if (!didSetup) {
+    if (!oneTimeSetup) {
       setupProxy()
       setupAppListeners()
-      didSetup = true
+      oneTimeSetup = true
     }
   })
 }
@@ -70,7 +73,6 @@ function setupProxy() {
   proxyServer = createProxyHandler(proxyOptions, requestHandler, responseHandler)
 }
 
-/// Setup Listeners for the React module
 function setupAppListeners() {
   ipcMain.on('proxy-options-updated', (_, payload: any) => {
     proxyServer.proxyConfigUpdated(payload)
@@ -81,7 +83,7 @@ app.allowRendererProcessReuse = true
 
 app.on('ready', () => {
   startWindow()
-  setupProxyAndListeners()
+  setupOneTimeModules()
 })
 
 app.on('quit', () => {
