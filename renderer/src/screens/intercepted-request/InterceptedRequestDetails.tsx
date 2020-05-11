@@ -1,7 +1,5 @@
 import React, { useState } from 'react'
 
-import { Request, Response } from '../../models'
-
 import RequestContainer from '../components/request-content-container/RequestContainer'
 import { InterceptResult, InterceptAction, ContentType, AnyContent } from '../../shared/modules'
 

@@ -1,12 +1,9 @@
 import React, { useState, useEffect, useRef } from 'react'
 
-// Actions
 import { setupTransientItems, Action, onKeyboardInput, KeyAction } from './DisclosureListActions'
 
-// Models
 import { DisclosureListModel, DisclosureItemModel } from './models'
 
-// Images
 import websiteIcon from '../../resources/assets/disclosure-list/website_icon.svg'
 import selectedWebsiteIcon from '../../resources/assets/disclosure-list/website_icon_selected.svg'
 import folderIcon from '../../resources/assets/disclosure-list/folder_icon.svg'
@@ -14,7 +11,6 @@ import selectedFolderIcon from '../../resources/assets/disclosure-list/folder_ic
 import fileIcon from '../../resources/assets/disclosure-list/file_icon.svg'
 import selectedFileIcon from '../../resources/assets/disclosure-list/file_icon_selected.svg'
 
-// Style
 import './DisclosureList.css'
 
 class DisclosureListState {
@@ -137,7 +133,7 @@ const DisclosureItem = (props: { item: DisclosureItemModel, actionHandler: KeyAc
     const className = props.item.isSelected ? "SelectedLeafSingleListItem" : "LeafSingleListItem"
     return (
         <div className={className} onClick={() => props.actionHandler(Action.setSelected, props.item.key)}>
-            <img src={itemImage}/>{props.item.label}
+            <img alt={props.item.label} src={itemImage}/>{props.item.label}
         </div>
     )
 }
@@ -167,7 +163,7 @@ const ToggleDisclosureItem = (props: { item: DisclosureItemModel, image: string,
     return (
         <div className={discloseClassName} onClick={(e) => selectionHandler(e)}>
             <button className={buttonClass} style={selectedDisclosureIconColor} onClick={(e) => visibilityHandler(e)}/>
-            <img src={props.image}/>
+            <img alt={props.item.label} src={props.image}/>
             {props.item.label}
         </div>
     )

@@ -1,6 +1,5 @@
 import React from 'react'
 
-// Models
 import { RequestCycle } from '../../../../models'
 import { 
   isSuccessStatusCode, 
@@ -10,7 +9,6 @@ import {
   isServerErrorStatusCode
 } from '../../../../models/status-code'
 
-// Assets
 import informationIcon from '../../../../resources/assets/requests-details/stats/information.svg'
 import successIcon from '../../../../resources/assets/requests-details/stats/success.svg'
 import redirectIcon from '../../../../resources/assets/requests-details/stats/redirect.svg'
@@ -18,7 +16,6 @@ import syncIcon from '../../../../resources/assets/requests-details/stats/sync.s
 import clientErrorIcon from '../../../../resources/assets/requests-details/stats/client_error.svg'
 import serverErrorIcon from '../../../../resources/assets/requests-details/stats/server_error.svg'
 
-// Style
 import './RequestsStats.css'
 
 const RequestsStats = ({ cycles }: { cycles: RequestCycle[] }) => {
@@ -26,12 +23,12 @@ const RequestsStats = ({ cycles }: { cycles: RequestCycle[] }) => {
 
     return (
         <div className="StatsWrapper">
-            <div className="StatsItem"><img src={informationIcon} />{informational} Informational</div>
-            <div className="StatsItem"><img src={successIcon} />{success} Successful</div>
-            <div className="StatsItem"><img src={redirectIcon} />{redirects} Redirects</div>
-            <div className="StatsItem"><img src={clientErrorIcon} />{clientErrors} Client Errors</div>
-            <div className="StatsItem"><img src={serverErrorIcon} />{serverErrors} Server Errors</div>
-            <div className="StatsItem"><img src={syncIcon} />{incomplete} Incomplete</div>
+            <div className="StatsItem"><img alt={`${informational} Informational Requests`} src={informationIcon} />{informational} Informational</div>
+            <div className="StatsItem"><img alt={`${success} Successful Requests`} src={successIcon} />{success} Successful</div>
+            <div className="StatsItem"><img alt={`${redirects} Redirect Requests`} src={redirectIcon} />{redirects} Redirects</div>
+            <div className="StatsItem"><img alt={`${clientErrors} Client Error Requests`} src={clientErrorIcon} />{clientErrors} Client Errors</div>
+            <div className="StatsItem"><img alt={`${serverErrors} Server Error Requests`} src={serverErrorIcon} />{serverErrors} Server Errors</div>
+            <div className="StatsItem"><img alt={`${incomplete} Incomplete Requests`} src={syncIcon} />{incomplete} Incomplete</div>
         </div>
     )
 }

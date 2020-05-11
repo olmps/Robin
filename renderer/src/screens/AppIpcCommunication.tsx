@@ -32,7 +32,7 @@ const SetupIpcCommunication = (setAppState: SetAppState, appOptions: AppOptions)
       ipcRenderer.removeListener(IPCMessageChannel.proxyNewRequest, newCycleHandler)
       ipcRenderer.removeListener(IPCMessageChannel.proxyNewResponse, updateCycleHandler)
     }
-  }, [])
+  })
 }
 
 function ipcHandlers(setAppState: SetAppState): [CycleUpdateHandler, CycleUpdateHandler] {

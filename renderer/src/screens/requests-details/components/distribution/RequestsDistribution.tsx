@@ -1,10 +1,8 @@
 import React from 'react'
 import { Doughnut } from 'react-chartjs-2'
 
-// Models
 import { RequestCycle } from '../../../../models'
 
-// Style
 import './RequestsDistribution.css'
 
 const RequestsDistribution = ({ cycles }: { cycles: RequestCycle[] }) => {

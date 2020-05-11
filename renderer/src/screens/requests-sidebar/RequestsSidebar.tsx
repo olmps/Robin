@@ -1,10 +1,8 @@
 import React, { useState } from 'react'
 import RequestsList from './RequestsList'
 
-// Models
 import { RequestCycle } from '../../models'
 
-// Style
 import './RequestsSidebar.css';
 
 class SidebarState {

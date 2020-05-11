@@ -7,7 +7,7 @@ const RequestCard = ({ iconPath, title, subtitle }: { iconPath: string, title: s
     return (
         <div className="CardWrapper">
             <div className="Card">
-                <img className="CardIcon" src={iconPath}/>
+                <img alt={"Card Icon"} className="CardIcon" src={iconPath}/>
                 <p className="CardTitle">{title}</p>
                 <p className="CardSubtitle">{subtitle}</p>
             </div>
