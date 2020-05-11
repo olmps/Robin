@@ -1,13 +1,10 @@
 import React from 'react'
 
-// Components
 import { DisclosureList } from '../../components/disclosure-list/DisclosureList'
 
-// Models
 import { RequestCycle } from '../../models'
 import { DisclosureListModel, DisclosureItemModel } from '../../components/disclosure-list/models'
 
-// Extensions
 import '../../extensions/array+string'
 
 type SelectCycleHandler = (selectedCycleId: string, associatedRequestsIds: string[]) => void

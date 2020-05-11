@@ -1,18 +1,26 @@
 import * as hoxy from 'hoxy'
 import { uuid } from 'uuidv4'
 import * as fs from 'fs'
-import * as events from 'events'
 import { ProxyConfig } from './proxy-config'
 import { exec } from 'child_process'
 import GeoIpHandler from '../geoip/geoip'
+import { UpdatedContent, RequestContent, ResponseContent } from '../shared/modules'
 
-class ProxyHandler extends events.EventEmitter {
+type RequestHandler = (payload: any) => Promise<UpdatedContent>
+
+export class ProxyHandler {
   config: ProxyConfig
   proxyServer: hoxy.Proxy
 
-  constructor(config: ProxyConfig) {
-    super()
+  // Handlers
+  newRequestHandler: RequestHandler
+  updateRequestHandler: RequestHandler
+
+  constructor(config: ProxyConfig, newRequestHandler: RequestHandler, updateRequestHandler: RequestHandler) {
     this.config = config
+    this.newRequestHandler = newRequestHandler
+    this.updateRequestHandler = updateRequestHandler
+
     this.proxyServer = hoxy.createServer({
       certAuthority: {
         key: fs.readFileSync(`src/resources/certificates/proxy-cert-key.key.pem`),
@@ -28,6 +36,7 @@ class ProxyHandler extends events.EventEmitter {
       this.config.isProxyEnabled = newOptions.proxyEnabled
       this.toggleProxyStatus()
     }
+    this.config.isInterceptEnabled = newOptions.interceptEnabled
   }
 
   private toggleProxyStatus() {
@@ -56,7 +65,7 @@ class ProxyHandler extends events.EventEmitter {
       // Fallback to "socket hang up" error
       // The socket cannot was interrupted for an unknown reason. This doesn't affect the application behavior
       if (error.code === 'ECONNRESET') return
-      console.error("Hoxy Error: ", JSON.stringify(error))
+      console.error("Hoxy Error: " + JSON.stringify(error))
     })
 
     try {
@@ -90,7 +99,6 @@ class ProxyHandler extends events.EventEmitter {
     request.started = new Date().getTime()
 
     const { protocol, hostname, port, method, headers, url, query } = request
-    const formattedRequest = { id: request.id, protocol, hostname, port, method, headers, url, query, body: request.string! }
 
     let geoLocation: any = {}
 
@@ -102,26 +110,56 @@ class ProxyHandler extends events.EventEmitter {
       geoLocation.destination = destination
     } catch { } // We don't care for errors because there's nothing we can do as a fallback
 
+    request.geoLocation = geoLocation
+
+    const formattedRequest = { cycleId: request.id, protocol, hostname, port, method, headers, url, query, body: request.string! }
+
     const payload = {
       id: request.id,
       requestPayload: formattedRequest,
       geoLocation
     }
-
-    this.emit('new-request', payload)
+    
+    if (this.config.isInterceptEnabled) {
+      const modifiedRequest = await this.newRequestHandler(payload)
+      const updatedContent = modifiedRequest.updatedContent as RequestContent
+      
+      request.hostname = updatedContent.headers.get("host")?.trim()
+      request.method = updatedContent.method
+      request.headers = updatedContent.headers
+      request.url = updatedContent.path
+      request.string = updatedContent.body
+    } else {
+      this.newRequestHandler(payload)
+    }
   }
 
-  private onInterceptResponse(request: any, response: hoxy.Response) {
+  private async onInterceptResponse(request: any, response: any) {
     const requestId = request.id
-    const cycleDuration = new Date().getTime() - request.started
+    const duration = new Date().getTime() - request.started
 
     const { statusCode, headers } = response
-    const formattedResponse = { id: requestId, duration: cycleDuration, statusCode, headers, body: response.string! }
+    const formattedResponse = { cycleId: requestId, statusCode, headers, body: response.string! }
 
-    this.emit('new-response', formattedResponse)
+    const payload = {
+      id: requestId,
+      responsePayload: formattedResponse,
+      duration
+    }
+
+    if (this.config.isInterceptEnabled) {
+      const modifiedResponse = await this.updateRequestHandler(payload)
+      const updatedContent = modifiedResponse.updatedContent as ResponseContent
+      
+      response.statusCode = updatedContent.statusCode
+      response.headers = updatedContent.headers
+      response.string = updatedContent.body
+    } else {
+      this.updateRequestHandler(payload)
+    }
   }
 }
 
-export default function createProxyHandler(config: ProxyConfig) {
-  return new ProxyHandler(config)
+export default function createProxyHandler(config: ProxyConfig, newRequestHandler: RequestHandler, updateRequestHandler: RequestHandler) {
+  return new ProxyHandler(config, newRequestHandler, updateRequestHandler)
 }

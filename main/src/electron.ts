@@ -1,11 +1,12 @@
-import { BrowserWindow, app, ipcMain } from 'electron'
+import { BrowserWindow, app, ipcMain, ipcRenderer } from 'electron'
 import * as isDev from "electron-is-dev"
 import * as path from 'path'
-import createProxyHandler from './proxy/proxy'
+import createProxyHandler, { ProxyHandler } from './proxy/proxy'
+import { UpdatedContent, IPCMessageChannel } from './shared'
 
 let mainWindow: BrowserWindow
-let proxyServer = createProxyHandler({ isProxyEnabled: true, listenPort: 8080, excludedExtensions: [] })
-let didSetupListeners: boolean = false
+let proxyServer: ProxyHandler
+let oneTimeSetup: boolean = false
 
 function startWindow() {
   mainWindow = new BrowserWindow({
@@ -29,29 +30,53 @@ function startWindow() {
   mainWindow.on("closed", () => mainWindow.destroy())
 }
 
-function setupListeners() {
+/**
+ * Setup modules that can only be setup once. Proxy modules and IPC listeners are
+ * examples of one-time modules
+ */
+function setupOneTimeModules() {
   mainWindow.webContents.on('did-finish-load', () => {
-    if (!didSetupListeners) {
-      setupProxyListeners()
+    if (!oneTimeSetup) {
+      setupProxy()
       setupAppListeners()
-      didSetupListeners = true
+      oneTimeSetup = true
     }
   })
 }
 
-/// Setup Listeners for the proxy module
-function setupProxyListeners() {
-  proxyServer.on('new-request', (requestPayload: any) => {
-    mainWindow.webContents.send('proxy-new-request', requestPayload)
-  })
-  proxyServer.on('new-response', (responsePayload: any) => {
-    mainWindow.webContents.send('proxy-new-response', responsePayload)
-  })
+function setupProxy() {
+  const requestHandler = (requestPayload: any) => {
+    return new Promise<UpdatedContent>((resolve, _) => {
+      const updatedRequestChannel = IPCMessageChannel.updatedRequest(requestPayload.id)
+      ipcMain.on(updatedRequestChannel, (_, payload: UpdatedContent) => {
+        ipcMain.removeAllListeners(updatedRequestChannel)
+        resolve(payload)
+      })
+      mainWindow.webContents.send(IPCMessageChannel.proxyNewRequest, requestPayload)
+    })
+  }
+  const responseHandler = (responsePayload: any) => {
+    const updatedResponseChannel = IPCMessageChannel.updatedResponse(responsePayload.id)
+    return new Promise<UpdatedContent>((resolve, _) => {
+      ipcMain.on(updatedResponseChannel, (_, payload: UpdatedContent) => {
+        ipcMain.removeAllListeners(updatedResponseChannel)
+        resolve(payload)
+      })
+      mainWindow.webContents.send(IPCMessageChannel.proxyNewResponse, responsePayload)
+    })
+  }
+  const proxyOptions = {
+    isProxyEnabled: true, 
+    isInterceptEnabled: false, 
+    listenPort: 8080,
+    excludedExtensions: []
+  }
+  
+  proxyServer = createProxyHandler(proxyOptions, requestHandler, responseHandler)
 }
 
-/// Setup Listeners for the React module
 function setupAppListeners() {
-  ipcMain.on('proxy-options-updated', (_, payload: any) => {
+  ipcMain.on(IPCMessageChannel.proxyOptionsUpdated, (_, payload: any) => {
     proxyServer.proxyConfigUpdated(payload)
   })
 }
@@ -60,7 +85,7 @@ app.allowRendererProcessReuse = true
 
 app.on('ready', () => {
   startWindow()
-  setupListeners()
+  setupOneTimeModules()
 })
 
 app.on('quit', () => {

@@ -1,12 +1,9 @@
 import React from 'react'
 
-// Components
 import RequestCard from './card/RequestCard'
 
-// Models
 import { RequestCycle } from '../../models'
 
-// Assets
 import requestIcon from '../../resources/assets/requests-details/cards/compare_arrows.svg'
 import clockIcon from '../../resources/assets/requests-details/cards/clock.svg'
 import memoryIcon from '../../resources/assets/requests-details/cards/memory.svg'
@@ -18,7 +15,6 @@ import syncIcon from '../../resources/assets/requests-details/stats/sync.svg'
 import clientErrorIcon from '../../resources/assets/requests-details/stats/client_error.svg'
 import serverErrorIcon from '../../resources/assets/requests-details/stats/server_error.svg'
 
-// Style
 import './RequestsCardsCollection.css'
 import { isInformationalStatusCode, isSuccessStatusCode, isRedirectStatusCode, isClientErrorStatusCode, isServerErrorStatusCode } from '../../models/status-code'
 
@@ -79,9 +75,9 @@ function formatBytes(bytes: number) {
 }
 
 function formatDuration(duration: number): string {
-  return duration >= 1000 ? 
-        `${new Date(duration).getSeconds().toFixed(0)} s` :
-        `${duration.toFixed(0)} ms`
+  return duration >= 1000 ?
+    `${new Date(duration).getSeconds().toFixed(0)} s` :
+    `${duration.toFixed(0)} ms`
 }
 
 function statusCodeIcon(statusCode: number | undefined): string {

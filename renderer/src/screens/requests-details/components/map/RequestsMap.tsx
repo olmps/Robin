@@ -1,10 +1,8 @@
 import React from 'react'
 import { ComposableMap, Geographies, Geography, Line, Marker } from "react-simple-maps"
 
-// Models
 import { RequestCycle } from '../../../../models'
 
-// Style
 import './RequestsMap.css'
 import { GeoLocation } from '../../../../models/request-cycle'
 

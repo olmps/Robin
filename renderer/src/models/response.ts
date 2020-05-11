@@ -1,38 +1,46 @@
+import HttpStatusCode from "./status-code"
+
 export class Response {
-    /** HTTP status code being sent to the client. */
-    statusCode: number
+  /** Id from the wrapper cycle */
+  cycleId: string
 
-    /**
-     * HTTP response header name/value JS object. Header names are all-lowercase,
-     * such as 'content-type'.
-     */
-    headers: Map<string, string>
+  /** HTTP status code being sent to the client. */
+  statusCode: number
 
-    /** Response body parsed as string. */
-    body: string
+  /**
+   * HTTP response header name/value JS object. Header names are all-lowercase,
+   * such as 'content-type'.
+   */
+  headers: Map<string, string>
 
-    constructor(statusCode: number, headers: Map<string, string>, body: string) {
-        this.statusCode = statusCode
-        this.headers = headers
-        this.body = body
-    }
+  /** Response body parsed as string. */
+  body: string
 
-    static fromJson(responseJson: any): Response {
-        const { statusCode, headers, body } = responseJson
-        
-        let formattedHeaders = new Map<string, string>()
-        Object.keys(headers).forEach(key => {
-            formattedHeaders.set(key, headers[key])
-        })
+  get status(): string { return HttpStatusCode[this.statusCode] }
 
-        return new Response(statusCode, formattedHeaders, body)
-    }
+  constructor(cycleId: string, statusCode: number, headers: Map<string, string>, body: string) {
+    this.cycleId = cycleId
+    this.statusCode = statusCode
+    this.headers = headers
+    this.body = body
+  }
 
-    size(): number {
-        let size = 0
-        size += this.statusCode.toString().length
-        if (this.body) { size += this.body.length }
+  static fromJson(responseJson: any): Response {
+    const { cycleId, statusCode, headers, body } = responseJson
 
-        return size
-    }
+    let formattedHeaders = new Map<string, string>()
+    Object.keys(headers).forEach(key => {
+      formattedHeaders.set(key, headers[key])
+    })
+
+    return new Response(cycleId, statusCode, formattedHeaders, body)
+  }
+
+  size(): number {
+    let size = 0
+    size += this.statusCode.toString().length
+    if (this.body) { size += this.body.length }
+
+    return size
+  }
 }

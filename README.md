@@ -1,68 +1,68 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+# Robin - A Web Security Tool
 
-## Available Scripts
+Robin is a Web Security debugging tool built using `Electron` and `React JS`. We propose it as a **FREE** and OpenSource alternative to the known web debugging tools.
 
-In the project directory, you can run:
+## Installing
+---
 
-### `npm start`
+Choose the OS and download the latest release
 
-Runs the app in the development mode.<br />
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+[![All platforms download](https://img.shields.io/badge/download-any_platform-green.svg)](https://github.com/olmps/Robin/releases/latest)
 
-The page will reload if you make edits.<br />
-You will also see any lint errors in the console.
+## Modules
+---
 
-### `npm test`
+The codebase is divided in two main modules: `main` and `renderer`.
 
-Launches the test runner in the interactive watch mode.<br />
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Main
 
-### `npm run build`
+The `main` module represents the `Electron` app. It wraps the React application and is responsible for making OS-level tasks.
 
-Builds the app for production to the `build` folder.<br />
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Renderer
 
-The build is minified and the filenames include the hashes.<br />
-Your app is ready to be deployed!
+The `renderer` module represents the `React` app. It includes all the application interface and is responsible for presentation and user-interaction tasks.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Enabled HTTPS
+---
 
-### `npm run eject`
+If you run `Robin` and your browser show scary messages about the traffic, you need to trust Robins certificate to intercept and inspect HTTPS traffic. Robin uses a wildcard certificate and performs a Man In the Middle between the request origin and its destination. In order to perform these MITM, you need to trust Robin's wildcard certificate. Follow these steps to enable HTTPS traffic intercept:
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+### MacOS
+1. Install the certificate by double-tapping the certificate and its key at `main/src/resources/certificates/`
+2. Open the `Keychain Access`
+3. Right click `Robin Certificate` and tap `Get Info`
+4. Under `Trust` section, chose `Always Trust`
+5. When close the window, confirm the trust settings
+6. All done.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Contributing
+---
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### Setting up the Environment
+```bash
+# Clone the repository
+git clone https://github.com/olmps/Robin
+cd Robin
+# Install the root dependencies
+npm i
+# Install the Main dependencies
+cd main
+npm i
+# Install the Renderer dependencies
+cd renderer
+npm i
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+# Start the app
+npm run start
+```
 
-## Learn More
+By default, the application automatically turn on the proxy settings on `macOS` environment. But you can manually enable/disable this settings on `System Preferences -> Network -> Advanced -> Proxies`.
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+To turn the proxy on, the server specs must follow:
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+- Web Proxy (HTTP): 127.0.0.1 : 8080
+- Secure Web Proxy (HTTPS): 127.0.0.1 : 8080
 
-### Code Splitting
+### If after closing the application / debug session you appear to be without network connection, it may be the case that the application failed to disable the proxy settings on the machine. Follow the steps above to manually turn it off.
 
-This section has moved here: https://facebook.github.io/create-react-app/docs/code-splitting
-
-### Analyzing the Bundle Size
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size
-
-### Making a Progressive Web App
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app
-
-### Advanced Configuration
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/advanced-configuration
-
-### Deployment
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/deployment
-
-### `npm run build` fails to minify
-
-This section has moved here: https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify
+### Read the [Contributing Guidelines](./CONTRIBUTING.MD)

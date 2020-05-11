@@ -1,20 +1,21 @@
 import React, { useState } from 'react'
-import SplitPane from 'react-split-pane'
 
 import Toolbar, { ToolbarAction } from './toolbar/Toolbar'
 import RequestsSidebar from './requests-sidebar/RequestsSidebar'
 import RequestsDetails from './requests-details/RequestsDetails'
 import SingleRequestDetails from './single-request-details/SingleRequestDetails'
-
-import SetupIpcCommunication, { sendUpdatedProxyOptions } from './AppIpcCommunication'
+import SplitPane from '../components/split-pane/SplitPane'
+import InterceptedRequestDetails from './intercepted-request/InterceptedRequestDetails'
 
 import { RequestCycle } from '../models'
 
-import './App.css'
+import SetupIpcCommunication, { sendUpdatedProxyOptions, didUpdateContent } from './AppIpcCommunication'
+import { RequestContent, ResponseContent, InterceptResult, InterceptAction, ContentType, AnyContent, UpdatedContent } from '../shared/modules'
 
 class AppOptions {
   constructor(
-    public isFingerprintEnabled: boolean = true) { }
+    public isFingerprintEnabled: boolean = true,
+    public isInterceptEnabled: boolean = false) { }
 }
 
 class AppState {
@@ -23,6 +24,7 @@ class AppState {
     public selectedCycle: RequestCycle | undefined = undefined,
     // Associated cycles contains all requests under `selectedCycle` path
     public associatedCycles: RequestCycle[] = [],
+    public interceptedRequests: Array<AnyContent> = [],
     public options: AppOptions = new AppOptions()) { }
 }
 
@@ -31,30 +33,49 @@ type ToolbarActionHandler = (action: ToolbarAction) => void
 
 const App = () => {
   const [appState, setAppState] = useState(new AppState())
-  const [selectedCycleHandler, toolbarActionHandler] = setupAppHandlers(appState, setAppState)
+  const [selectedCycleHandler, toolbarActionHandler, interceptHandler] = setupAppHandlers(appState, setAppState)
 
-  SetupIpcCommunication(setAppState)
-
-  const hasSelectedRequest: boolean = appState.selectedCycle !== undefined
-  const isSingleRequest: boolean = appState.selectedCycle !== undefined && appState.associatedCycles.length === 0
+  SetupIpcCommunication(setAppState, appState.options)
 
   return (
     <>
-      <Toolbar isFingerprintEnabled={appState.options.isFingerprintEnabled} handler={toolbarActionHandler} />
-      <SplitPane split="vertical" minSize={300} defaultSize={300}>
+      <Toolbar isFingerprintEnabled={appState.options.isFingerprintEnabled}
+               isInterceptEnabled={appState.options.isInterceptEnabled}
+               handler={toolbarActionHandler} />
+      <SplitPane initialWidth={300} minWidth={300} maxWidth={500}>
         <RequestsSidebar cycles={appState.cycles} selectionHandler={selectedCycleHandler} />
-        {isSingleRequest ?
-          <SingleRequestDetails selectedCycle={appState.selectedCycle!} /> :
-          hasSelectedRequest ?
-            <RequestsDetails cycles={appState.associatedCycles.concat([appState.selectedCycle!])} /> :
-            <RequestsDetails cycles={appState.cycles} />
-        }
+        <RequestDetailsPane appState={appState} interceptHandler={interceptHandler} />
       </SplitPane>
     </>
   )
 }
 
-function setupAppHandlers(appState: AppState, setAppState: SetAppState): [SelectCycleHandler, ToolbarActionHandler] {
+/**
+ * Defines based on the `AppState` which will be shown on the right pane of the application.
+ * The importance order is defined as:
+ *  1. Intercepted Request or Response
+ *  2. A result based on a selection on the requests lists left pane
+ *  3. A general overview from all requests
+ */
+const RequestDetailsPane = (props: { appState: AppState, interceptHandler: InterceptResult }) => {
+  const hasInterceptedContent = props.appState.interceptedRequests.length > 0
+  const interceptedContent = props.appState.interceptedRequests[0]
+
+  const hasSelectedRequest: boolean = props.appState.selectedCycle !== undefined
+  const isSingleRequest: boolean = props.appState.selectedCycle !== undefined && props.appState.associatedCycles.length === 0
+
+  return (
+    hasInterceptedContent ?
+      <InterceptedRequestDetails content={interceptedContent} handler={props.interceptHandler} /> :
+      isSingleRequest ?
+        <SingleRequestDetails selectedCycle={props.appState.selectedCycle!} /> :
+        hasSelectedRequest ?
+          <RequestsDetails cycles={props.appState.associatedCycles.concat([props.appState.selectedCycle!])} /> :
+          <RequestsDetails cycles={props.appState.cycles} />
+  )
+}
+
+function setupAppHandlers(appState: AppState, setAppState: SetAppState): [SelectCycleHandler, ToolbarActionHandler, InterceptResult] {
   // Handles when a cycle is selected on requests list sidebar
   const selectedCycleHandler = (selectedCycleId: string, associatedRequestsIds: string[]) => {
     const selectedCycle = appState.cycles.find(cycle => cycle.id === selectedCycleId)
@@ -67,6 +88,8 @@ function setupAppHandlers(appState: AppState, setAppState: SetAppState): [Select
 
   // Handles when a toolbar action is triggered
   const toolbarActionHandler = (action: ToolbarAction) => {
+    const options = appState.options
+
     switch (action) {
       case ToolbarAction.clear:
         setAppState(state => {
@@ -74,9 +97,15 @@ function setupAppHandlers(appState: AppState, setAppState: SetAppState): [Select
         })
         break
       case ToolbarAction.fingerprintToggled:
-        const options = appState.options
         options.isFingerprintEnabled = !options.isFingerprintEnabled
-        sendUpdatedProxyOptions(options.isFingerprintEnabled)
+        sendUpdatedProxyOptions(setAppState, options.isFingerprintEnabled, options.isInterceptEnabled)
+        setAppState(state => {
+          return { ...state, options }
+        })
+        break
+      case ToolbarAction.interceptToggled:
+        options.isInterceptEnabled = !options.isInterceptEnabled
+        sendUpdatedProxyOptions(setAppState, options.isFingerprintEnabled, options.isInterceptEnabled)
         setAppState(state => {
           return { ...state, options }
         })
@@ -84,7 +113,17 @@ function setupAppHandlers(appState: AppState, setAppState: SetAppState): [Select
     }
   }
 
-  return [selectedCycleHandler, toolbarActionHandler]
+  const interceptHandler = (action: InterceptAction, contentType: ContentType, updatedContent: RequestContent | ResponseContent) => {
+    const payload: UpdatedContent = {
+      action: InterceptAction[action],
+      type: ContentType[contentType],
+      updatedContent
+    }
+    
+    didUpdateContent(payload, setAppState)
+  }
+
+  return [selectedCycleHandler, toolbarActionHandler, interceptHandler]
 }
 
 export default App
