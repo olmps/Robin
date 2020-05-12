@@ -40,19 +40,12 @@ If you run `Robin` and your browser show scary messages about the traffic, you n
 
 ### Setting up the Environment
 ```bash
-# Clone the repository
+# We'll clone the repository and cd into it
 git clone https://github.com/olmps/Robin
 cd Robin
-# Install the root dependencies
+# Then install both root and submodules' dependencies through NPM
 npm i
-# Install the Main dependencies
-cd main
-npm i
-# Install the Renderer dependencies
-cd renderer
-npm i
-
-# Start the app
+# At last, we start the application
 npm run start
 ```
 
