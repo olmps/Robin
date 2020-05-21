@@ -11,36 +11,26 @@ export class Response {
    * HTTP response header name/value JS object. Header names are all-lowercase,
    * such as 'content-type'.
    */
-  headers: Map<string, string>
+  headers: Record<string, string>
 
   /** Response body parsed as string. */
   body: string
 
+  /** Response size in bytes */
+  size: number
+
   get status(): string { return HttpStatusCode[this.statusCode] }
 
-  constructor(cycleId: string, statusCode: number, headers: Map<string, string>, body: string) {
+  constructor(cycleId: string, statusCode: number, headers: Record<string, string>, body: string, size: number) {
     this.cycleId = cycleId
     this.statusCode = statusCode
     this.headers = headers
     this.body = body
+    this.size = size
   }
 
   static fromJson(responseJson: any): Response {
-    const { cycleId, statusCode, headers, body } = responseJson
-
-    let formattedHeaders = new Map<string, string>()
-    Object.keys(headers).forEach(key => {
-      formattedHeaders.set(key, headers[key])
-    })
-
-    return new Response(cycleId, statusCode, formattedHeaders, body)
-  }
-
-  size(): number {
-    let size = 0
-    size += this.statusCode.toString().length
-    if (this.body) { size += this.body.length }
-
-    return size
+    const { cycleId, statusCode, headers, body, size } = responseJson
+    return new Response(cycleId, statusCode, headers, body, size)
   }
 }

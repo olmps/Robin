@@ -41,7 +41,7 @@ export class Request {
   method: Method
 
   /** HTTP request header name/value JS object. These are all-lowercase, e.g. accept-encoding */
-  headers: Map<string, string>
+  headers: Record<string, string>
 
   /** Root-relative request URL, including body string, like /foo/bar?baz=qux */
   url: string
@@ -51,10 +51,13 @@ export class Request {
    * For example if the URL is /foo/bar?baz=qux, then this
    * map will look like { baz: 'qux' }.
    */
-  query: Map<string, string>
+  query: Record<string, string>
 
   /** Request body parsed as String. */
   body?: string
+
+  /** Request size in bytes */
+  size: number
 
   get fullUrl(): string { return `${this.hostname}${this.url}` }
   get rawMethod(): string { return rawMethod(this.method) }
@@ -63,8 +66,9 @@ export class Request {
   isNewRequest: boolean = true
 
   private constructor(cycleId: string, protocol: string, hostname: string,
-                      port: number, method: Method, headers: Map<string, string>,
-                      url: string, query: Map<string, string>, body?: string) {
+                      port: number, method: Method, headers: Record<string, string>,
+                      url: string, query: Record<string, string>, size: number,
+                      body?: string) {
     this.cycleId = cycleId
     this.protocol = protocol
     this.hostname = hostname
@@ -74,41 +78,13 @@ export class Request {
     this.url = url
     this.query = query
     this.body = body
+    this.size = size
   }
 
   static fromJson(requestJson: any): Request {
-    const { cycleId, protocol, hostname, port, method, headers, url, query, body } = requestJson
+    const { cycleId, protocol, hostname, port, method, headers, url, query, size, body } = requestJson
 
-    let formattedHeaders = new Map<string, string>()
-    Object.keys(headers).forEach(key => {
-      formattedHeaders.set(key, headers[key])
-    })
-
-    let formattedQueries = new Map<string, string>()
-    Object.keys(query).forEach(key => {
-      formattedHeaders.set(key, query[key])
-    })
-
-    return new Request(cycleId, protocol, hostname, port, createRequestMethod(method), formattedHeaders, url, formattedQueries, body)
-  }
-
-  size(): number {
-    let size = 0
-    size += this.protocol.length
-    size += this.hostname.length
-    size += rawMethod(this.method).length
-    this.headers.forEach((key, value) => {
-      size += key.length
-      size += value.length
-    })
-    size += this.url.length
-    this.query.forEach((key, value) => {
-      size += key.length
-      size += value.length
-    })
-    if (this.body) { size += this.body.length }
-
-    return size
+    return new Request(cycleId, protocol, hostname, port, createRequestMethod(method), headers, url, query, size, body)
   }
 
   setRequestMethod(method: string) {

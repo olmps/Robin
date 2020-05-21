@@ -1,4 +1,4 @@
-import * as hoxy from 'hoxy'
+import * as Sniffer from 'web-proxy-sniffer'
 import { uuid } from 'uuidv4'
 import * as fs from 'fs'
 import { ProxyConfig } from './proxy-config'
@@ -10,7 +10,7 @@ type RequestHandler = (payload: any) => Promise<UpdatedContent>
 
 export class ProxyHandler {
   config: ProxyConfig
-  proxyServer: hoxy.Proxy
+  proxyServer: Sniffer.Proxy
 
   // Handlers
   newRequestHandler: RequestHandler
@@ -21,7 +21,7 @@ export class ProxyHandler {
     this.newRequestHandler = newRequestHandler
     this.updateRequestHandler = updateRequestHandler
 
-    this.proxyServer = hoxy.createServer({
+    this.proxyServer = Sniffer.createServer({
       certAuthority: {
         key: fs.readFileSync(`src/resources/certificates/proxy-cert-key.key.pem`),
         cert: fs.readFileSync(`src/resources/certificates/proxy-cert.crt.pem`)
@@ -57,30 +57,15 @@ export class ProxyHandler {
 
   private startProxyServer() {
     this.turnProxySettingsOn(this.config.listenPort)
-
+    
     this.proxyServer.on('error', (error: any) => {
-      // Fallback for DNS resolve issues.
-      // ENOTFOUND means the target URL was not found -> it may not exists or DNS couldn't resolve it
-      if (error.code === 'ENOTFOUND ENOTFOUND') return
-      // Fallback to "socket hang up" error
-      // The socket cannot was interrupted for an unknown reason. This doesn't affect the application behavior
-      if (error.code === 'ECONNRESET') return
-      console.error("Hoxy Error: " + JSON.stringify(error))
+      console.log("ERRO NO NOVO PROXY: " + JSON.stringify(error))
     })
 
-    try {
-      this.proxyServer.listen(this.config.listenPort)
-    } catch (error) {
-      // This shouldn't be happening, but hoxy has a bug on `.close()` function
-      // and this error happens when trying to start the proxy again. We have
-      // a task to create our own proxy module, so this buggy hoxy errors handling
-      // will be removed in the future
-      if (error.code === "ERR_SERVER_ALREADY_LISTEN") return
-      console.error("Hoxy Error: ", JSON.stringify(error))
-    }
-
-    this.proxyServer.intercept({ phase: 'request', as: 'string' }, (req) => this.onInterceptRequest(req))
-    this.proxyServer.intercept({ phase: 'response', as: 'string' }, (req, res) => this.onInterceptResponse(req, res))
+    this.proxyServer.listen(this.config.listenPort)
+    
+    this.proxyServer.intercept({ phase: 'request' }, (req, res) => this.onInterceptRequest(req))
+    this.proxyServer.intercept({ phase: 'response' }, (req, res) => this.onInterceptResponse(req, res))
   }
 
   private turnProxySettingsOn(port: number) {
@@ -94,57 +79,63 @@ export class ProxyHandler {
 
   // Intercept the request before it's sent to the destination.
   // The user may modify the request content before it's sent.
-  private async onInterceptRequest(request: any) {
+  private async onInterceptRequest(request: Sniffer.IRequest): Promise<Sniffer.IRequest> {
     request.id = uuid()
     request.started = new Date().getTime()
 
-    const { protocol, hostname, port, method, headers, url, query } = request
+    const { protocol, hostname, port, method, headers, url, query, body } = request
 
-    let geoLocation: any = {}
-
-    try {
-      const source = await GeoIpHandler.getCurrentLocation()
-      const destination = await GeoIpHandler.geoLocation(hostname)
-
-      geoLocation.source = source
-      geoLocation.destination = destination
-    } catch { } // We don't care for errors because there's nothing we can do as a fallback
-
-    request.geoLocation = geoLocation
-
-    const formattedRequest = { cycleId: request.id, protocol, hostname, port, method, headers, url, query, body: request.string! }
+    const requestSize = 0 // TODO
+    const formattedRequest = { cycleId: request.id, protocol, hostname, port, method, headers, url, query, size: requestSize, body }
 
     const payload = {
       id: request.id,
-      requestPayload: formattedRequest,
-      geoLocation
+      requestPayload: formattedRequest
     }
     
     if (this.config.isInterceptEnabled) {
       const modifiedRequest = await this.newRequestHandler(payload)
       const updatedContent = modifiedRequest.updatedContent as RequestContent
       
-      request.hostname = updatedContent.headers.get("host")?.trim()
+      request.hostname = updatedContent.headers.host.trim()
       request.method = updatedContent.method
       request.headers = updatedContent.headers
       request.url = updatedContent.path
       request.string = updatedContent.body
+
+      return Promise.resolve(request)
     } else {
       this.newRequestHandler(payload)
+      return Promise.resolve(request)
     }
   }
 
-  private async onInterceptResponse(request: any, response: any) {
+  private async onInterceptResponse(request: Sniffer.IRequest, response: Sniffer.IResponse): Promise<Sniffer.IResponse> {
     const requestId = request.id
     const duration = new Date().getTime() - request.started
 
-    const { statusCode, headers } = response
-    const formattedResponse = { cycleId: requestId, statusCode, headers, body: response.string! }
+    const { statusCode, headers, body } = response
 
+    const responseSize = 0 // TODO
+    const formattedResponse = { cycleId: requestId, statusCode, headers, size: responseSize, body }
+
+    let geoLocation: any = {}
+
+    try {
+      const source = await GeoIpHandler.getCurrentLocation()
+      const destination = GeoIpHandler.getGeoLocation(response.remoteAddress)
+
+      geoLocation.source = source
+      geoLocation.destination = destination
+    } catch (error) {
+      console.error(error)
+    }
+    
     const payload = {
       id: requestId,
       responsePayload: formattedResponse,
-      duration
+      duration,
+      geoLocation
     }
 
     if (this.config.isInterceptEnabled) {
@@ -154,8 +145,11 @@ export class ProxyHandler {
       response.statusCode = updatedContent.statusCode
       response.headers = updatedContent.headers
       response.string = updatedContent.body
+      
+      return Promise.resolve(response)
     } else {
       this.updateRequestHandler(payload)
+      return Promise.resolve(response)
     }
   }
 }

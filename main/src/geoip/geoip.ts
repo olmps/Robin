@@ -1,4 +1,3 @@
-import * as dns from 'dns'
 import * as geoIp from 'geoip-lite'
 import * as publicIp from 'public-ip'
 
@@ -11,7 +10,7 @@ export default class GeoIpHandler {
   /**
    * Get current location based on the user public IPV4 address.
    */
-  static async getCurrentLocation(): Promise<GeoLocation> {
+  static async getCurrentLocation() {
     const userPublicIp = await publicIp.v4()
     const userGeoLocation = geoIp.lookup(userPublicIp)
     if (userGeoLocation) {
@@ -22,28 +21,14 @@ export default class GeoIpHandler {
   }
 
   /**
-   * Get GeoLocation for a hostname address
+   * Get GeoLocation for an ip address
    */
-  static async geoLocation(hostname: string): Promise<GeoLocation> {
-    try {
-      const ipAddress = await this.lookup(hostname)
-      const geoData = geoIp.lookup(ipAddress)
-      if (geoData) {
-        return Promise.resolve(new GeoLocation(geoData.ll[0], geoData.ll[1]))
-      }
-      
-      throw new Error(`Failed to retrieve geolocation from ip address ${ipAddress}`)
-    } catch (error) {
-      throw error
+  static getGeoLocation(ipAddress: string): GeoLocation {
+    const geoData = geoIp.lookup(ipAddress)
+    if (geoData) {
+      return new GeoLocation(geoData.ll[0], geoData.ll[1])
     }
-  }
-
-  private static async lookup(hostname: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      dns.lookup(hostname, (err, address) => {
-          if (err) reject(err)
-          resolve(address)
-      })
-    })
+    
+    throw new Error(`Failed to retrieve geolocation from ip address ${ipAddress}`)
   }
 }

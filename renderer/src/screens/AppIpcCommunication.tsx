@@ -40,8 +40,7 @@ function ipcHandlers(setAppState: SetAppState): [CycleUpdateHandler, CycleUpdate
   const newCycleHandler = (payload: any, isInterceptEnabled: boolean) => {
     const request = Request.fromJson(payload.requestPayload)
     const cycleId = payload.id
-    const geoLocation = GeoLocation.fromJson(payload.geoLocation)
-    const cycle = new RequestCycle(cycleId, request, 0, geoLocation, undefined)
+    const cycle = new RequestCycle(cycleId, request, 0, undefined, undefined)
 
     setAppState(state => {
       const cycles = state.cycles
@@ -62,6 +61,7 @@ function ipcHandlers(setAppState: SetAppState): [CycleUpdateHandler, CycleUpdate
   // Handles when a cycle is updated in the main module (when a request response is received is an example)
   const updateCycleHandler = (payload: any, isInterceptEnabled: boolean) => {
     const response = Response.fromJson(payload.responsePayload)
+    const geoLocation = GeoLocation.fromJson(payload.geoLocation)
 
     setAppState(state => {
       const cycles = state.cycles
@@ -71,6 +71,7 @@ function ipcHandlers(setAppState: SetAppState): [CycleUpdateHandler, CycleUpdate
       if (updatedCycle) {
         updatedCycle.response = response
         updatedCycle.duration = payload.duration
+        updatedCycle.geoLocation = geoLocation
       }
 
       const interceptedRequests = state.interceptedRequests
