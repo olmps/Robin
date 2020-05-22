@@ -29,6 +29,7 @@ const InterceptedRequestDetails = (props: { content: AnyContent, handler: Interc
         <h1>{formattedTitle}</h1>
         <InformationContainer content={props.content} type={contentType} setState={setState} />
         <div className="ButtonsContainer">
+          <button onClick={() => actionHandler(InterceptAction.drop)} className="DropButton">DROP</button>
           <button onClick={() => actionHandler(InterceptAction.send)} className="SendButton">SEND</button>
         </div>
       </div>

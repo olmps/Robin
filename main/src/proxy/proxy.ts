@@ -94,6 +94,8 @@ export class ProxyHandler {
     
     if (this.config.isInterceptEnabled) {
       const modifiedRequest = await this.newRequestHandler(payload)
+      if (modifiedRequest.action === 'drop') { return Promise.reject() }
+
       const updatedContent = modifiedRequest.updatedContent as RequestContent
       
       request.hostname = updatedContent.headers.host.trim()
@@ -138,6 +140,8 @@ export class ProxyHandler {
 
     if (this.config.isInterceptEnabled) {
       const modifiedResponse = await this.updateRequestHandler(payload)
+      if (modifiedResponse.action === 'drop') { return Promise.reject() }
+
       const updatedContent = modifiedResponse.updatedContent as ResponseContent
       
       response.statusCode = updatedContent.statusCode
