@@ -83,10 +83,9 @@ export class ProxyHandler {
     request.id = uuid()
     request.started = new Date().getTime()
 
-    const { protocol, hostname, port, method, headers, url, query, body } = request
-
-    const requestSize = 0 // TODO
-    const formattedRequest = { cycleId: request.id, protocol, hostname, port, method, headers, url, query, size: requestSize, body }
+    const { protocol, hostname, port, method, headers, url, query, body, size } = request
+    
+    const formattedRequest = { cycleId: request.id, protocol, hostname, port, method, headers, url, query, size, body }
 
     const payload = {
       id: request.id,
@@ -114,10 +113,9 @@ export class ProxyHandler {
     const requestId = request.id
     const duration = new Date().getTime() - request.started
 
-    const { statusCode, headers, body } = response
-
-    const responseSize = 0 // TODO
-    const formattedResponse = { cycleId: requestId, statusCode, headers, size: responseSize, body }
+    const { statusCode, headers, size, body } = response
+    
+    const formattedResponse = { cycleId: requestId, statusCode, headers, size, body }
 
     let geoLocation: any = {}
 

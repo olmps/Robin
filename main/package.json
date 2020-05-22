@@ -7,10 +7,10 @@
   },
   "author": "Guilherme Girotto",
   "dependencies": {
-    "geoip-lite": "^1.4.1",
+    "geoip-lite": "^1.4.2",
     "public-ip": "^4.0.1",
     "uuidv4": "^6.0.7",
-    "web-proxy-sniffer": "^1.0.1"
+    "web-proxy-sniffer": "^1.0.2"
   },
   "devDependencies": {
     "@types/electron": "^1.6.10",

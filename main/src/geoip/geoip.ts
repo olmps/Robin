@@ -6,15 +6,20 @@ class GeoLocation {
 }
 
 export default class GeoIpHandler {
+
+  private static currentLocation: GeoLocation | undefined = undefined
   
   /**
    * Get current location based on the user public IPV4 address.
    */
   static async getCurrentLocation() {
+    if (this.currentLocation) { return this.currentLocation }
+
     const userPublicIp = await publicIp.v4()
     const userGeoLocation = geoIp.lookup(userPublicIp)
     if (userGeoLocation) {
-      return new GeoLocation(userGeoLocation.ll[0], userGeoLocation.ll[1])
+      this.currentLocation = new GeoLocation(userGeoLocation.ll[0], userGeoLocation.ll[1])
+      return this.currentLocation!
     }
     
     throw new Error(`Failed to retrieve user geolocation from public ip address ${userPublicIp}`)
