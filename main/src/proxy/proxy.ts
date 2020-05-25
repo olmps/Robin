@@ -57,7 +57,7 @@ export class ProxyHandler {
 
   private startProxyServer() {
     this.turnProxySettingsOn(this.config.listenPort)
-    
+
     this.proxyServer.on('error', (error: any) => {
       console.log("ERRO NO NOVO PROXY: " + JSON.stringify(error))
     })
@@ -84,27 +84,32 @@ export class ProxyHandler {
     request.started = new Date().getTime()
 
     const { protocol, hostname, port, method, headers, url, query, body, size } = request
-    
+
     const formattedRequest = { cycleId: request.id, protocol, hostname, port, method, headers, url, query, size, body }
 
     const payload = {
       id: request.id,
       requestPayload: formattedRequest
     }
-    
+
     if (this.config.isInterceptEnabled) {
-      const modifiedRequest = await this.newRequestHandler(payload)
-      if (modifiedRequest.action === 'drop') { return Promise.reject() }
+      try {
+        const modifiedRequest = await this.newRequestHandler(payload)
+        if (modifiedRequest.action === 'drop') { return Promise.reject() }
 
-      const updatedContent = modifiedRequest.updatedContent as RequestContent
-      
-      request.hostname = updatedContent.headers.host.trim()
-      request.method = updatedContent.method
-      request.headers = updatedContent.headers
-      request.url = updatedContent.path
-      request.string = updatedContent.body
+        const updatedContent = modifiedRequest.updatedContent as RequestContent
 
-      return Promise.resolve(request)
+        request.method = updatedContent.method
+        request.headers = updatedContent.headers
+        request.url = updatedContent.path
+        request.string = updatedContent.body
+        
+        return Promise.resolve(request)
+
+      } catch (error) {
+        console.log("[PROXY ERROR] Error while sending modified request: " + error)
+        return Promise.reject()
+      }
     } else {
       this.newRequestHandler(payload)
       return Promise.resolve(request)
@@ -116,7 +121,7 @@ export class ProxyHandler {
     const duration = new Date().getTime() - request.started
 
     const { statusCode, headers, size, body } = response
-    
+
     const formattedResponse = { cycleId: requestId, statusCode, headers, size, body }
 
     let geoLocation: any = {}
@@ -130,7 +135,7 @@ export class ProxyHandler {
     } catch (error) {
       console.error(error)
     }
-    
+
     const payload = {
       id: requestId,
       responsePayload: formattedResponse,
@@ -139,16 +144,21 @@ export class ProxyHandler {
     }
 
     if (this.config.isInterceptEnabled) {
-      const modifiedResponse = await this.updateRequestHandler(payload)
-      if (modifiedResponse.action === 'drop') { return Promise.reject() }
+      try {
+        const modifiedResponse = await this.updateRequestHandler(payload)
+        if (modifiedResponse.action === 'drop') { return Promise.reject() }
 
-      const updatedContent = modifiedResponse.updatedContent as ResponseContent
-      
-      response.statusCode = updatedContent.statusCode
-      response.headers = updatedContent.headers
-      response.string = updatedContent.body
-      
-      return Promise.resolve(response)
+        const updatedContent = modifiedResponse.updatedContent as ResponseContent
+
+        response.statusCode = updatedContent.statusCode
+        response.headers = updatedContent.headers
+        response.string = updatedContent.body
+
+        return Promise.resolve(response)
+      } catch (error) {
+        console.log("[PROXY ERROR] Error while sending modified response: " + error)
+        return Promise.reject()
+      }
     } else {
       this.updateRequestHandler(payload)
       return Promise.resolve(response)

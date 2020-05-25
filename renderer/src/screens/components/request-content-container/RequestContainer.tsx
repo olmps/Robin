@@ -133,9 +133,11 @@ function handleResponseChanges(newValue: string, cycleId: string, handler: Respo
 
   responseLines.shift()
 
+  const headerRegex = new RegExp('([a-zA-Z0-9-_]+):(.*)')
   let headers: Record<string, string> = { }
 
   for (const line of responseLines) {
+    if (!headerRegex.test(line)) { continue }
     const key = line.split(':')[0]
     const value = line.split(':')[1]
     headers[key] = value

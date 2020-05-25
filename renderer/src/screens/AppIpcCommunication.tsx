@@ -141,10 +141,10 @@ function sendUpdatedContent(content: UpdatedContent) {
 
   switch (type) {
     case 'request':
-      ipcRenderer.send(IPCMessageChannel.updatedRequest(updatedContent.cycleId), updatedContent)
+      ipcRenderer.send(IPCMessageChannel.updatedRequest(updatedContent.cycleId), content)
       break
     case 'response':
-      ipcRenderer.send(IPCMessageChannel.updatedResponse(updatedContent.cycleId), updatedContent)
+      ipcRenderer.send(IPCMessageChannel.updatedResponse(updatedContent.cycleId), content)
       break
   }
 }
