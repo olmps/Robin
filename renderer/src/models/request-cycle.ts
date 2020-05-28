@@ -64,8 +64,8 @@ export class RequestCycle {
    * If the cycle has no response yet, return just the request size.
    */
   size(): number {
-    let size = this.request.size()
-    if (this.response) { size += this.response.size() }
+    let size = this.request.size
+    if (this.response) { size += this.response.size }
     return size
   }
 }

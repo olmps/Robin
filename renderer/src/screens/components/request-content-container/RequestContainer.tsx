@@ -36,8 +36,8 @@ const RequestContainer: React.FunctionComponent<ContainerProps> = (props) => {
       rawContent = `HTTP/1.1 ${statusCode} ${HttpStatusCode[statusCode]}\n` // TODO: GET HTTP MODE FROM REQUEST
   }
 
-  props.content.headers.forEach((value, key) => {
-    rawContent += `${key}: ${value}\n`
+  Object.keys(props.content.headers).forEach((key) => {
+    rawContent += `${key}: ${props.content.headers[key]}\n`
   })
   if (props.content.body) { rawContent += `\n${props.content.body}` }
 
@@ -91,7 +91,7 @@ function handleRequestChanges(newValue: string, cycleId: string, handler: Reques
   requestLines.shift() // Removes first line
 
   const headerRegex = new RegExp('([a-zA-Z0-9-_]+):(.*)')
-  const headers = new Map<string, string>()
+  const headers: Record<string, string> = { }
   let isReadingBody = false
   let body = ""
 
@@ -103,7 +103,7 @@ function handleRequestChanges(newValue: string, cycleId: string, handler: Reques
     if (!isReadingBody) {
       const key = line.split(':')[0]
       const value = line.split(':')[1].trim()
-      headers.set(key, value)
+      headers[key] = value
     } else {
       body += `\n${line}`
     }
@@ -133,12 +133,14 @@ function handleResponseChanges(newValue: string, cycleId: string, handler: Respo
 
   responseLines.shift()
 
-  let headers = new Map<string, string>()
+  const headerRegex = new RegExp('([a-zA-Z0-9-_]+):(.*)')
+  let headers: Record<string, string> = { }
 
   for (const line of responseLines) {
+    if (!headerRegex.test(line)) { continue }
     const key = line.split(':')[0]
     const value = line.split(':')[1]
-    headers.set(key, value)
+    headers[key] = value
   }
 
   const newContent = { cycleId, type: 'response', statusCode, headers }

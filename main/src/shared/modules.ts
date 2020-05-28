@@ -4,8 +4,8 @@
  */
 
 // Interfaces
-export interface RequestContent { cycleId: string, method: string, path: string, headers: Map<string, string>, body?: string }
-export interface ResponseContent { cycleId: string, statusCode: number, headers: Map<string, string>, body?: string }
+export interface RequestContent { cycleId: string, method: string, path: string, headers: Record<string, string>, body?: string }
+export interface ResponseContent { cycleId: string, statusCode: number, headers: Record<string, string>, body?: string }
 export interface UpdatedContent { action: string, type: string, updatedContent: RequestContent | ResponseContent }
 
 // Enums

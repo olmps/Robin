@@ -6,9 +6,9 @@ import { RequestCycle } from '../../../../models'
 import './RequestsMap.css'
 import { GeoLocation } from '../../../../models/request-cycle'
 
-const RequestsMap = ({ cycles }: { cycles: RequestCycle[] }) => {
-  const geoUrl = "https://raw.githubusercontent.com/zcreativelabs/react-simple-maps/master/topojson-maps/world-110m.json"
+import WorldMapJson from '../../../../resources/world-map.json'
 
+const RequestsMap = ({ cycles }: { cycles: RequestCycle[] }) => {
   const geoLocations = cycles.filter(cycle => cycle.geoLocation !== undefined).map(cycle => cycle.geoLocation!)
   const filteredLocations = uniqueLocations(geoLocations)
   const filteredDestinations = filteredLocations.map(location => location.destination)
@@ -16,7 +16,7 @@ const RequestsMap = ({ cycles }: { cycles: RequestCycle[] }) => {
   return (
     <div>
       <ComposableMap>
-        <Geographies geography={geoUrl}>
+        <Geographies geography={WorldMapJson}>
           {({ geographies }) =>
             geographies.map(geo => <Geography key={geo.rsmKey} geography={geo} fill="#2F2E3A" stroke="#1F1F1F" />)
           }

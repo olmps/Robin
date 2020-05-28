@@ -14,7 +14,7 @@
   justify-content: center;
 }
 
-.SendButton, .DenyButton {
+.SendButton, .DropButton {
   cursor: pointer;
   font-size: 28px;
   font-weight: bold;
@@ -35,10 +35,10 @@
   opacity: 0.8;
 }
 
-.DenyButton {
+.DropButton {
   background-color: #D11A1A;
 }
 
-.DenyButton:active {
+.DropButton:active {
   opacity: 0.8;
 }
