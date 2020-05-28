@@ -3,6 +3,7 @@ export class DisclosureItemModel {
   public originalRequestKey: string
   public label: string
   public isRoot: boolean
+  public isSecure: boolean
   public subItems: DisclosureItemModel[]
 
   // Transient properties
@@ -13,11 +14,12 @@ export class DisclosureItemModel {
 
   get hasSubItems(): boolean { return this.subItems.length > 0 }
 
-  constructor(key: string, originalRequestKey: string, label: string, isRoot: boolean, subItems: DisclosureItemModel[]) {
+  constructor(key: string, originalRequestKey: string, label: string, isRoot: boolean, isSecure: boolean, subItems: DisclosureItemModel[]) {
     this.key = key
     this.originalRequestKey = originalRequestKey
     this.label = label
     this.isRoot = isRoot
+    this.isSecure = isSecure
     this.subItems = subItems
   }
 

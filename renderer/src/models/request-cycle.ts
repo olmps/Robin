@@ -47,8 +47,10 @@ export class RequestCycle {
     return this.response.statusCode
   }
   get isComplete(): boolean {
-    // TODO: FIND A BETTER WAY TO HANDLE SOCKET CONNECTIONS
-    return this.response !== undefined || this.fullUrl.includes('socket')
+    return this.response !== undefined
+  }
+  get isSecure(): boolean {
+    return this.request.protocol === "https:"
   }
 
   constructor(id: string, request: Request, duration: number, geoLocation?: GeoLocation, response?: Response) {

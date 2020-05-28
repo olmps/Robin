@@ -1,11 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<svg width="71px" height="89px" viewBox="0 0 71 89" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-    <!-- Generator: Sketch 54.1 (76490) - https://sketchapp.com -->
-    <title>file_icon</title>
-    <desc>Created with Sketch.</desc>
-    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
-        <g id="file_icon" fill="#B6B6B6" fill-rule="nonzero">
-            <path d="M49.328,0.5 L6.5,0.5 C3.191,0.5 0.5,3.191 0.5,6.5 L0.5,82.5 C0.5,85.809 3.191,88.5 6.5,88.5 L64.5,88.5 C67.809,88.5 70.5,85.809 70.5,82.5 L70.5,21.672 L49.328,0.5 Z M48.5,5.328 L65.672,22.5 L50.5,22.5 C49.396,22.5 48.5,21.604 48.5,20.5 L48.5,5.328 Z M64.5,84.5 L6.5,84.5 C5.396,84.5 4.5,83.604 4.5,82.5 L4.5,6.5 C4.5,5.396 5.396,4.5 6.5,4.5 L44.5,4.5 L44.5,20.5 C44.5,23.809 47.191,26.5 50.5,26.5 L66.5,26.5 L66.5,82.5 C66.5,83.604 65.604,84.5 64.5,84.5 Z" id="Shape"></path>
-        </g>
-    </g>
-</svg>
+<svg id="Camada_1" data-name="Camada 1" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 71 89"><defs><style>.cls-1{fill:#fff;}</style></defs><path class="cls-1" d="M62.15,85.35h-53a6,6,0,0,1-6-6V8.58a6,6,0,0,1,6-6H46.7c3.31,0,21.44,17.47,21.44,20.77v56A6,6,0,0,1,62.15,85.35Z"/><g id="Page-1"><g id="file_icon" data-name="file icon"><path id="Shape" d="M49.33.5H6.5a6,6,0,0,0-6,6v76a6,6,0,0,0,6,6h58a6,6,0,0,0,6-6V21.67ZM48.5,5.33,65.67,22.5H50.5a2,2,0,0,1-2-2Zm16,79.17H6.5a2,2,0,0,1-2-2V6.5a2,2,0,0,1,2-2h38v16a6,6,0,0,0,6,6h16v56A2,2,0,0,1,64.5,84.5Z"/></g></g></svg>
