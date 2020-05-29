@@ -13,13 +13,22 @@ import './SingleRequestDetails.css'
 import '../../extensions/string'
 
 class SingleRequestState {
-  constructor(public selectedSegmentIndex: number = 0) { }
+  constructor(
+    public selectedSegmentIndex: number = 0,
+    public truncateTitle: boolean = true
+  ) { }
 }
 
 const SingleRequestDetails = (props: { selectedCycle: RequestCycle }) => {
   const [state, setState] = useState(new SingleRequestState())
 
-  const formattedTitle = props.selectedCycle.fullUrl.clippedTo(32)
+  let formattedTitle = "Request URL: "
+  formattedTitle += state.truncateTitle ? props.selectedCycle.fullUrl.clippedTo(32) : props.selectedCycle.fullUrl
+
+  const onMouseHoverTitle = (hover: boolean) => {
+    setState({ ...state, truncateTitle: !hover })
+  }
+
   const segmentItems = ["General Info", "Request", "Response"]
 
   const segmentSelectionHandler = (selectedIndex: number) => {
@@ -31,7 +40,7 @@ const SingleRequestDetails = (props: { selectedCycle: RequestCycle }) => {
   return (
     <>
       <div className="ContentColumn">
-        <h1>{formattedTitle}</h1>
+        <h1 onMouseEnter={() => onMouseHoverTitle(true)} onMouseLeave={() => onMouseHoverTitle(false)}>{formattedTitle}</h1>
         <SingleRequestCardsCollection cycle={props.selectedCycle} />
         <SegmentedControl items={segmentItems} selectionHandler={segmentSelectionHandler} />
         <InformationContainer cycle={props.selectedCycle} selectedIndex={state.selectedSegmentIndex} />
