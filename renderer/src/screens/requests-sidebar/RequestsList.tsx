@@ -46,8 +46,8 @@ const RequestsList = ( props: { requests: RequestCycle[], selectionHandler: Sele
 function buildDisclosureItems(cycles: RequestCycle[]): DisclosureItemModel[] {
   // Builds the root lever, i.e, the items representing the domains urls (like www.google.com, www.apple.com, etc)
   let filteredCycles: RequestCycle[] = []
-  cycles.forEach(cycle => { 
-    if (!filteredCycles.find(target => target.hostname === cycle.hostname)) { 
+  cycles.forEach(cycle => {
+    if (!filteredCycles.find(target => target.fullHostname === cycle.fullHostname)) { 
       filteredCycles.push(cycle)
     } 
   })
@@ -59,15 +59,15 @@ function buildDisclosureItems(cycles: RequestCycle[]): DisclosureItemModel[] {
   let currentKey = 1000000
 
   const baseItems = filteredCycles.map(cycle => {
-    let item = new DisclosureItemModel(currentKey.toString(), cycle.id, cycle.hostname, true, cycle.isSecure, [])
+    let item = new DisclosureItemModel(currentKey.toString(), cycle.id, cycle.fullHostname, true, cycle.isSecure, [])
     currentKey += 1
     return item
   })
 
   // For each cycle, use `setup` function to recursively build its subItems
   cycles.forEach(cycle => {
-    const relatedItem = baseItems.find(item => item.label === cycle.hostname)!
-    relatedItem.isNew = cycles.find(cycle => cycle.hostname === relatedItem.label && cycle.request.isNewRequest) !== undefined
+    const relatedItem = baseItems.find(item => item.label === cycle.fullHostname)!
+    relatedItem.isNew = cycles.find(cycle => cycle.fullHostname === relatedItem.label && cycle.request.isNewRequest) !== undefined
     setup(cycle.url, relatedItem, relatedItem.key, cycle.id)
   })
   
