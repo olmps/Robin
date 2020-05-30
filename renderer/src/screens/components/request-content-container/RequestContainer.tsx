@@ -1,7 +1,7 @@
 import React from 'react'
 import { UnControlled as CodeMirror } from 'react-codemirror2'
 
-import { RequestContent, ResponseContent, ContentType } from '../../../shared/modules'
+import { RequestContent, ResponseContent, ContentType, HeaderValue } from '../../../shared/modules'
 
 import './RequestContainer.css'
 import { HttpStatusCode } from '../../../models'
@@ -37,7 +37,12 @@ const RequestContainer: React.FunctionComponent<ContainerProps> = (props) => {
   }
 
   Object.keys(props.content.headers).forEach((key) => {
-    rawContent += `${key}: ${props.content.headers[key]}\n`
+    const headerValue = props.content.headers[key]
+    if (typeof headerValue === 'string') {
+      rawContent += `${key}: ${headerValue}\n`
+    } else {
+      headerValue.forEach(value => rawContent += `${key}: ${value}\n`)
+    }
   })
   if (props.content.body) { rawContent += `\n${props.content.body}` }
 
@@ -91,7 +96,7 @@ function handleRequestChanges(newValue: string, cycleId: string, handler: Reques
   requestLines.shift() // Removes first line
 
   const headerRegex = new RegExp('([a-zA-Z0-9-_]+):(.*)')
-  const headers: Record<string, string> = { }
+  const headers: Record<string, HeaderValue> = { }
   let isReadingBody = false
   let body = ""
 
@@ -103,6 +108,12 @@ function handleRequestChanges(newValue: string, cycleId: string, handler: Reques
     if (!isReadingBody) {
       const key = line.split(':')[0]
       const value = line.split(':')[1].trim()
+      if (key in headers) {
+        const values = headers[key] as string[]
+        values.push(value)
+        headers[key] = values
+        continue
+      }
       headers[key] = value
     } else {
       body += `\n${line}`
@@ -134,12 +145,18 @@ function handleResponseChanges(newValue: string, cycleId: string, handler: Respo
   responseLines.shift()
 
   const headerRegex = new RegExp('([a-zA-Z0-9-_]+):(.*)')
-  let headers: Record<string, string> = { }
+  let headers: Record<string, HeaderValue> = { }
 
   for (const line of responseLines) {
     if (!headerRegex.test(line)) { continue }
     const key = line.split(':')[0]
     const value = line.split(':')[1]
+    if (key in headers) {
+      const values = headers[key] as string[]
+      values.push(value)
+      headers[key] = values
+      continue
+    }
     headers[key] = value
   }
 

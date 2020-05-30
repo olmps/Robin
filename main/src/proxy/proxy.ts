@@ -58,8 +58,9 @@ export class ProxyHandler {
   private startProxyServer() {
     this.turnProxySettingsOn(this.config.listenPort)
 
-    this.proxyServer.on('error', (error: any) => {
+    this.proxyServer.on('error', (error: Sniffer.ProxyError) => {
       console.log("[PROXY ERROR] " + JSON.stringify(error))
+      console.log(error.message)
     })
 
     this.proxyServer.listen(this.config.listenPort)

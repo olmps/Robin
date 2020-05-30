@@ -4,8 +4,9 @@
  */
 
 // Interfaces
-export interface RequestContent { cycleId: string, method: string, path: string, headers: Record<string, string>, body?: string }
-export interface ResponseContent { cycleId: string, statusCode: number, headers: Record<string, string>, body?: string }
+export type HeaderValue = string | string[]
+export interface RequestContent { cycleId: string, method: string, path: string, headers: Record<string, HeaderValue>, body?: string }
+export interface ResponseContent { cycleId: string, statusCode: number, headers: Record<string, HeaderValue>, body?: string }
 export interface UpdatedContent { action: string, type: string, updatedContent: RequestContent | ResponseContent }
 
 // Enums

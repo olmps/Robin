@@ -1,5 +1,7 @@
 import HttpStatusCode from "./status-code"
 
+export type HeaderValue = string | string[]
+
 export class Response {
   /** Id from the wrapper cycle */
   cycleId: string
@@ -11,7 +13,7 @@ export class Response {
    * HTTP response header name/value JS object. Header names are all-lowercase,
    * such as 'content-type'.
    */
-  headers: Record<string, string>
+  headers: Record<string, HeaderValue>
 
   /** Response body parsed as string. */
   body: string
@@ -21,7 +23,7 @@ export class Response {
 
   get status(): string { return HttpStatusCode[this.statusCode] }
 
-  constructor(cycleId: string, statusCode: number, headers: Record<string, string>, body: string, size: number) {
+  constructor(cycleId: string, statusCode: number, headers: Record<string, HeaderValue>, body: string, size: number) {
     this.cycleId = cycleId
     this.statusCode = statusCode
     this.headers = headers

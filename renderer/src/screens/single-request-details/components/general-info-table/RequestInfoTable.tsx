@@ -39,7 +39,7 @@ const Row = (props: { title: string, content: string }) => {
 
 const Header = (props: { title: string }) => {
   return (
-    <h3>{props.title}</h3>
+    <tr><th><h3>{props.title}</h3></th></tr>
   )
 }
 
