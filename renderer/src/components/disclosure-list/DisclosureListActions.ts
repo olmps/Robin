@@ -52,10 +52,9 @@ function onKeyboardInput(event: KeyboardEvent,
                         openItemsKeys: string[],
                         itemAction: KeyAction,
                         list: DisclosureListModel) {
-  event.preventDefault()
-  
   switch (event.key) {
     case "ArrowLeft":
+      event.preventDefault()
       if (item.isSelected) {
         if (item.isOpen) {
           itemAction(Action.toggleVisibility, item.key)
@@ -66,13 +65,16 @@ function onKeyboardInput(event: KeyboardEvent,
       }
       break
     case "ArrowRight":
+      event.preventDefault()
       if (item.isSelected && !item.isOpen) { itemAction(Action.toggleVisibility, item.key) }
       break
     case "ArrowUp":
+      event.preventDefault()
       const previousDisclosureItem = previousItem(item, openItemsKeys, list)
       if (previousDisclosureItem) { itemAction(Action.setSelected, previousDisclosureItem.key) }
       break
     case "ArrowDown":
+      event.preventDefault()
       const nextDisclosureItem = nextItem(item, openItemsKeys, list)
       if (nextDisclosureItem) { itemAction(Action.setSelected, nextDisclosureItem.key) }
       break

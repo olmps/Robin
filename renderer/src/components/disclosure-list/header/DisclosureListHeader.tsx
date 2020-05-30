@@ -16,13 +16,9 @@ class ActionsState {
 }
 
 const DisclosureListHeader = (props: { actionHandler: DiscloseActionHandler }) => {
-  const searchHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-    props.actionHandler(DiscloseAction.search, event.target.value)
-  }
-
   return (
     <div className="DisclosureListHeader">
-      <input className="FilterTextField" placeholder="Filter" type="text" onChange={(e) => searchHandler(e)} />
+      <input className="FilterTextField" placeholder="Filter" type="text" onChange={(e) => props.actionHandler(DiscloseAction.search, e.target.value)} />
       <RequestsActions actionHandler={props.actionHandler} />
     </div>
   )
