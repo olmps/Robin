@@ -37,10 +37,11 @@ export class RequestCycle {
   duration: number
   /// GeoLocation may not exists if a DNS resolve operations fails, for example
   geoLocation?: GeoLocation
-
-  get fullUrl(): string { return `${this.request.hostname}${this.request.url}` }
+  
+  get fullUrl(): string { return `${this.request.protocol}//${this.request.hostname}${this.request.url}` }
   get url(): string { return this.request.url }
   get hostname(): string { return this.request.hostname }
+  get fullHostname(): string { return `${this.request.protocol}//${this.request.hostname}` }
   get method(): Method { return this.request.method }
   get statusCode(): number | undefined {
     if (!this.response) { return undefined }

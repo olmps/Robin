@@ -59,7 +59,7 @@ export class ProxyHandler {
     this.turnProxySettingsOn(this.config.listenPort)
 
     this.proxyServer.on('error', (error: any) => {
-      console.log("ERRO NO NOVO PROXY: " + JSON.stringify(error))
+      console.log("[PROXY ERROR] " + JSON.stringify(error))
     })
 
     this.proxyServer.listen(this.config.listenPort)
@@ -83,9 +83,9 @@ export class ProxyHandler {
     request.id = uuid()
     request.started = new Date().getTime()
 
-    const { protocol, hostname, port, method, headers, url, query, body, size } = request
+    const { protocol, hostname, port, method, headers, url, query, stringBody, size } = request
 
-    const formattedRequest = { cycleId: request.id, protocol, hostname, port, method, headers, url, query, size, body }
+    const formattedRequest = { cycleId: request.id, protocol, hostname, port, method, headers, url, query, size, body: stringBody }
 
     const payload = {
       id: request.id,
@@ -120,9 +120,9 @@ export class ProxyHandler {
     const requestId = request.id
     const duration = new Date().getTime() - request.started
 
-    const { statusCode, headers, size, body } = response
+    const { statusCode, headers, size, stringBody } = response
 
-    const formattedResponse = { cycleId: requestId, statusCode, headers, size, body }
+    const formattedResponse = { cycleId: requestId, statusCode, headers, size, body: stringBody }
 
     let geoLocation: any = {}
 
