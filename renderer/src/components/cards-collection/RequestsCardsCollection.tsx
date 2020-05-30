@@ -3,6 +3,7 @@ import React from 'react'
 import RequestCard from './card/RequestCard'
 
 import { RequestCycle } from '../../models'
+import { isInformationalStatusCode, isSuccessStatusCode, isRedirectStatusCode, isClientErrorStatusCode, isServerErrorStatusCode } from '../../models/status-code'
 
 import requestIcon from '../../resources/assets/requests-details/cards/compare_arrows.svg'
 import clockIcon from '../../resources/assets/requests-details/cards/clock.svg'
@@ -16,7 +17,7 @@ import clientErrorIcon from '../../resources/assets/requests-details/stats/clien
 import serverErrorIcon from '../../resources/assets/requests-details/stats/server_error.svg'
 
 import './RequestsCardsCollection.css'
-import { isInformationalStatusCode, isSuccessStatusCode, isRedirectStatusCode, isClientErrorStatusCode, isServerErrorStatusCode } from '../../models/status-code'
+import '../../extensions/number'
 
 const RequestsCardsCollection = ({ cycles }: { cycles: RequestCycle[] }) => {
   const [requestsAmount, averageDuration, totalSize] = requestsStats(cycles)
@@ -35,7 +36,7 @@ const SingleRequestCardsCollection = ({ cycle }: { cycle: RequestCycle }) => {
   const statusCdIcon = statusCodeIcon(cycle.statusCode)
 
   const requestTime = cycle.isComplete ? formatDuration(cycle.duration) : "-"
-  const requestSize = formatBytes(cycle.size())
+  const requestSize = cycle.size().sizeFormatted()
 
   return (
     <div className="CardsCollection">
@@ -60,18 +61,7 @@ function requestsStats(cycles: RequestCycle[]): [string, string, string] {
 
   const totalSize = completeCycles.reduce((a, b) => a + b.size(), 0)
 
-  return [cycles.length.toString(), formattedDuration, formatBytes(totalSize)]
-}
-
-function formatBytes(bytes: number) {
-  if (bytes === 0) return '0 Bytes'
-
-  const k = 1024
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
-
-  const i = Math.floor(Math.log(bytes) / Math.log(k));
-
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(0)) + ' ' + sizes[i];
+  return [cycles.length.toString(), formattedDuration, totalSize.sizeFormatted()]
 }
 
 function formatDuration(duration: number): string {

@@ -19,6 +19,12 @@ class SingleRequestState {
   ) { }
 }
 
+enum Tab {
+  generalInformation = 0,
+  request = 1,
+  response = 2
+}
+
 const SingleRequestDetails = (props: { selectedCycle: RequestCycle }) => {
   const [state, setState] = useState(new SingleRequestState())
 
@@ -43,28 +49,28 @@ const SingleRequestDetails = (props: { selectedCycle: RequestCycle }) => {
         <h1 onMouseEnter={() => onMouseHoverTitle(true)} onMouseLeave={() => onMouseHoverTitle(false)}>{formattedTitle}</h1>
         <SingleRequestCardsCollection cycle={props.selectedCycle} />
         <SegmentedControl items={segmentItems} selectionHandler={segmentSelectionHandler} />
-        <InformationContainer cycle={props.selectedCycle} selectedIndex={state.selectedSegmentIndex} />
+        <InformationContainer cycle={props.selectedCycle} selectedTab={state.selectedSegmentIndex} />
       </div>
     </>
   )
 }
 
-const InformationContainer = (props: { cycle: RequestCycle, selectedIndex: number }) => {
-  if (props.selectedIndex === 0) { // General Information tab
-    return <RequestInfoTable request={props.cycle} />
-  } else if (props.selectedIndex === 1) { // Request Tab
-    const { cycleId, rawMethod, url, headers, body } = props.cycle.request
-    const requestContent = { cycleId, method: rawMethod, path: url, headers, body }
-    return <RequestContainer content={requestContent} type={ContentType.request} readOnly={true} />
-  } else if (props.selectedIndex === 2) { // Response tab
-    if (props.cycle.response === undefined) { return <div className="CenteredContent"><BounceLoader color="#FFF" /></div> }
+const InformationContainer = (props: { cycle: RequestCycle, selectedTab: Tab }) => {
+  switch (props.selectedTab) {
+    case Tab.generalInformation: return <RequestInfoTable request={props.cycle} />
+    case Tab.request: {
+      const { cycleId, rawMethod, url, headers, body } = props.cycle.request
+      const requestContent = { cycleId, method: rawMethod, path: url, headers, body }
+      return <RequestContainer content={requestContent} type={ContentType.request} readOnly={true} />
+    }
+    case Tab.response: {
+      if (props.cycle.response === undefined) { return <div className="CenteredContent"><BounceLoader color="#FFF" /></div> }
 
-    const { cycleId, status, statusCode, headers } = props.cycle.response
-    const responseContent = { cycleId, status, statusCode, headers }
-    return <RequestContainer content={responseContent} type={ContentType.response} readOnly={true} />
+      const { cycleId, status, statusCode, headers, body } = props.cycle.response
+      const responseContent = { cycleId, status, statusCode, headers, body }
+      return <RequestContainer content={responseContent} type={ContentType.response} readOnly={true} />
+    }
   }
-
-  return <></>
 }
 
 export default SingleRequestDetails

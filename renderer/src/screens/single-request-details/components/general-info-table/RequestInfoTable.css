@@ -10,7 +10,6 @@ table {
 
 td, th {
   text-align: left;
-  border-bottom: 1pt solid #4C4C4C;
   padding: 8px;
   width: 20%;
 }
@@ -21,4 +20,8 @@ td {
   overflow: hidden;
   width: 100%;
   word-wrap: break-word;
+}
+
+.Underscored {
+  border-bottom: 1pt solid #4C4C4C;
 }
