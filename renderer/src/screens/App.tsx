@@ -1,6 +1,5 @@
 import React, { useState } from 'react'
 
-import Toolbar, { ToolbarAction } from './toolbar/Toolbar'
 import RequestsSidebar from './requests-sidebar/RequestsSidebar'
 import RequestsDetails from './requests-details/RequestsDetails'
 import SingleRequestDetails from './single-request-details/SingleRequestDetails'
@@ -29,20 +28,14 @@ class AppState {
     public options: AppOptions = new AppOptions()) { }
 }
 
-type SelectCycleHandler = (selectedCycleId: string, associatedRequestsIds: string[]) => void
-type ToolbarActionHandler = (action: ToolbarAction) => void
-
 const App = () => {
   const [appState, setAppState] = useState(new AppState())
-  const [disclosureListHandler, toolbarActionHandler, interceptHandler] = setupAppHandlers(appState, setAppState)
+  const [disclosureListHandler, interceptHandler] = setupAppHandlers(appState, setAppState)
 
   SetupIpcCommunication(setAppState, appState.options)
 
   return (
     <>
-      <Toolbar isFingerprintEnabled={appState.options.isFingerprintEnabled}
-        isInterceptEnabled={appState.options.isInterceptEnabled}
-        handler={toolbarActionHandler} />
       <SplitPane initialWidth={300} minWidth={300} maxWidth={500}>
         <RequestsSidebar cycles={appState.cycles} actionHandler={disclosureListHandler} />
         <RequestDetailsPane appState={appState} interceptHandler={interceptHandler} />
@@ -76,8 +69,10 @@ const RequestDetailsPane = (props: { appState: AppState, interceptHandler: Inter
   )
 }
 
-function setupAppHandlers(appState: AppState, setAppState: SetAppState): [DiscloseActionHandler, ToolbarActionHandler, InterceptResult] {
+function setupAppHandlers(appState: AppState, setAppState: SetAppState): [DiscloseActionHandler, InterceptResult] {
   const disclosureListActionHandler = (action: DiscloseAction, content: any | undefined) => {
+    const updatedOptions = appState.options
+
     switch (action) {
       case DiscloseAction.clear:
         setAppState({ ...appState, cycles: [], selectedCycle: undefined, associatedCycles: [] })
@@ -90,23 +85,15 @@ function setupAppHandlers(appState: AppState, setAppState: SetAppState): [Disclo
         const associatedCycles = appState.cycles.filter(cycle => associatedRequestsIds.includes(cycle.id))
         setAppState({ ...appState, selectedCycle, associatedCycles })
         break
-    }
-  }
-
-  // Handles when a toolbar action is triggered
-  const toolbarActionHandler = (action: ToolbarAction) => {
-    const options = appState.options
-
-    switch (action) {
-      case ToolbarAction.fingerprintToggled:
-        options.isFingerprintEnabled = !options.isFingerprintEnabled
-        sendUpdatedProxyOptions(setAppState, options.isFingerprintEnabled, options.isInterceptEnabled)
-        setAppState({ ...appState, options })
+      case DiscloseAction.fingerprint:
+        updatedOptions.isFingerprintEnabled = !updatedOptions.isFingerprintEnabled
+        setAppState({ ...appState, options: updatedOptions })
+        sendUpdatedProxyOptions(setAppState, updatedOptions.isFingerprintEnabled, updatedOptions.isInterceptEnabled)
         break
-      case ToolbarAction.interceptToggled:
-        options.isInterceptEnabled = !options.isInterceptEnabled
-        sendUpdatedProxyOptions(setAppState, options.isFingerprintEnabled, options.isInterceptEnabled)
-        setAppState({ ...appState, options })
+      case DiscloseAction.intercept:
+        updatedOptions.isInterceptEnabled = !updatedOptions.isInterceptEnabled
+        setAppState({ ...appState, options: updatedOptions })
+        sendUpdatedProxyOptions(setAppState, updatedOptions.isFingerprintEnabled, updatedOptions.isInterceptEnabled)
         break
     }
   }
@@ -121,7 +108,7 @@ function setupAppHandlers(appState: AppState, setAppState: SetAppState): [Disclo
     didUpdateContent(payload, setAppState)
   }
 
-  return [disclosureListActionHandler, toolbarActionHandler, interceptHandler]
+  return [disclosureListActionHandler, interceptHandler]
 }
 
 export default App

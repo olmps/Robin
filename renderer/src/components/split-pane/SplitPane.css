@@ -3,7 +3,7 @@
   background: #1F1F1F;
   color: white;
   display: grid;
-  height: calc(100% - 55px); /* 55px is the size of the toolbar. TODO: find a better way than using this size hardcoded */
+  height: 100%;
   width: 100%;
   position: absolute;
   outline: none;

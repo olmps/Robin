@@ -21,7 +21,16 @@
   font-weight: bold;
 }
 
+.RequestsActionsRow {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
 .ActionButton {
+  margin: 4px;
   padding: 0;
   cursor: pointer;
   border: none;
@@ -29,8 +38,17 @@
   background: none;
 }
 
+.ActionIcon {
+  width: 20px;
+  height: 20px;
+}
+
 .ActionIcon g {
   fill: #B6B6B6;
+}
+
+.Enabled g {
+  fill: red;
 }
 
 .FilterTextField {

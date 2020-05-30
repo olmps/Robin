@@ -1,5 +1,5 @@
 export enum DiscloseAction {
-  select, clear, fold, search
+  fingerprint, intercept, select, clear, fold, search
 }
 
 export type DiscloseActionHandler = (action: DiscloseAction, content: any | undefined) => void
