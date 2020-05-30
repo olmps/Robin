@@ -4,12 +4,10 @@ import { setupTransientItems, Action, onKeyboardInput, KeyAction } from './Discl
 
 import { DisclosureListModel, DisclosureItemModel } from './models'
 
-import websiteIcon from '../../resources/assets/disclosure-list/website_icon.svg'
-import selectedWebsiteIcon from '../../resources/assets/disclosure-list/website_icon_selected.svg'
-import folderIcon from '../../resources/assets/disclosure-list/folder_icon.svg'
-import selectedFolderIcon from '../../resources/assets/disclosure-list/folder_icon_selected.svg'
-import fileIcon from '../../resources/assets/disclosure-list/file_icon.svg'
-import selectedFileIcon from '../../resources/assets/disclosure-list/file_icon_selected.svg'
+import { ReactComponent as WebsiteIcon } from '../../resources/assets/disclosure-list/website_icon.svg'
+import { ReactComponent as SecureWebsiteIcon } from '../../resources/assets/disclosure-list/secure_website_icon.svg'
+import { ReactComponent as FolderIcon } from '../../resources/assets/disclosure-list/folder_icon.svg'
+import { ReactComponent as FileIcon } from '../../resources/assets/disclosure-list/file_icon.svg'
 
 import './DisclosureList.css'
 
@@ -114,35 +112,41 @@ const RecursiveDisclosureItem = (props: { item: DisclosureItemModel, actionHandl
 }
 
 const DisclosureItem = (props: { item: DisclosureItemModel, actionHandler: KeyAction }) => {
-  let itemImage = ""
-  if (props.item.isRoot) { itemImage = props.item.isSelected ? selectedWebsiteIcon : websiteIcon }
-  else if (props.item.hasSubItems) { itemImage = props.item.isSelected ? selectedFolderIcon : folderIcon }
-  else { itemImage = props.item.isSelected ? selectedFileIcon : fileIcon }
-
   if (props.item.hasSubItems) {
+    let icon: JSX.Element
+    if (props.item.isRoot) {
+      if (props.item.isSecure) {
+        icon = props.item.isSelected ? <SecureWebsiteIcon className="Icon SelectedIcon" /> : <SecureWebsiteIcon className="Icon" />
+      } else {
+        icon = props.item.isSelected ? <WebsiteIcon className="Icon SelectedIcon" /> : <WebsiteIcon className="Icon" />
+      }
+    } else {
+      icon = props.item.isSelected ? <FolderIcon className="Icon SelectedIcon" /> : <FolderIcon className="Icon" />
+    }
+
     return (
       <div className="SingleListItem">
         <ToggleDisclosureItem item={props.item}
-          image={itemImage}
+          icon={icon}
           actionHandler={props.actionHandler}
         />
       </div>
     )
   }
 
-  const className = props.item.isSelected ? "SelectedLeafSingleListItem" : "LeafSingleListItem"
+
+
   return (
-    <div className={className} onClick={() => props.actionHandler(Action.setSelected, props.item.key)}>
-      <img alt={props.item.label} src={itemImage} />{props.item.label}
+    <div className="SingleListItem">
+      <LeafItem item={props.item} actionHandler={props.actionHandler} />
     </div>
   )
 }
 
 /**
- * Behaves exactly like HTML <details> tag but it only discloses when tapping on the disclose icon, and provides a callback
- * for outside touches
+ * Behaves exactly like HTML <details> tag but it only discloses when tapping on the disclose icon
  */
-const ToggleDisclosureItem = (props: { item: DisclosureItemModel, image: string, actionHandler: KeyAction }) => {
+const ToggleDisclosureItem = (props: { item: DisclosureItemModel, icon: JSX.Element, actionHandler: KeyAction }) => {
   const visibilityHandler = (event: React.MouseEvent) => {
     props.actionHandler(Action.toggleVisibility, props.item.key)
     event.stopPropagation()
@@ -157,14 +161,46 @@ const ToggleDisclosureItem = (props: { item: DisclosureItemModel, image: string,
   }
 
   const selectedDisclosureIconColor = props.item.isSelected ? props.item.isOpen ? { borderTopColor: '#FFF' } : { borderLeftColor: '#FFF' } : {}
-  const buttonClass = props.item.isOpen ? "DiscloseOpenIcon" : "DiscloseClosedIcon"
+  const buttonClass = props.item.isOpen ? "DiscloseArrow OpenArrow" : "DiscloseArrow ClosedArrow"
 
-  const discloseClassName = props.item.isSelected ? "DiscloseFinalItemSelected" : props.item.isHighlighted ? "DiscloseFinalItemHighlighted" : "DiscloseFinalItem"
+  let className = "DiscloseFinalItem"
+  if (props.item.isSelected) {
+    className += " SelectedItem"
+  } else if (props.item.isHighlighted) {
+    className += " HighlightedItem"
+  }
+
   return (
-    <div className={discloseClassName} onClick={(e) => selectionHandler(e)}>
+    <div className={className} onClick={(e) => selectionHandler(e)}>
       <button className={buttonClass} style={selectedDisclosureIconColor} onClick={(e) => visibilityHandler(e)} />
-      <img alt={props.item.label} src={props.image} />
+      {props.icon}
       {props.item.label}
+    </div>
+  )
+}
+
+/**
+ * Represents a list item that has no subitems - like a three leaf.
+ */
+const LeafItem = (props: { item: DisclosureItemModel, actionHandler: KeyAction }) => {
+  const selectionHandler = (event: React.MouseEvent) => {
+    // CMD + Click deselect the item
+    if (props.item.isSelected && event.metaKey) {
+      props.actionHandler(Action.setSelected, "")
+    } else if (!props.item.isSelected) {
+      props.actionHandler(Action.setSelected, props.item.key)
+    }
+  }
+
+  let className = "LeafSingleListItem"
+  if (props.item.isSelected) { className += " SelectedItem" }
+
+  let iconClassName = "Icon"
+  if (props.item.isSelected) { iconClassName += " SelectedIcon" }
+
+  return (
+    <div className={className} onClick={(e) => selectionHandler(e)}>
+      <FileIcon className={iconClassName} />{props.item.label}
     </div>
   )
 }

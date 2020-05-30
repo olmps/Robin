@@ -18,7 +18,28 @@ const RequestsMap = ({ cycles }: { cycles: RequestCycle[] }) => {
       <ComposableMap>
         <Geographies geography={WorldMapJson}>
           {({ geographies }) =>
-            geographies.map(geo => <Geography key={geo.rsmKey} geography={geo} fill="#2F2E3A" stroke="#1F1F1F" />)
+            geographies.map(geo =>
+              <Geography 
+                key={geo.rsmKey} 
+                geography={geo}
+                style={{
+                  default:{
+                    fill: "#2F2E3A", 
+                    stroke: "#1F1F1F",
+                    outline: "none"
+                  },
+                  hover:{
+                    fill: "#2F2E3A", 
+                    stroke: "#1F1F1F",
+                    outline: "none"
+                  },
+                  pressed:{
+                    fill: "#2F2E3A", 
+                    stroke: "#1F1F1F",
+                    outline: "none"
+                  }
+                }} />
+            )
           }
         </Geographies>
         {

@@ -59,7 +59,7 @@ function buildDisclosureItems(cycles: RequestCycle[]): DisclosureItemModel[] {
   let currentKey = 1000000
 
   const baseItems = filteredCycles.map(cycle => {
-    let item = new DisclosureItemModel(currentKey.toString(), cycle.id, cycle.hostname, true, [])
+    let item = new DisclosureItemModel(currentKey.toString(), cycle.id, cycle.hostname, true, cycle.isSecure, [])
     currentKey += 1
     return item
   })
@@ -88,7 +88,7 @@ function setup(urlSegment: string, item: DisclosureItemModel, keyPrefix: String,
   // and the /page already represents the final segment
   if (urlSegment === "/") {
       const itemKey = `${keyPrefix}${item.subItems.length}`
-      const subItem = new DisclosureItemModel(itemKey, sourceRequestId, urlSegment, false, [])
+      const subItem = new DisclosureItemModel(itemKey, sourceRequestId, urlSegment, false, item.isSecure, [])
       subItem.isNew = item.isNew
       item.subItems.push(subItem)
       return
@@ -112,7 +112,7 @@ function setup(urlSegment: string, item: DisclosureItemModel, keyPrefix: String,
       setup(remainingFragments, item.subItems[existingItemIndex], `${keyPrefix}${existingItemIndex}`, sourceRequestId)
     } else {
       const itemKey = `${keyPrefix}${item.subItems.length}`
-      const subItem = new DisclosureItemModel(itemKey, sourceRequestId, firstFragment, false, [])
+      const subItem = new DisclosureItemModel(itemKey, sourceRequestId, firstFragment, false, item.isSecure, [])
       subItem.isNew = item.isNew
       item.subItems.push(subItem)
       setup(remainingFragments, subItem, itemKey, sourceRequestId)
@@ -122,7 +122,7 @@ function setup(urlSegment: string, item: DisclosureItemModel, keyPrefix: String,
     formattedUrl = formattedUrl.substring(1)
     if (formattedUrl === "") { return }
     const itemKey = `${keyPrefix}${item.subItems.length}`
-    const subItem = new DisclosureItemModel(itemKey, sourceRequestId, formattedUrl, false, [])
+    const subItem = new DisclosureItemModel(itemKey, sourceRequestId, formattedUrl, false, item.isSecure, [])
     subItem.isNew = item.isNew
     item.subItems.push(subItem)
   }

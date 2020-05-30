@@ -28,7 +28,7 @@ const SplitPane = (props: React.PropsWithChildren<SplitPaneProps>) => {
 
   return (
     <div className="SplitPane" onMouseMove={(e) => onResizerMove(e, state, setState)} onMouseUp={(e) => onResizerMouseUp(e, state, setState)}>
-      <div style={{ width:state.currentWidth }}>{childrenPanes[0]}</div>
+      <div style={{ width: state.currentWidth, overflow: 'scroll' }}>{childrenPanes[0]}</div>
       <div className="Resizer" onMouseDown={(e) => onResizerMouseDown(e, setState)} />
       {childrenPanes[1]}
     </div>
