@@ -3,27 +3,33 @@ import React from 'react'
 import { DisclosureList } from '../../components/disclosure-list/DisclosureList'
 
 import { RequestCycle } from '../../models'
-import { DisclosureListModel, DisclosureItemModel } from '../../components/disclosure-list/models'
+import { DisclosureListModel, DisclosureItemModel, DiscloseAction, DiscloseActionHandler } from '../../components/disclosure-list/models'
 
 import '../../extensions/array+string'
 
-type SelectCycleHandler = (selectedCycleId: string, associatedRequestsIds: string[]) => void
-
-const RequestsList = ( props: { requests: RequestCycle[], selectionHandler: SelectCycleHandler }) => {
+const RequestsList = ( props: { requests: RequestCycle[], actionHandler: DiscloseActionHandler }) => {
   const listItems = buildDisclosureItems(props.requests)
   const list = new DisclosureListModel(listItems)
 
-  // Remove duplicates from the requests ids list
-  const selectionHandler = (selectedCycleId: string, associatedRequestsIds: string[]) => {
-    let filteredAssociateIds = associatedRequestsIds.unique()
-    filteredAssociateIds = filteredAssociateIds.filter(id => id !== selectedCycleId)
-    props.selectionHandler(selectedCycleId, filteredAssociateIds)
+  const listActionHandler = (action: DiscloseAction, content: any | undefined) => {
+    switch (action) {
+      // Remove duplicates from the underneath id's before moving on
+      case DiscloseAction.select:
+        const selectedCycleId: string = content[0]
+        const associatedRequestsIds: string[] = content[1]
+        let filteredAssociateIds = associatedRequestsIds.unique()
+        filteredAssociateIds = filteredAssociateIds.filter(id => id !== selectedCycleId)
+        props.actionHandler(DiscloseAction.select, [selectedCycleId, filteredAssociateIds])
+        break
+      default:
+        props.actionHandler(action, content)
+    }
   }
 
   return (
     <>
-      <ul style={{ paddingLeft: 0 }}>
-        <DisclosureList list={list} selectionHandler={selectionHandler} />
+      <ul style={{ paddingLeft: 0, margin: 0 }}>
+        <DisclosureList list={list} actionHandler={listActionHandler} />
       </ul>
     </>
   )

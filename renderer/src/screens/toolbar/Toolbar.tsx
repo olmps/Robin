@@ -9,7 +9,7 @@ import { ReactComponent as StopIcon } from '../../resources/assets/toolbar/stop.
 import './Toolbar.css'
 
 export enum ToolbarAction {
-  clear, fingerprintToggled, interceptToggled
+  fingerprintToggled, interceptToggled
 }
 
 type ToolbarActionHandler = (action: ToolbarAction) => void
@@ -25,7 +25,6 @@ const Toolbar = (props: { isFingerprintEnabled: boolean, isInterceptEnabled: boo
   
   return (
     <div className="Toolbar">
-      <ToolbarButton icon={clearComponent} style={{ marginLeft: 230 }} onClick={() => props.handler(ToolbarAction.clear)} />
       <ToolbarButton icon={fingerprintComponent} style={{ marginLeft: 50 }} onClick={() => props.handler(ToolbarAction.fingerprintToggled)} />
       <ToolbarButton icon={stopComponent} style={{ marginLeft: 50 }} onClick={() => props.handler(ToolbarAction.interceptToggled)} />
     </div>

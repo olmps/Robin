@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from 'react'
 
 import { setupTransientItems, Action, onKeyboardInput, KeyAction } from './DisclosureListActions'
 
-import { DisclosureListModel, DisclosureItemModel } from './models'
+import { DisclosureListModel, DisclosureItemModel, DiscloseAction, DiscloseActionHandler } from './models'
 
 import { ReactComponent as WebsiteIcon } from '../../resources/assets/disclosure-list/website_icon.svg'
 import { ReactComponent as SecureWebsiteIcon } from '../../resources/assets/disclosure-list/secure_website_icon.svg'
@@ -10,14 +10,14 @@ import { ReactComponent as FolderIcon } from '../../resources/assets/disclosure-
 import { ReactComponent as FileIcon } from '../../resources/assets/disclosure-list/file_icon.svg'
 
 import './DisclosureList.css'
+import DisclosureListHeader from './header/DisclosureListHeader'
 
 class DisclosureListState {
-  constructor(public selectedItemKey: string = "", public openItemsKeys: string[] = []) { }
+  constructor(public selectedItemKey: string = "",
+              public openItemsKeys: string[] = []) { }
 }
 
-type SelectCycleHandler = (selectedCycleId: string, associatedRequestsIds: string[]) => void
-
-export const DisclosureList = (props: { list: DisclosureListModel, selectionHandler: SelectCycleHandler }) => {
+export const DisclosureList = (props: { list: DisclosureListModel, actionHandler: DiscloseActionHandler }) => {
   const [listState, setListState] = useState(new DisclosureListState())
 
   setupTransientItems(props.list, listState.selectedItemKey, listState.openItemsKeys)
@@ -26,13 +26,14 @@ export const DisclosureList = (props: { list: DisclosureListModel, selectionHand
     switch (action) {
       case Action.setSelected:
         if (itemKey === "") {
-          props.selectionHandler("", [])
+          props.actionHandler(DiscloseAction.select, ["", []])
           setListState({ ...listState, selectedItemKey: "" })
           return
         }
         const selectedItem = props.list.getItem(itemKey)!
+        // TODO: MAYBE REMOVE THIS `underneathOriginalRequestKeys` SOMEHOW
         const underneathRequestsKeys = selectedItem.underneathOriginalRequestKeys()
-        props.selectionHandler(selectedItem.originalRequestKey, underneathRequestsKeys)
+        props.actionHandler(DiscloseAction.select, [selectedItem.originalRequestKey, underneathRequestsKeys])
         setListState({ ...listState, selectedItemKey: itemKey })
         break
       case Action.toggleVisibility:
@@ -63,8 +64,19 @@ export const DisclosureList = (props: { list: DisclosureListModel, selectionHand
     // Detects a tap on the RequestsSidebar but not on the list component. The expected behavior is to unselect
     // the selected item.
     if (!wrapperRef.current.contains(targetNode) && targetNode.className === "RequestsSidebar") {
-      props.selectionHandler("", [])
+      props.actionHandler(DiscloseAction.select, ["", []])
       setListState({ ...listState, selectedItemKey: "" })
+    }
+  }
+
+  const headerActionHandler = (action: DiscloseAction, content: any | undefined) => {
+    switch (action) {
+      // Fold is the only action handled by the list component. Other actions depends from parent's information
+      case DiscloseAction.fold:
+        setListState({ ...listState, openItemsKeys: [] })
+        break
+      default:
+        props.actionHandler(action, content)
     }
   }
 
@@ -82,6 +94,7 @@ export const DisclosureList = (props: { list: DisclosureListModel, selectionHand
 
   return (
     <div ref={wrapperRef} >
+      <DisclosureListHeader actionHandler={headerActionHandler} />
       <RecursiveDisclosureList items={props.list.items} actionHandler={itemAction} />
     </div>
   )
