@@ -66,6 +66,8 @@ export class Request {
 
   // Transient properties
   isNewRequest: boolean = true
+  modified: boolean = false
+  dropped: boolean = false
 
   private constructor(cycleId: string, protocol: string, hostname: string,
                       port: number, method: Method, headers: Record<string, HeaderValue>,

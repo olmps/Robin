@@ -8,6 +8,8 @@ import { ReactComponent as WebsiteIcon } from '../../resources/assets/disclosure
 import { ReactComponent as SecureWebsiteIcon } from '../../resources/assets/disclosure-list/secure_website_icon.svg'
 import { ReactComponent as FolderIcon } from '../../resources/assets/disclosure-list/folder_icon.svg'
 import { ReactComponent as FileIcon } from '../../resources/assets/disclosure-list/file_icon.svg'
+import { ReactComponent as BlockedIcon } from '../../resources/assets/disclosure-list/drop_request_icon.svg'
+import { ReactComponent as LoadingIcon } from '../../resources/assets/requests-details/stats/sync.svg'
 
 import './DisclosureList.css'
 import DisclosureListHeader from './header/DisclosureListHeader'
@@ -147,8 +149,6 @@ const DisclosureItem = (props: { item: DisclosureItemModel, actionHandler: KeyAc
     )
   }
 
-
-
   return (
     <div className="SingleListItem">
       <LeafItem item={props.item} actionHandler={props.actionHandler} />
@@ -213,7 +213,12 @@ const LeafItem = (props: { item: DisclosureItemModel, actionHandler: KeyAction }
 
   return (
     <div className={className} onClick={(e) => selectionHandler(e)}>
-      <FileIcon className={iconClassName} />{props.item.label}
+      {props.item.isBlocked ? 
+        <BlockedIcon className="Icon Blocked" /> :
+        props.item.isLoading ?
+        <LoadingIcon className="Icon" /> :
+        <FileIcon className={iconClassName} />}
+      {props.item.label}
     </div>
   )
 }

@@ -23,6 +23,10 @@ export class Response {
 
   get status(): string { return HttpStatusCode[this.statusCode] }
 
+  // Transient Properties
+  dropped: boolean = false
+  modified: boolean = false
+
   constructor(cycleId: string, statusCode: number, headers: Record<string, HeaderValue>, body: string, size: number) {
     this.cycleId = cycleId
     this.statusCode = statusCode

@@ -65,7 +65,8 @@ function buildDisclosureItems(cycles: RequestCycle[]): DisclosureItemModel[] {
   let currentKey = 1000000
 
   const baseItems = filteredCycles.map(cycle => {
-    let item = new DisclosureItemModel(currentKey.toString(), cycle.id, cycle.fullHostname, true, cycle.isSecure, [])
+    let item = new DisclosureItemModel(currentKey.toString(), cycle.id, cycle.fullHostname, true, [])
+    item.isSecure = cycle.isSecure
     currentKey += 1
     return item
   })
@@ -74,7 +75,12 @@ function buildDisclosureItems(cycles: RequestCycle[]): DisclosureItemModel[] {
   cycles.forEach(cycle => {
     const relatedItem = baseItems.find(item => item.label === cycle.fullHostname)!
     relatedItem.isNew = cycles.find(cycle => cycle.fullHostname === relatedItem.label && cycle.request.isNewRequest) !== undefined
-    setup(cycle.url, relatedItem, relatedItem.key, cycle.id)
+    const staticValues = {
+      sourceRequestId: cycle.id, 
+      isBlocked: cycle.request.dropped, 
+      isLoading: cycle.response === undefined
+    }
+    setup(cycle.url, relatedItem, relatedItem.key, staticValues)
   })
   
   return baseItems
@@ -85,17 +91,19 @@ function buildDisclosureItems(cycles: RequestCycle[]): DisclosureItemModel[] {
  * @param urlSegment Segment of URL being built.
  * @param item The item that represents current `urlSegment`
  * @param keyPrefix The prefix to be used before the key identifier
- * @param sourceRequestId The identifier from the original request
+ * @param staticValues Static values that must be propagated to child items
  */
-function setup(urlSegment: string, item: DisclosureItemModel, keyPrefix: String, sourceRequestId: string) {
+function setup(urlSegment: string, item: DisclosureItemModel, keyPrefix: String, staticValues: any) {
   // Special scenario where the first URL segment is just a slash ('/'). This scenario means a
   // request on a URL base, like GET www.google.com. We must handle this as a DisclosureItem.Model
   // Other standalone slashes must be ignored, because the `urlSegment` is something like /path/to/page/,
   // and the /page already represents the final segment
   if (urlSegment === "/") {
       const itemKey = `${keyPrefix}${item.subItems.length}`
-      const subItem = new DisclosureItemModel(itemKey, sourceRequestId, urlSegment, false, item.isSecure, [])
+      const subItem = new DisclosureItemModel(itemKey, staticValues.sourceRequestId, urlSegment, false, [])
       subItem.isNew = item.isNew
+      subItem.isBlocked = staticValues.isBlocked
+      subItem.isLoading = staticValues.isLoading
       item.subItems.push(subItem)
       return
   }
@@ -115,21 +123,25 @@ function setup(urlSegment: string, item: DisclosureItemModel, keyPrefix: String,
     const existingItemIndex = item.subItems.findIndex(item => item.label === firstFragment)
 
     if (existingItemIndex !== -1) {
-      setup(remainingFragments, item.subItems[existingItemIndex], `${keyPrefix}${existingItemIndex}`, sourceRequestId)
+      setup(remainingFragments, item.subItems[existingItemIndex], `${keyPrefix}${existingItemIndex}`, staticValues)
     } else {
       const itemKey = `${keyPrefix}${item.subItems.length}`
-      const subItem = new DisclosureItemModel(itemKey, sourceRequestId, firstFragment, false, item.isSecure, [])
+      const subItem = new DisclosureItemModel(itemKey, staticValues.sourceRequestId, firstFragment, false, [])
       subItem.isNew = item.isNew
+      subItem.isBlocked = staticValues.isBlocked
+      subItem.isLoading = staticValues.isLoading
       item.subItems.push(subItem)
-      setup(remainingFragments, subItem, itemKey, sourceRequestId)
+      setup(remainingFragments, subItem, itemKey, staticValues)
     }
   // It's a single-segment, like /page
   } else {
     formattedUrl = formattedUrl.substring(1)
     if (formattedUrl === "") { return }
     const itemKey = `${keyPrefix}${item.subItems.length}`
-    const subItem = new DisclosureItemModel(itemKey, sourceRequestId, formattedUrl, false, item.isSecure, [])
+    const subItem = new DisclosureItemModel(itemKey, staticValues.sourceRequestId, formattedUrl, false, [])
     subItem.isNew = item.isNew
+    subItem.isBlocked = staticValues.isBlocked
+    subItem.isLoading = staticValues.isLoading
     item.subItems.push(subItem)
   }
 }

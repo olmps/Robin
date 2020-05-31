@@ -57,7 +57,7 @@ const SingleRequestDetails = (props: { selectedCycle: RequestCycle }) => {
 
 const InformationContainer = (props: { cycle: RequestCycle, selectedTab: Tab }) => {
   switch (props.selectedTab) {
-    case Tab.generalInformation: return <RequestInfoTable request={props.cycle} />
+    case Tab.generalInformation: return <RequestInfoTable cycle={props.cycle} />
     case Tab.request: {
       const { cycleId, rawMethod, url, headers, body } = props.cycle.request
       const requestContent = { cycleId, method: rawMethod, path: url, headers, body }
