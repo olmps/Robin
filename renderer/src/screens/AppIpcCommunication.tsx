@@ -163,6 +163,7 @@ function updateCycle(cycle: RequestCycle, content: UpdatedContent) {
       cycle.request.url = requestContent.path
       cycle.request.headers = requestContent.headers
       cycle.request.body = requestContent.body
+      cycle.request.dropped = content.action === 'drop'
       break
     case "response":
       const responseContent = content.updatedContent as ResponseContent
@@ -170,6 +171,7 @@ function updateCycle(cycle: RequestCycle, content: UpdatedContent) {
       cycle.response!.statusCode = responseContent.statusCode
       cycle.response!.headers = responseContent.headers
       cycle.response!.body = responseContent.body!
+      cycle.response!.dropped = content.action === 'drop'
   }
 }
 

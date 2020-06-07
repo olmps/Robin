@@ -17,3 +17,12 @@
 .CardsCollection > :last-child {
   margin-right: 0px;
 }
+
+.CardIcon {
+  height: 60px;
+  width: 60px;
+}
+
+.Red g {
+  fill: red;
+}

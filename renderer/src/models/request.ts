@@ -24,6 +24,8 @@ function rawMethod(method: Method): string {
   }
 }
 
+export type HeaderValue = string | string[]
+
 export class Request {
   /** Id from the wrapper cycle */
   cycleId: string
@@ -41,7 +43,7 @@ export class Request {
   method: Method
 
   /** HTTP request header name/value JS object. These are all-lowercase, e.g. accept-encoding */
-  headers: Record<string, string>
+  headers: Record<string, HeaderValue>
 
   /** Root-relative request URL, including body string, like /foo/bar?baz=qux */
   url: string
@@ -64,9 +66,11 @@ export class Request {
 
   // Transient properties
   isNewRequest: boolean = true
+  modified: boolean = false
+  dropped: boolean = false
 
   private constructor(cycleId: string, protocol: string, hostname: string,
-                      port: number, method: Method, headers: Record<string, string>,
+                      port: number, method: Method, headers: Record<string, HeaderValue>,
                       url: string, query: Record<string, string>, size: number,
                       body?: string) {
     this.cycleId = cycleId

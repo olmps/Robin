@@ -2,6 +2,7 @@ import React, { useState } from 'react'
 import RequestsList from './RequestsList'
 
 import { RequestCycle } from '../../models'
+import { DiscloseAction, DiscloseActionHandler } from '../../components/disclosure-list/models'
 
 import './RequestsSidebar.css';
 
@@ -9,21 +10,24 @@ class SidebarState {
   constructor(public requestsFilter: string | undefined = undefined) { }
 }
 
-type SelectCycleHandler = (selectedCycleId: string, associatedRequestsIds: string[]) => void
+const RequestsSidebar = (props: { cycles: RequestCycle[], actionHandler: DiscloseActionHandler }) => {
+  const [state, setState] = useState(new SidebarState())
 
-const RequestsSidebar = ( props: { cycles: RequestCycle[], selectionHandler: SelectCycleHandler }) => {
-  const [sidebarState, setSidebarState] = useState(new SidebarState())
+  const listActionHandler = (action: DiscloseAction, content: any | undefined) => {
+    // Requests are filtered on this component.
+    if (action === DiscloseAction.search) {
+      setState({ ...state, requestsFilter: content })
+      return
+    }
 
-  const filterHandler = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSidebarState({ ...sidebarState, requestsFilter: event.target.value })
+    // Other actions are handled by parent components
+    props.actionHandler(action, content)
   }
-
-  const filteredRequests = filterRequests(props.cycles, sidebarState.requestsFilter)
+  const filteredRequests = filterRequests(props.cycles, state.requestsFilter)
 
   return (
     <div className="RequestsSidebar">
-      <input className="FilterTextField" placeholder="Filter" type="text" onChange={(e) => filterHandler(e)} />
-      <RequestsList requests={filteredRequests} selectionHandler={props.selectionHandler} />
+      <RequestsList requests={filteredRequests} actionHandler={listActionHandler} />
     </div>
   )
 }

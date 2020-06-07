@@ -98,3 +98,7 @@
 .SelectedIcon g {
   fill: #FFFFFF;
 }
+
+.Blocked g {
+  fill: red;
+}
