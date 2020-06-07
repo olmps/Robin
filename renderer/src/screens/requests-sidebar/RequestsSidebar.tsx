@@ -23,6 +23,7 @@ const RequestsSidebar = (props: { cycles: RequestCycle[], actionHandler: Disclos
     // Other actions are handled by parent components
     props.actionHandler(action, content)
   }
+
   const filteredRequests = filterRequests(props.cycles, state.requestsFilter)
 
   return (

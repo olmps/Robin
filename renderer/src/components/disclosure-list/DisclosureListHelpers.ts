@@ -1,11 +1,22 @@
 import { DisclosureListModel, DisclosureItemModel } from "./models"
+import ContextMenu, { ContextMenuItem } from "../context-menu/ContextMenu"
 
-enum Action {
-  setSelected, toggleVisibility
+// An action that is executed on a list item
+enum ItemAction {
+  setSelected, toggleVisibility, rightClick
+}
+export type ItemActionHandler = (action: ItemAction, content: any) => void
+
+export interface ContextMenuData {
+  itemKey: string,
+  path: string,
+  clientX: number,
+  clientY: number
 }
 
-export type KeyAction = ((action: Action, itemKey: string) => void)
+export type ContextMenuActionHandler = () => void
 
+/// Setup transient properties on the list items.
 function setupTransientProperties(list: DisclosureListModel, selectedItemKey: string, openItemsKeys: string[]) {
   const flattenList = list.flatten([], true)
 
@@ -44,39 +55,37 @@ function getHighlightedItems(items: DisclosureItemModel[]): string[] {
   return highlightedItemsKeys
 }
 
-/**
- * Handles keyboard input events
- */
+// Handle keyboard input events
 function onKeyboardInput(event: KeyboardEvent,
                         item: DisclosureItemModel,
                         openItemsKeys: string[],
-                        itemAction: KeyAction,
+                        itemAction: ItemActionHandler,
                         list: DisclosureListModel) {
   switch (event.key) {
     case "ArrowLeft":
       event.preventDefault()
       if (item.isSelected) {
         if (item.isOpen) {
-          itemAction(Action.toggleVisibility, item.key)
+          itemAction(ItemAction.toggleVisibility, item.key)
         } else if (item.hasSubItems) {
           const previousDisclosureItem = previousItem(item, openItemsKeys, list)
-          if (previousDisclosureItem) { itemAction(Action.toggleVisibility, previousDisclosureItem.key) }
+          if (previousDisclosureItem) { itemAction(ItemAction.toggleVisibility, previousDisclosureItem.key) }
         }
       }
       break
     case "ArrowRight":
       event.preventDefault()
-      if (item.isSelected && !item.isOpen) { itemAction(Action.toggleVisibility, item.key) }
+      if (item.isSelected && !item.isOpen) { itemAction(ItemAction.toggleVisibility, item.key) }
       break
     case "ArrowUp":
       event.preventDefault()
       const previousDisclosureItem = previousItem(item, openItemsKeys, list)
-      if (previousDisclosureItem) { itemAction(Action.setSelected, previousDisclosureItem.key) }
+      if (previousDisclosureItem) { itemAction(ItemAction.setSelected, previousDisclosureItem.key) }
       break
     case "ArrowDown":
       event.preventDefault()
       const nextDisclosureItem = nextItem(item, openItemsKeys, list)
-      if (nextDisclosureItem) { itemAction(Action.setSelected, nextDisclosureItem.key) }
+      if (nextDisclosureItem) { itemAction(ItemAction.setSelected, nextDisclosureItem.key) }
       break
 
     default: break
@@ -105,4 +114,10 @@ function previousItem(item: DisclosureItemModel, openItemsKeys: string[], list: 
   return null
 }
 
-export { Action, setupTransientProperties as setupTransientItems, getHighlightedItems, onKeyboardInput, nextItem, previousItem }
+function contextMenuDataSource(contextHandler: ContextMenuActionHandler): ContextMenuItem[] {
+  const focus: ContextMenuItem = { title: "Focus", action: contextHandler }
+
+  return [focus]
+}
+
+export { ItemAction, setupTransientProperties, getHighlightedItems, onKeyboardInput }
