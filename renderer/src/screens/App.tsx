@@ -15,7 +15,8 @@ import { RequestContent, ResponseContent, InterceptResult, InterceptAction, Cont
 class AppOptions {
   constructor(
     public isFingerprintEnabled: boolean = true,
-    public isInterceptEnabled: boolean = false) { }
+    public isInterceptEnabled: boolean = false,
+    public interceptPaths: string[] = []) { }
 }
 
 class AppState {
@@ -95,6 +96,17 @@ function setupAppHandlers(appState: AppState, setAppState: SetAppState): [Disclo
         setAppState({ ...appState, options: updatedOptions })
         sendUpdatedProxyOptions(setAppState, updatedOptions.isFingerprintEnabled, updatedOptions.isInterceptEnabled)
         break
+      case DiscloseAction.interceptPath:
+        console.log("Intercepting path " + content)
+        const interceptedPaths = updatedOptions.interceptPaths
+        if (interceptedPaths.includes(content)) {
+          const index = interceptedPaths.indexOf(content)
+          interceptedPaths.splice(index, 1)
+        } else {
+          interceptedPaths.push(content)
+        }
+        updatedOptions.interceptPaths = interceptedPaths
+        setAppState({ ...appState, options: updatedOptions })
     }
   }
 

@@ -61,7 +61,7 @@ export class Request {
   /** Request size in bytes */
   size: number
 
-  get fullUrl(): string { return `${this.hostname}${this.url}` }
+  get fullUrl(): string { return `${this.protocol}//${this.hostname}${this.url}` }
   get rawMethod(): string { return rawMethod(this.method) }
 
   // Transient properties

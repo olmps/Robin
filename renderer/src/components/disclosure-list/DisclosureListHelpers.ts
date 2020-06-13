@@ -1,17 +1,30 @@
 import { DisclosureListModel, DisclosureItemModel } from "./models"
+import { ContextMenuItem } from "../context-menu/ContextMenu"
 
-enum Action {
-  setSelected, toggleVisibility
+// An action that is executed on a list item
+enum ItemAction { setSelected, toggleVisibility, rightClick }
+
+export type ItemActionHandler = (action: ItemAction, content: any) => void
+
+enum ContextAction { focus, intercept }
+
+export interface ContextMenuData {
+  item: DisclosureItemModel,
+  path: string,
+  clientX: number,
+  clientY: number
 }
 
-export type KeyAction = ((action: Action, itemKey: string) => void)
+export type ContextMenuActionHandler = () => void
 
-function setupTransientProperties(list: DisclosureListModel, selectedItemKey: string, openItemsKeys: string[]) {
+/// Setup transient properties on the list items.
+function setupTransientProperties(list: DisclosureListModel, selectedItemKey: string, openItemsKeys: string[], focusedPaths: string[]) {
   const flattenList = list.flatten([], true)
 
   flattenList.forEach(item => {
     item.isSelected = item.key === selectedItemKey
     item.isOpen = openItemsKeys.includes(item.key)
+    item.isFocused = focusedPaths.find(path => path.includes(item.path)) !== undefined
   })
 
   const newHighlightedItems = getHighlightedItems(list.items)
@@ -44,39 +57,37 @@ function getHighlightedItems(items: DisclosureItemModel[]): string[] {
   return highlightedItemsKeys
 }
 
-/**
- * Handles keyboard input events
- */
+// Handle keyboard input events
 function onKeyboardInput(event: KeyboardEvent,
                         item: DisclosureItemModel,
                         openItemsKeys: string[],
-                        itemAction: KeyAction,
+                        itemAction: ItemActionHandler,
                         list: DisclosureListModel) {
   switch (event.key) {
     case "ArrowLeft":
       event.preventDefault()
       if (item.isSelected) {
         if (item.isOpen) {
-          itemAction(Action.toggleVisibility, item.key)
+          itemAction(ItemAction.toggleVisibility, item.key)
         } else if (item.hasSubItems) {
           const previousDisclosureItem = previousItem(item, openItemsKeys, list)
-          if (previousDisclosureItem) { itemAction(Action.toggleVisibility, previousDisclosureItem.key) }
+          if (previousDisclosureItem) { itemAction(ItemAction.toggleVisibility, previousDisclosureItem.key) }
         }
       }
       break
     case "ArrowRight":
       event.preventDefault()
-      if (item.isSelected && !item.isOpen) { itemAction(Action.toggleVisibility, item.key) }
+      if (item.isSelected && !item.isOpen) { itemAction(ItemAction.toggleVisibility, item.key) }
       break
     case "ArrowUp":
       event.preventDefault()
       const previousDisclosureItem = previousItem(item, openItemsKeys, list)
-      if (previousDisclosureItem) { itemAction(Action.setSelected, previousDisclosureItem.key) }
+      if (previousDisclosureItem) { itemAction(ItemAction.setSelected, previousDisclosureItem.key) }
       break
     case "ArrowDown":
       event.preventDefault()
       const nextDisclosureItem = nextItem(item, openItemsKeys, list)
-      if (nextDisclosureItem) { itemAction(Action.setSelected, nextDisclosureItem.key) }
+      if (nextDisclosureItem) { itemAction(ItemAction.setSelected, nextDisclosureItem.key) }
       break
 
     default: break
@@ -105,4 +116,15 @@ function previousItem(item: DisclosureItemModel, openItemsKeys: string[], list: 
   return null
 }
 
-export { Action, setupTransientProperties as setupTransientItems, getHighlightedItems, onKeyboardInput, nextItem, previousItem }
+function contextMenuDataSource(item: DisclosureItemModel, contextHandler: (action: ContextAction) => void): ContextMenuItem[] {
+  const focusTitle = item.isFocused ? "Unfocus" : "Focus"
+  const focus: ContextMenuItem = { title: focusTitle, action: () => contextHandler(ContextAction.focus) }
+
+  const interceptTitle = item.isIntercepting ? "Disable Intercept" : "Enable Intercept"
+  const intercept: ContextMenuItem = { title: interceptTitle, action: () => contextHandler(ContextAction.intercept) }
+  
+  return [focus, intercept]
+}
+
+export { ItemAction, ContextAction }
+export { setupTransientProperties, getHighlightedItems, onKeyboardInput, contextMenuDataSource }

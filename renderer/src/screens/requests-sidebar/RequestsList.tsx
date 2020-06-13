@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 import { DisclosureList } from '../../components/disclosure-list/DisclosureList'
 
@@ -7,8 +7,14 @@ import { DisclosureListModel, DisclosureItemModel, DiscloseAction, DiscloseActio
 
 import '../../extensions/array+string'
 
+class RequestsListState {
+  constructor(public interceptedPaths: string[] = []) { }
+}
+
 const RequestsList = ( props: { requests: RequestCycle[], actionHandler: DiscloseActionHandler }) => {
-  const listItems = buildDisclosureItems(props.requests)
+  const [state, setState] = useState(new RequestsListState())
+
+  const listItems = buildDisclosureItems(props.requests, state.interceptedPaths)
   const list = new DisclosureListModel(listItems)
 
   const listActionHandler = (action: DiscloseAction, content: any | undefined) => {
@@ -21,8 +27,20 @@ const RequestsList = ( props: { requests: RequestCycle[], actionHandler: Disclos
         filteredAssociateIds = filteredAssociateIds.filter(id => id !== selectedCycleId)
         props.actionHandler(DiscloseAction.select, [selectedCycleId, filteredAssociateIds])
         break
+      case DiscloseAction.interceptPath:
+        const interceptedPaths = state.interceptedPaths
+        if (interceptedPaths.includes(content)) {
+          const index = interceptedPaths.indexOf(content)
+          interceptedPaths.splice(index, 1)
+        } else {
+          interceptedPaths.push(content)
+        }
+        setState({ ...state, interceptedPaths })
+        props.actionHandler(action, content)
+        break
       default:
         props.actionHandler(action, content)
+        break
     }
   }
 
@@ -49,7 +67,7 @@ const RequestsList = ( props: { requests: RequestCycle[], actionHandler: Disclos
  * 
  * @param cycles List of completed cycles
  */
-function buildDisclosureItems(cycles: RequestCycle[]): DisclosureItemModel[] {
+function buildDisclosureItems(cycles: RequestCycle[], interceptedPaths: string[]): DisclosureItemModel[] {
   // Builds the root lever, i.e, the items representing the domains urls (like www.google.com, www.apple.com, etc)
   let filteredCycles: RequestCycle[] = []
   cycles.forEach(cycle => {
@@ -65,8 +83,9 @@ function buildDisclosureItems(cycles: RequestCycle[]): DisclosureItemModel[] {
   let currentKey = 1000000
 
   const baseItems = filteredCycles.map(cycle => {
-    let item = new DisclosureItemModel(currentKey.toString(), cycle.id, cycle.fullHostname, true, [])
+    let item = new DisclosureItemModel(currentKey.toString(), cycle.id, cycle.fullHostname, cycle.fullHostname, true, [])
     item.isSecure = cycle.isSecure
+    item.isIntercepting = interceptedPaths.find(path => path.includes(item.path)) !== undefined
     currentKey += 1
     return item
   })
@@ -78,9 +97,10 @@ function buildDisclosureItems(cycles: RequestCycle[]): DisclosureItemModel[] {
     const staticValues = {
       sourceRequestId: cycle.id, 
       isBlocked: cycle.request.dropped, 
-      isLoading: cycle.response === undefined
+      isLoading: cycle.response === undefined,
+      interceptPath: interceptedPaths.find(path => path.includes(relatedItem.path))
     }
-    setup(cycle.url, relatedItem, relatedItem.key, staticValues)
+    setup(cycle.url, cycle.fullHostname, relatedItem, relatedItem.key, staticValues)
   })
   
   return baseItems
@@ -91,19 +111,22 @@ function buildDisclosureItems(cycles: RequestCycle[]): DisclosureItemModel[] {
  * @param urlSegment Segment of URL being built.
  * @param item The item that represents current `urlSegment`
  * @param keyPrefix The prefix to be used before the key identifier
+ * @param sourceRequestId The identifier from the original request
  * @param staticValues Static values that must be propagated to child items
  */
-function setup(urlSegment: string, item: DisclosureItemModel, keyPrefix: String, staticValues: any) {
+function setup(urlSegment: string, fullPath: string, item: DisclosureItemModel, keyPrefix: String, staticValues: any) {
   // Special scenario where the first URL segment is just a slash ('/'). This scenario means a
   // request on a URL base, like GET www.google.com. We must handle this as a DisclosureItem.Model
   // Other standalone slashes must be ignored, because the `urlSegment` is something like /path/to/page/,
   // and the /page already represents the final segment
   if (urlSegment === "/") {
+      fullPath += "/"
       const itemKey = `${keyPrefix}${item.subItems.length}`
-      const subItem = new DisclosureItemModel(itemKey, staticValues.sourceRequestId, urlSegment, false, [])
+      const subItem = new DisclosureItemModel(itemKey, staticValues.sourceRequestId, fullPath, urlSegment, false, [])
       subItem.isNew = item.isNew
       subItem.isBlocked = staticValues.isBlocked
       subItem.isLoading = staticValues.isLoading
+      subItem.isIntercepting = staticValues.interceptPath?.includes(fullPath)
       item.subItems.push(subItem)
       return
   }
@@ -121,27 +144,31 @@ function setup(urlSegment: string, item: DisclosureItemModel, keyPrefix: String,
     const firstFragment = splitUrl[0]
     const remainingFragments = formattedUrl.substring(1).replace(firstFragment, "")
     const existingItemIndex = item.subItems.findIndex(item => item.label === firstFragment)
+    fullPath += `/${firstFragment}`
 
     if (existingItemIndex !== -1) {
-      setup(remainingFragments, item.subItems[existingItemIndex], `${keyPrefix}${existingItemIndex}`, staticValues)
+      setup(remainingFragments, fullPath, item.subItems[existingItemIndex], `${keyPrefix}${existingItemIndex}`, staticValues)
     } else {
       const itemKey = `${keyPrefix}${item.subItems.length}`
-      const subItem = new DisclosureItemModel(itemKey, staticValues.sourceRequestId, firstFragment, false, [])
+      const subItem = new DisclosureItemModel(itemKey, staticValues.sourceRequestId, fullPath, firstFragment, false, [])
       subItem.isNew = item.isNew
       subItem.isBlocked = staticValues.isBlocked
       subItem.isLoading = staticValues.isLoading
+      subItem.isIntercepting = staticValues.interceptPath?.includes(fullPath)
       item.subItems.push(subItem)
-      setup(remainingFragments, subItem, itemKey, staticValues)
+      setup(remainingFragments, fullPath, subItem, itemKey, staticValues)
     }
   // It's a single-segment, like /page
   } else {
     formattedUrl = formattedUrl.substring(1)
+    fullPath += `/${formattedUrl}`
     if (formattedUrl === "") { return }
     const itemKey = `${keyPrefix}${item.subItems.length}`
-    const subItem = new DisclosureItemModel(itemKey, staticValues.sourceRequestId, formattedUrl, false, [])
+    const subItem = new DisclosureItemModel(itemKey, staticValues.sourceRequestId, fullPath, formattedUrl, false, [])
     subItem.isNew = item.isNew
     subItem.isBlocked = staticValues.isBlocked
     subItem.isLoading = staticValues.isLoading
+    subItem.isIntercepting = staticValues.interceptPath?.includes(fullPath)
     item.subItems.push(subItem)
   }
 }

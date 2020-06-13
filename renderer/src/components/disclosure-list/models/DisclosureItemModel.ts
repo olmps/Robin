@@ -2,6 +2,7 @@ export class DisclosureItemModel {
   public key: string
   public originalRequestKey: string
   public label: string
+  public path: string
   public isRoot: boolean
   public subItems: DisclosureItemModel[]
 
@@ -15,13 +16,16 @@ export class DisclosureItemModel {
   public isOpen: boolean = false
   public isNew: boolean = false
   public isSelected: boolean = false
+  public isFocused: boolean = false
+  public isIntercepting: boolean = false
 
   get hasSubItems(): boolean { return this.subItems.length > 0 }
 
-  constructor(key: string, originalRequestKey: string, label: string, isRoot: boolean, subItems: DisclosureItemModel[]) {
+  constructor(key: string, originalRequestKey: string, path: string, label: string, isRoot: boolean, subItems: DisclosureItemModel[]) {
     this.key = key
     this.originalRequestKey = originalRequestKey
     this.label = label
+    this.path = path
     this.isRoot = isRoot
     this.subItems = subItems
   }
