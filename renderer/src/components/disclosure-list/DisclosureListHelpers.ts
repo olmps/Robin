@@ -1,14 +1,15 @@
 import { DisclosureListModel, DisclosureItemModel } from "./models"
-import ContextMenu, { ContextMenuItem } from "../context-menu/ContextMenu"
+import { ContextMenuItem } from "../context-menu/ContextMenu"
 
 // An action that is executed on a list item
-enum ItemAction {
-  setSelected, toggleVisibility, rightClick
-}
+enum ItemAction { setSelected, toggleVisibility, rightClick }
+
 export type ItemActionHandler = (action: ItemAction, content: any) => void
 
+enum ContextAction { focus }
+
 export interface ContextMenuData {
-  itemKey: string,
+  item: DisclosureItemModel,
   path: string,
   clientX: number,
   clientY: number
@@ -17,12 +18,13 @@ export interface ContextMenuData {
 export type ContextMenuActionHandler = () => void
 
 /// Setup transient properties on the list items.
-function setupTransientProperties(list: DisclosureListModel, selectedItemKey: string, openItemsKeys: string[]) {
+function setupTransientProperties(list: DisclosureListModel, selectedItemKey: string, openItemsKeys: string[], focusedPaths: string[]) {
   const flattenList = list.flatten([], true)
 
   flattenList.forEach(item => {
     item.isSelected = item.key === selectedItemKey
     item.isOpen = openItemsKeys.includes(item.key)
+    item.isFocused = focusedPaths.find(path => path.includes(item.path)) !== undefined
   })
 
   const newHighlightedItems = getHighlightedItems(list.items)
@@ -114,10 +116,12 @@ function previousItem(item: DisclosureItemModel, openItemsKeys: string[], list: 
   return null
 }
 
-function contextMenuDataSource(contextHandler: ContextMenuActionHandler): ContextMenuItem[] {
-  const focus: ContextMenuItem = { title: "Focus", action: contextHandler }
+function contextMenuDataSource(item: DisclosureItemModel, contextHandler: (action: ContextAction) => void): ContextMenuItem[] {
+  const focusTitle = item.isFocused ? "Unfocus" : "Focus"
+  const focus: ContextMenuItem = { title: focusTitle, action: () => contextHandler(ContextAction.focus) }
 
   return [focus]
 }
 
-export { ItemAction, setupTransientProperties, getHighlightedItems, onKeyboardInput }
+export { ItemAction, ContextAction }
+export { setupTransientProperties, getHighlightedItems, onKeyboardInput, contextMenuDataSource }

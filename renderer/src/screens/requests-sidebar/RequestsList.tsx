@@ -66,6 +66,7 @@ function buildDisclosureItems(cycles: RequestCycle[]): DisclosureItemModel[] {
 
   const baseItems = filteredCycles.map(cycle => {
     let item = new DisclosureItemModel(currentKey.toString(), cycle.id, cycle.fullHostname, cycle.fullHostname, true, [])
+    item.isSecure = cycle.isSecure
     currentKey += 1
     return item
   })
@@ -101,7 +102,7 @@ function setup(urlSegment: string, fullPath: string, item: DisclosureItemModel, 
   if (urlSegment === "/") {
       fullPath += "/"
       const itemKey = `${keyPrefix}${item.subItems.length}`
-      const subItem = new DisclosureItemModel(itemKey, staticValues.sourceRequestId, urlSegment, fullPath, false, [])
+      const subItem = new DisclosureItemModel(itemKey, staticValues.sourceRequestId, fullPath, urlSegment, false, [])
       subItem.isNew = item.isNew
       subItem.isBlocked = staticValues.isBlocked
       subItem.isLoading = staticValues.isLoading
@@ -128,7 +129,7 @@ function setup(urlSegment: string, fullPath: string, item: DisclosureItemModel, 
       setup(remainingFragments, fullPath, item.subItems[existingItemIndex], `${keyPrefix}${existingItemIndex}`, staticValues)
     } else {
       const itemKey = `${keyPrefix}${item.subItems.length}`
-      const subItem = new DisclosureItemModel(itemKey, staticValues.sourceRequestId, firstFragment, fullPath, false, [])
+      const subItem = new DisclosureItemModel(itemKey, staticValues.sourceRequestId, fullPath, firstFragment, false, [])
       subItem.isNew = item.isNew
       subItem.isBlocked = staticValues.isBlocked
       subItem.isLoading = staticValues.isLoading
@@ -141,7 +142,7 @@ function setup(urlSegment: string, fullPath: string, item: DisclosureItemModel, 
     fullPath += `/${formattedUrl}`
     if (formattedUrl === "") { return }
     const itemKey = `${keyPrefix}${item.subItems.length}`
-    const subItem = new DisclosureItemModel(itemKey, staticValues.sourceRequestId, formattedUrl, fullPath, false, [])
+    const subItem = new DisclosureItemModel(itemKey, staticValues.sourceRequestId, fullPath, formattedUrl, false, [])
     subItem.isNew = item.isNew
     subItem.isBlocked = staticValues.isBlocked
     subItem.isLoading = staticValues.isLoading

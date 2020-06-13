@@ -16,6 +16,7 @@ export class DisclosureItemModel {
   public isOpen: boolean = false
   public isNew: boolean = false
   public isSelected: boolean = false
+  public isFocused: boolean = false
 
   get hasSubItems(): boolean { return this.subItems.length > 0 }
 

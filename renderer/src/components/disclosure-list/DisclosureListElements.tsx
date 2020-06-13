@@ -2,7 +2,7 @@ import React from 'react'
 
 import { DisclosureItemModel } from './models'
 
-import { ItemAction, ItemActionHandler } from './DisclosureListHelpers'
+import { ItemAction, ItemActionHandler, ContextMenuData } from './DisclosureListHelpers'
 
 import { ReactComponent as WebsiteIcon } from '../../resources/assets/disclosure-list/website_icon.svg'
 import { ReactComponent as SecureWebsiteIcon } from '../../resources/assets/disclosure-list/secure_website_icon.svg'
@@ -38,6 +38,23 @@ export const RecursiveDisclosureItem = (props: { item: DisclosureItemModel, acti
 }
 
 export const DisclosureItem = (props: { item: DisclosureItemModel, actionHandler: ItemActionHandler }) => {
+  
+  const contextMenuHandler = (event: React.MouseEvent) => {
+    const contextMenuData: ContextMenuData = { item: props.item, path: props.item.path, clientX: event.clientX, clientY: event.clientY }
+    props.actionHandler(ItemAction.rightClick, contextMenuData)
+    event.preventDefault()
+    event.stopPropagation()
+  }
+
+  const selectionHandler = (event: React.MouseEvent) => {
+    // CMD + Click deselect the item
+    if (props.item.isSelected && event.metaKey) {
+      props.actionHandler(ItemAction.setSelected, "")
+    } else if (!props.item.isSelected) {
+      props.actionHandler(ItemAction.setSelected, props.item.key)
+    }
+  }
+
   if (props.item.hasSubItems) {
     let icon: JSX.Element
     if (props.item.isRoot) {
@@ -55,6 +72,8 @@ export const DisclosureItem = (props: { item: DisclosureItemModel, actionHandler
         <ToggleDisclosureItem item={props.item}
           icon={icon}
           actionHandler={props.actionHandler}
+          contextMenu={contextMenuHandler}
+          selectionHandler={selectionHandler}
         />
       </div>
     )
@@ -62,31 +81,19 @@ export const DisclosureItem = (props: { item: DisclosureItemModel, actionHandler
 
   return (
     <div className="SingleListItem">
-      <LeafItem item={props.item} actionHandler={props.actionHandler} />
+      <LeafItem item={props.item} actionHandler={props.actionHandler} contextMenu={contextMenuHandler} selectionHandler={selectionHandler} />
     </div>
   )
 }
 
-/**
- * Behaves exactly like HTML <details> tag but it only discloses when tapping on the disclose icon
- */
-export const ToggleDisclosureItem = (props: { item: DisclosureItemModel, icon: JSX.Element, actionHandler: ItemActionHandler }) => {
+/// Behaves exactly like HTML <details> tag but it only discloses when tapping on the disclose icon
+export const ToggleDisclosureItem = (props: { item: DisclosureItemModel, 
+                                              icon: JSX.Element, 
+                                              actionHandler: ItemActionHandler, 
+                                              contextMenu: (event: React.MouseEvent) => void, 
+                                              selectionHandler: (event: React.MouseEvent) => void }) => {
   const visibilityHandler = (event: React.MouseEvent) => {
     props.actionHandler(ItemAction.toggleVisibility, props.item.key)
-    event.stopPropagation()
-  }
-  const selectionHandler = (event: React.MouseEvent) => {
-    // CMD + Click deselect the item
-    if (props.item.isSelected && event.metaKey) {
-      props.actionHandler(ItemAction.setSelected, "")
-    } else if (!props.item.isSelected) {
-      props.actionHandler(ItemAction.setSelected, props.item.key)
-    }
-  }
-  const contextMenuHandler = (event: React.MouseEvent) => {
-    const contextMenuData = { itemKey: props.item.key, path: props.item.path, clientX: event.clientX, clientY: event.clientY }
-    props.actionHandler(ItemAction.rightClick, contextMenuData)
-    event.preventDefault()
     event.stopPropagation()
   }
 
@@ -101,7 +108,7 @@ export const ToggleDisclosureItem = (props: { item: DisclosureItemModel, icon: J
   }
 
   return (
-    <div className={className} onClick={(e) => selectionHandler(e)} onContextMenu={contextMenuHandler}>
+    <div className={className} onClick={props.selectionHandler} onContextMenu={props.contextMenu}>
       <button className={buttonClass} style={selectedDisclosureIconColor} onClick={(e) => visibilityHandler(e)} />
       {props.icon}
       {props.item.label}
@@ -109,19 +116,11 @@ export const ToggleDisclosureItem = (props: { item: DisclosureItemModel, icon: J
   )
 }
 
-/**
- * Represents a list item that has no subitems - like a three leaf.
- */
-export const LeafItem = (props: { item: DisclosureItemModel, actionHandler: ItemActionHandler }) => {
-  const selectionHandler = (event: React.MouseEvent) => {
-    // CMD + Click deselect the item
-    if (props.item.isSelected && event.metaKey) {
-      props.actionHandler(ItemAction.setSelected, "")
-    } else if (!props.item.isSelected) {
-      props.actionHandler(ItemAction.setSelected, props.item.key)
-    }
-  }
-
+/// Represents a list item that has no subitems - like a three leaf.
+export const LeafItem = (props: { item: DisclosureItemModel, 
+                                  actionHandler: ItemActionHandler, 
+                                  contextMenu: (event: React.MouseEvent) => void, 
+                                  selectionHandler: (event: React.MouseEvent) => void }) => {
   let className = "LeafSingleListItem"
   if (props.item.isSelected) { className += " SelectedItem" }
 
@@ -129,7 +128,7 @@ export const LeafItem = (props: { item: DisclosureItemModel, actionHandler: Item
   if (props.item.isSelected) { iconClassName += " SelectedIcon" }
 
   return (
-    <div className={className} onClick={(e) => selectionHandler(e)}>
+    <div className={className} onClick={props.selectionHandler} onContextMenu={props.contextMenu}>
       {props.item.isBlocked ? 
         <BlockedIcon className="Icon Blocked" /> :
         props.item.isLoading ?
