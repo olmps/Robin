@@ -34,7 +34,7 @@ export const DisclosureList = (props: { list: DisclosureListModel, actionHandler
   // Handle mouse events inside and outside the component
   const mouseEventHandler = (event: MouseEvent) => onMouseEvent(event, wrapperRef, props.actionHandler, setListState)
   // Handle context menu action on a specific item
-  const contextMenuActionHandler = (action: ContextAction) => onContextMenuAction(action, listState.contextMenuData!.item, setListState)
+  const contextMenuActionHandler = (action: ContextAction) => onContextMenuAction(action, listState.contextMenuData!.item, setListState, props.actionHandler)
   // Handle header actions
   const headerActionHandler = (action: DiscloseAction, content: any | undefined) => onHeaderAction(action, content, setListState, props.actionHandler)
   // Dismiss Context Menu handler
@@ -150,7 +150,7 @@ function onMouseEvent(event: MouseEvent,
 }
 
 // Handle context menu actions
-function onContextMenuAction(action: ContextAction, item: DisclosureItemModel, setState: SetListState) {
+function onContextMenuAction(action: ContextAction, item: DisclosureItemModel, setState: SetListState, actionHandler: DiscloseActionHandler) {
   switch (action) {
     case ContextAction.focus:
       setState(state => {
@@ -164,7 +164,10 @@ function onContextMenuAction(action: ContextAction, item: DisclosureItemModel, s
         return { ...state, contextMenuData: undefined, focusedPaths: focusedPaths }
       })
       break
-
+    case ContextAction.intercept:
+      actionHandler(DiscloseAction.interceptPath, item.path)
+      setState(state => { return { ...state, contextMenuData: undefined } })
+      break
     default:
       break
   }

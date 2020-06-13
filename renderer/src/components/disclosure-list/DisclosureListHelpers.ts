@@ -6,7 +6,7 @@ enum ItemAction { setSelected, toggleVisibility, rightClick }
 
 export type ItemActionHandler = (action: ItemAction, content: any) => void
 
-enum ContextAction { focus }
+enum ContextAction { focus, intercept }
 
 export interface ContextMenuData {
   item: DisclosureItemModel,
@@ -120,7 +120,10 @@ function contextMenuDataSource(item: DisclosureItemModel, contextHandler: (actio
   const focusTitle = item.isFocused ? "Unfocus" : "Focus"
   const focus: ContextMenuItem = { title: focusTitle, action: () => contextHandler(ContextAction.focus) }
 
-  return [focus]
+  const interceptTitle = item.isIntercepting ? "Disable Intercept" : "Enable Intercept"
+  const intercept: ContextMenuItem = { title: interceptTitle, action: () => contextHandler(ContextAction.intercept) }
+  
+  return [focus, intercept]
 }
 
 export { ItemAction, ContextAction }

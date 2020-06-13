@@ -32,13 +32,13 @@ export class GeoLocation {
 export class RequestCycle {
   id: string
   request: Request
-  // A response may not exists because the cycle may not be complete yet, i.e, it's the response
+  /// A response may not exists because the cycle may not be complete yet, i.e, it's the response
   response?: Response
   duration: number
   /// GeoLocation may not exists if a DNS resolve operations fails, for example
   geoLocation?: GeoLocation
   
-  get fullUrl(): string { return `${this.request.protocol}//${this.request.hostname}${this.request.url}` }
+  get fullUrl(): string { return this.request.fullUrl }
   get url(): string { return this.request.url }
   get hostname(): string { return this.request.hostname }
   get fullHostname(): string { return `${this.request.protocol}//${this.request.hostname}` }
@@ -47,12 +47,8 @@ export class RequestCycle {
     if (!this.response) { return undefined }
     return this.response.statusCode
   }
-  get isComplete(): boolean {
-    return this.response !== undefined
-  }
-  get isSecure(): boolean {
-    return this.request.protocol === "https:"
-  }
+  get isComplete(): boolean { return this.response !== undefined }
+  get isSecure(): boolean { return this.request.protocol === "https:" }
 
   constructor(id: string, request: Request, duration: number, geoLocation?: GeoLocation, response?: Response) {
     this.id = id

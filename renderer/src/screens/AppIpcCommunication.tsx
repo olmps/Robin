@@ -8,7 +8,7 @@ import { IPCMessageChannel, UpdatedContent, RequestContent, ResponseContent } fr
 
 const { ipcRenderer } = window.require('electron')
 
-type CycleUpdateHandler = (payload: any, isInterceptEnabled: boolean) => void
+type CycleUpdateHandler = (payload: any, isInterceptEnabled: boolean, interceptPaths: string[]) => void
 
 /**
  * Responsible for the communication between the App and Electron module.
@@ -21,11 +21,11 @@ const SetupIpcCommunication = (setAppState: SetAppState, appOptions: AppOptions)
     // Ensure that ipcRenderer is not already registered. It may happening while
     // debugging for example, when React hot reload.
     if (ipcRenderer.rawListeners(IPCMessageChannel.proxyNewRequest).length === 0) {
-      ipcRenderer.on(IPCMessageChannel.proxyNewRequest, (_: any, payload: any) => newCycleHandler(payload, appOptions.isInterceptEnabled))
+      ipcRenderer.on(IPCMessageChannel.proxyNewRequest, (_: any, payload: any) => newCycleHandler(payload, appOptions.isInterceptEnabled, appOptions.interceptPaths))
     }
 
     if (ipcRenderer.rawListeners(IPCMessageChannel.proxyNewResponse).length === 0) {
-      ipcRenderer.on(IPCMessageChannel.proxyNewResponse, (_: any, payload: any) => updateCycleHandler(payload, appOptions.isInterceptEnabled))
+      ipcRenderer.on(IPCMessageChannel.proxyNewResponse, (_: any, payload: any) => updateCycleHandler(payload, appOptions.isInterceptEnabled, appOptions.interceptPaths))
     }
 
     return function unsubscribeProxyListener() {
@@ -37,7 +37,7 @@ const SetupIpcCommunication = (setAppState: SetAppState, appOptions: AppOptions)
 
 function ipcHandlers(setAppState: SetAppState): [CycleUpdateHandler, CycleUpdateHandler] {
   // Handles a new cycle received from main module
-  const newCycleHandler = (payload: any, isInterceptEnabled: boolean) => {
+  const newCycleHandler = (payload: any, isInterceptEnabled: boolean, interceptPaths: string[]) => {
     const request = Request.fromJson(payload.requestPayload)
     const cycleId = payload.id
     const cycle = new RequestCycle(cycleId, request, 0, undefined, undefined)
@@ -47,19 +47,30 @@ function ipcHandlers(setAppState: SetAppState): [CycleUpdateHandler, CycleUpdate
       state.cycles.forEach(cycle => cycle.request.isNewRequest = false)
       cycles.push(cycle)
 
-      const interceptedRequests = state.interceptedRequests
-      if (isInterceptEnabled) {
+      if (isInterceptEnabled && interceptPaths.find(path => request.fullUrl.includes(path)) !== undefined) {
+        const interceptedRequests = state.interceptedRequests
         const { rawMethod, url, headers, body } = request
         const requestContent = { cycleId, method: rawMethod, path: url, headers, body }
         interceptedRequests.push(requestContent)
+        return { ...state, cycles, interceptedRequests }
+      } else if (isInterceptEnabled) {
+        const { rawMethod, url, headers, body } = request
+        const requestContent = { cycleId, method: rawMethod, path: url, headers, body }
+        const updatedContent: UpdatedContent = {
+          action: 'send',
+          type: 'request',
+          updatedContent: requestContent
+        }
+  
+        sendUpdatedContent(updatedContent)
       }
 
-      return { ...state, cycles, interceptedRequests }
+      return { ...state, cycles }
     })
   }
 
   // Handles when a cycle is updated in the main module (when a request response is received is an example)
-  const updateCycleHandler = (payload: any, isInterceptEnabled: boolean) => {
+  const updateCycleHandler = (payload: any, isInterceptEnabled: boolean, interceptPaths: string[]) => {
     const response = Response.fromJson(payload.responsePayload)
     const geoLocation = GeoLocation.fromJson(payload.geoLocation)
 
@@ -74,14 +85,25 @@ function ipcHandlers(setAppState: SetAppState): [CycleUpdateHandler, CycleUpdate
         updatedCycle.geoLocation = geoLocation
       }
 
-      const interceptedRequests = state.interceptedRequests
-      if (isInterceptEnabled) {
+      if (isInterceptEnabled && interceptPaths.find(path => updatedCycle?.fullUrl.includes(path)) !== undefined) {
+        const interceptedRequests = state.interceptedRequests
         const { cycleId, status, statusCode, headers } = response
         const updatedContent = { cycleId, status, statusCode, headers }
         interceptedRequests.push(updatedContent)
+        return { ...state, cycles, interceptedRequests }
+      } else if (isInterceptEnabled) {
+        const { cycleId, status, statusCode, headers } = response
+        const content = { cycleId, status, statusCode, headers }
+        const updatedContent: UpdatedContent = {
+          action: 'send',
+          type: 'response',
+          updatedContent: content
+        }
+  
+        sendUpdatedContent(updatedContent)
       }
 
-      return { ...state, cycles, interceptedRequests }
+      return { ...state, cycles }
     })
   }
 

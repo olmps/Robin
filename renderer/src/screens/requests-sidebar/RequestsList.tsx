@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 
 import { DisclosureList } from '../../components/disclosure-list/DisclosureList'
 
@@ -7,8 +7,14 @@ import { DisclosureListModel, DisclosureItemModel, DiscloseAction, DiscloseActio
 
 import '../../extensions/array+string'
 
+class RequestsListState {
+  constructor(public interceptedPaths: string[] = []) { }
+}
+
 const RequestsList = ( props: { requests: RequestCycle[], actionHandler: DiscloseActionHandler }) => {
-  const listItems = buildDisclosureItems(props.requests)
+  const [state, setState] = useState(new RequestsListState())
+
+  const listItems = buildDisclosureItems(props.requests, state.interceptedPaths)
   const list = new DisclosureListModel(listItems)
 
   const listActionHandler = (action: DiscloseAction, content: any | undefined) => {
@@ -21,8 +27,20 @@ const RequestsList = ( props: { requests: RequestCycle[], actionHandler: Disclos
         filteredAssociateIds = filteredAssociateIds.filter(id => id !== selectedCycleId)
         props.actionHandler(DiscloseAction.select, [selectedCycleId, filteredAssociateIds])
         break
+      case DiscloseAction.interceptPath:
+        const interceptedPaths = state.interceptedPaths
+        if (interceptedPaths.includes(content)) {
+          const index = interceptedPaths.indexOf(content)
+          interceptedPaths.splice(index, 1)
+        } else {
+          interceptedPaths.push(content)
+        }
+        setState({ ...state, interceptedPaths })
+        props.actionHandler(action, content)
+        break
       default:
         props.actionHandler(action, content)
+        break
     }
   }
 
@@ -49,7 +67,7 @@ const RequestsList = ( props: { requests: RequestCycle[], actionHandler: Disclos
  * 
  * @param cycles List of completed cycles
  */
-function buildDisclosureItems(cycles: RequestCycle[]): DisclosureItemModel[] {
+function buildDisclosureItems(cycles: RequestCycle[], interceptedPaths: string[]): DisclosureItemModel[] {
   // Builds the root lever, i.e, the items representing the domains urls (like www.google.com, www.apple.com, etc)
   let filteredCycles: RequestCycle[] = []
   cycles.forEach(cycle => {
@@ -67,6 +85,7 @@ function buildDisclosureItems(cycles: RequestCycle[]): DisclosureItemModel[] {
   const baseItems = filteredCycles.map(cycle => {
     let item = new DisclosureItemModel(currentKey.toString(), cycle.id, cycle.fullHostname, cycle.fullHostname, true, [])
     item.isSecure = cycle.isSecure
+    item.isIntercepting = interceptedPaths.find(path => path.includes(item.path)) !== undefined
     currentKey += 1
     return item
   })
@@ -78,7 +97,8 @@ function buildDisclosureItems(cycles: RequestCycle[]): DisclosureItemModel[] {
     const staticValues = {
       sourceRequestId: cycle.id, 
       isBlocked: cycle.request.dropped, 
-      isLoading: cycle.response === undefined
+      isLoading: cycle.response === undefined,
+      interceptPath: interceptedPaths.find(path => path.includes(relatedItem.path))
     }
     setup(cycle.url, cycle.fullHostname, relatedItem, relatedItem.key, staticValues)
   })
@@ -106,6 +126,7 @@ function setup(urlSegment: string, fullPath: string, item: DisclosureItemModel, 
       subItem.isNew = item.isNew
       subItem.isBlocked = staticValues.isBlocked
       subItem.isLoading = staticValues.isLoading
+      subItem.isIntercepting = staticValues.interceptPath?.includes(fullPath)
       item.subItems.push(subItem)
       return
   }
@@ -133,6 +154,7 @@ function setup(urlSegment: string, fullPath: string, item: DisclosureItemModel, 
       subItem.isNew = item.isNew
       subItem.isBlocked = staticValues.isBlocked
       subItem.isLoading = staticValues.isLoading
+      subItem.isIntercepting = staticValues.interceptPath?.includes(fullPath)
       item.subItems.push(subItem)
       setup(remainingFragments, fullPath, subItem, itemKey, staticValues)
     }
@@ -146,6 +168,7 @@ function setup(urlSegment: string, fullPath: string, item: DisclosureItemModel, 
     subItem.isNew = item.isNew
     subItem.isBlocked = staticValues.isBlocked
     subItem.isLoading = staticValues.isLoading
+    subItem.isIntercepting = staticValues.interceptPath?.includes(fullPath)
     item.subItems.push(subItem)
   }
 }
