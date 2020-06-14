@@ -96,15 +96,13 @@ function onItemAction(action: ItemAction, content: any, list: DisclosureListMode
       const itemKey = content as string
       // Means a previously selected item was deselected.
       if (itemKey === "") {
-        actionHandler(DiscloseAction.select, ["", []])
+        actionHandler(DiscloseAction.select, ["", ""])
         setState(state => { return { ...state, selectedItemKey: "" } })
         return
       }
       // Otherwise, we must het the item
       const selectedItem = list.getItem(itemKey)!
-      // TODO: REMOVE THIS `underneathOriginalRequestKeys` SOMEHOW
-      const underneathRequestsKeys = selectedItem.underneathOriginalRequestKeys()
-      actionHandler(DiscloseAction.select, [selectedItem.originalRequestKey, underneathRequestsKeys])
+      actionHandler(DiscloseAction.select, [selectedItem.originalRequestKey, selectedItem.path])
       setState(state => { return { ...state, selectedItemKey: itemKey } })
       break
     }
@@ -149,7 +147,7 @@ function onMouseEvent(event: MouseEvent,
   // Detects a tap on the RequestsSidebar but not on the list component. The expected behavior is to unselect
   // the current selected item - if it exists.
   if (!listWrapperRef.current?.contains(targetNode) && targetNode.className === "RequestsSidebar") {
-    actionHandler(DiscloseAction.select, ["", []])
+    actionHandler(DiscloseAction.select, ["", ""])
     setState(state => { return { ...state, selectedItemKey: "" } })
   }
 }

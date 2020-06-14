@@ -13,7 +13,6 @@ const RequestsDetails = ({ cycles }: { cycles: RequestCycle[] }) => {
   return (
     <>
       <div className="ContentColumn">
-        <h1>Requests Overview</h1>
         <RequestsCardsCollection cycles={cycles} />
         <h2>Distribution</h2>
         <RequestsDistribution cycles={cycles} />

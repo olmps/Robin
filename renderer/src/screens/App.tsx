@@ -80,10 +80,18 @@ function setupAppHandlers(appState: AppState, setAppState: SetAppState): [Disclo
         break
       case DiscloseAction.select:
         const selectedCycleId: string = content[0]
-        const associatedRequestsIds: string[] = content[1]
-
+        const selectedCyclePath: string = content[1]
         const selectedCycle = appState.cycles.find(cycle => cycle.id === selectedCycleId)
-        const associatedCycles = appState.cycles.filter(cycle => associatedRequestsIds.includes(cycle.id))
+        
+        const associatedCycles = appState.cycles.filter(cycle => {
+          const hasDifferentId = cycle.id !== selectedCycleId
+          const hasPathIncluded = cycle.fullUrl.includes(selectedCyclePath)
+          const hasDifferentPath = cycle.fullUrl !== selectedCyclePath
+          const sameHostname = cycle.fullHostname === selectedCycle?.fullHostname
+          
+          return hasDifferentId && hasPathIncluded && hasDifferentPath && sameHostname
+        })
+        
         setAppState({ ...appState, selectedCycle, associatedCycles })
         break
       case DiscloseAction.fingerprint:
