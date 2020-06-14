@@ -10,6 +10,7 @@ let oneTimeSetup: boolean = false
 
 function startWindow() {
   mainWindow = new BrowserWindow({
+    title: 'Robin',
     width: 900,
     height: 680,
     minWidth: 850,
