@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import BounceLoader from "react-spinners/BounceLoader"
+import SyncLoader from "react-spinners/SyncLoader"
 
 import { RequestCycle } from '../../models'
 import { ContentType } from '../../shared'
@@ -53,13 +53,25 @@ const InformationContainer = (props: { cycle: RequestCycle, selectedTab: Tab }) 
       return <RequestContainer content={requestContent} type={ContentType.request} readOnly={true} />
     }
     case Tab.response: {
-      if (props.cycle.response === undefined) { return <div className="CenteredContent"><BounceLoader color="#FFF" /></div> }
+      if (props.cycle.response === undefined) { return <WaitingResponseEmptyState /> }
 
       const { cycleId, status, statusCode, headers, body } = props.cycle.response
       const responseContent = { cycleId, status, statusCode, headers, body }
       return <RequestContainer content={responseContent} type={ContentType.response} readOnly={true} />
     }
   }
+}
+
+const WaitingResponseEmptyState = () => {
+
+  return (
+    <div className="CenteredContent">
+      <SyncLoader color="#FFF" />
+      <p className="EmptyTitle">Waiting Response</p>
+      <p className="EmptyMessage">This request has no response yet.</p>
+      <p className="EmptyMessage">Once it arrives, the response content will appear here.</p>
+    </div>
+  )
 }
 
 export default SingleRequestDetails
