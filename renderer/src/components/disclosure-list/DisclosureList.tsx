@@ -37,7 +37,7 @@ export const DisclosureList = (props: { list: DisclosureListModel, actionHandler
   const contextMenuActionHandler = (action: ContextAction) => onContextMenuAction(action, listState.contextMenuData!.item, setListState, props.actionHandler)
   // Handle header actions
   const headerActionHandler = (action: DiscloseAction, content: any | undefined) => onHeaderAction(action, content, setListState, props.actionHandler)
-  // Dismiss Context Menu handler
+  // Dismiss Context Menu
   const dismissContextMenu = () => { setListState({ ...listState, contextMenuData: undefined }) }
 
   useEffect(() => {
@@ -55,9 +55,14 @@ export const DisclosureList = (props: { list: DisclosureListModel, actionHandler
   return (
     <div ref={wrapperRef} >
       <DisclosureListHeader actionHandler={headerActionHandler} />
+
       { hasFocusedItems ? 
           <SplitList items={props.list.items} actionHandler={itemActionHandler} /> :
-          <RecursiveDisclosureList items={props.list.items} actionHandler={itemActionHandler} /> }
+          <div className="HorizontallScrollable">
+            <RecursiveDisclosureList items={props.list.items} actionHandler={itemActionHandler} />
+          </div>
+      }
+      
       {listState.contextMenuData !== undefined ?
         <ContextMenu items={contextMenuDataSource(listState.contextMenuData!.item, contextMenuActionHandler)}
           xPosition={listState.contextMenuData!.clientX}
@@ -74,7 +79,7 @@ const SplitList = (props: { items: DisclosureItemModel[], actionHandler: ItemAct
   const unfocusedItems = props.items.filter(item => !item.isFocused)
 
   return (
-    <div>
+    <div className="HorizontallScrollable">
       <p className="Title">Focused</p>
       <RecursiveDisclosureList items={focusedItems} actionHandler={props.actionHandler} />
       <p className="Title">Others</p>
