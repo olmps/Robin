@@ -37,7 +37,7 @@ const Row = (props: { title: string, content: string }) => {
   return (
     <tr>
       <th className="Underscored">{props.title}</th>
-      <td className="Underscored">{props.content}</td>
+      <td className="Underscored Scrollable">{props.content}</td>
     </tr>
   )
 }
