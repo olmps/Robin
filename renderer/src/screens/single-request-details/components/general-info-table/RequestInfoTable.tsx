@@ -13,7 +13,7 @@ export const RequestInfoTable = (props: { cycle: RequestCycle }) => {
 
   const formattedStatus = props.cycle.isComplete ? "Complete" :
                           props.cycle.request.dropped ? "Blocked" : "Waiting Response"
-  const responseSize = props.cycle.response  !== undefined ? props.cycle.response.size : 0
+  const responseSize = props.cycle.response !== undefined ? props.cycle.response.size : 0
 
   return (
     <div className="RequestInfoTable">
