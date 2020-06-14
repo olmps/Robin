@@ -97,7 +97,7 @@ function buildDisclosureItems(cycles: RequestCycle[], interceptedPaths: string[]
     const staticValues = {
       sourceRequestId: cycle.id, 
       isBlocked: cycle.request.dropped, 
-      isLoading: cycle.response === undefined,
+      isLoading: !cycle.isComplete,
       interceptPath: interceptedPaths.find(path => path.includes(relatedItem.path))
     }
     setup(cycle.url, cycle.fullHostname, relatedItem, relatedItem.key, staticValues)

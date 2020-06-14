@@ -44,10 +44,11 @@ export class RequestCycle {
   get fullHostname(): string { return `${this.request.protocol}//${this.request.hostname}` }
   get method(): Method { return this.request.method }
   get statusCode(): number | undefined {
+    if (this.request.isWebSocketUpgrade) { return 101 }
     if (!this.response) { return undefined }
     return this.response.statusCode
   }
-  get isComplete(): boolean { return this.response !== undefined }
+  get isComplete(): boolean { return this.request.isWebSocketUpgrade || this.response !== undefined }
   get isSecure(): boolean { return this.request.protocol === "https:" }
 
   constructor(id: string, request: Request, duration: number, geoLocation?: GeoLocation, response?: Response) {

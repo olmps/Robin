@@ -63,6 +63,7 @@ export class Request {
 
   get fullUrl(): string { return `${this.protocol}//${this.hostname}${this.url}` }
   get rawMethod(): string { return rawMethod(this.method) }
+  get isWebSocketUpgrade(): boolean { return this.headers.upgrade === "websocket" }
 
   // Transient properties
   isNewRequest: boolean = true
