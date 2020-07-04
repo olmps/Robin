@@ -13,6 +13,7 @@ require('codemirror/mode/http/http.js')
 
 type RequestContentHandler = (result: RequestContent) => void
 type ResponseContentHandler = (result: ResponseContent) => void
+type CommonContent = { headers: Record<string, HeaderValue>, body: string }
 
 interface ContainerProps {
   content: RequestContent | ResponseContent
@@ -67,10 +68,16 @@ const RequestContainer: React.FunctionComponent<ContainerProps> = (props) => {
 function handleChanges(newValue: string, cycleId: string, type: ContentType, handler: RequestContentHandler | ResponseContentHandler) {
   switch (type) {
     case ContentType.request:
-      handleRequestChanges(newValue, cycleId, handler as RequestContentHandler)
+      const requestHandler = handler as RequestContentHandler
+      const requestChanges = formatRequestChanges(newValue)
+      requestChanges.cycleId = cycleId
+      requestHandler(requestChanges)
       break
     case ContentType.response: 
-      handleResponseChanges(newValue, cycleId, handler as ResponseContentHandler)
+      const responseHandler = handler as ResponseContentHandler
+      const responseChanges = formatResponseChanges(newValue)
+      responseChanges.cycleId = cycleId
+      responseHandler(responseChanges)
       break
   }
 }
@@ -78,7 +85,7 @@ function handleChanges(newValue: string, cycleId: string, type: ContentType, han
 /**
  * Handle request changes on the textarea editor.
  * 
- * We are expecting a request with a valid raw format, i.e:
+ * A valid raw format is expected, i.e:
  * 
  *    <METHOD> <PATH> <PROTOCOL>
  *    [<HEADER>]
@@ -87,7 +94,7 @@ function handleChanges(newValue: string, cycleId: string, type: ContentType, han
  *    
  * Any changes to this content format will - and must - create an invalid request.
  */
-function handleRequestChanges(newValue: string, cycleId: string, handler: RequestContentHandler) {
+function formatRequestChanges(newValue: string): any {
   let requestLines = newValue.split('\n')
 
   const requestMethodAndPath = requestLines[0]
@@ -95,12 +102,47 @@ function handleRequestChanges(newValue: string, cycleId: string, handler: Reques
   const path = requestMethodAndPath.split(' ')[1]
   requestLines.shift() // Removes first line
 
+  const commonChanges = handleCommonChanges(requestLines)
+
+  return { type: 'request', method: rawMethod, path, headers: commonChanges.headers, body: commonChanges.body }
+}
+
+/**
+ * Handle response changes on the textarea editor.
+ * 
+ * A valid raw format is expected, i.e:
+ * 
+ *    <PROTOCOL> <STATUS CODE> <STATUS NAME>
+ *    [<HEADER>]
+ * 
+ *    <BODY>
+ *    
+ * Any changes to this content format will - and must - create an invalid response.
+ */
+function formatResponseChanges(newValue: string): any {
+  let responseLines = newValue.split('\n')
+
+  const splitStatusLine = responseLines[0].split(' ')
+  splitStatusLine.shift() // Ignore protocol
+  const statusCode = Number(splitStatusLine[0])
+  responseLines.shift() // Removes first line
+
+  const commonChanges = handleCommonChanges(responseLines)
+
+  return { type: 'response', statusCode, headers: commonChanges.headers, body: commonChanges.body }
+}
+
+/**
+ * Request and Response has the same structure except from the first line.
+ * This function extract the headers and body from the text area editor.
+ */
+function handleCommonChanges(contentLines: string[]): CommonContent {
   const headerRegex = new RegExp('([a-zA-Z0-9-_]+):(.*)')
-  const headers: Record<string, HeaderValue> = { }
+  let headers: Record<string, HeaderValue> = { }
   let isReadingBody = false
   let body = ""
 
-  for (const line of requestLines) {
+  for (const line of contentLines) {
     if (line === "" || !headerRegex.test(line)) {
       isReadingBody = true
       continue
@@ -120,48 +162,7 @@ function handleRequestChanges(newValue: string, cycleId: string, handler: Reques
     }
   }
 
-  const newContent = { cycleId, type: 'request', method: rawMethod, path, headers, body }
-  handler(newContent)
-}
-
-/**
- * Handle response changes on the textarea editor.
- * 
- * We are expecting a response with a valid raw format, i.e:
- * 
- *    <PROTOCOL> <STATUS CODE> <STATUS NAME>
- *    [<HEADER>]
- *    
- * Any changes to this content format will - and must - create an invalid response.
- */
-function handleResponseChanges(newValue: string, cycleId: string, handler: ResponseContentHandler) {
-  let responseLines = newValue.split('\n')
-
-  const splitStatusLine = responseLines[0].split(' ')
-  splitStatusLine.shift() // Ignore protocol
-  
-  const statusCode = Number(splitStatusLine[0])
-
-  responseLines.shift()
-
-  const headerRegex = new RegExp('([a-zA-Z0-9-_]+):(.*)')
-  let headers: Record<string, HeaderValue> = { }
-
-  for (const line of responseLines) {
-    if (!headerRegex.test(line)) { continue }
-    const key = line.split(':')[0]
-    const value = line.split(':')[1]
-    if (key in headers) {
-      const values = headers[key] as string[]
-      values.push(value)
-      headers[key] = values
-      continue
-    }
-    headers[key] = value
-  }
-
-  const newContent = { cycleId, type: 'response', statusCode, headers }
-  handler(newContent)
+  return { headers, body }
 }
 
 export default RequestContainer
