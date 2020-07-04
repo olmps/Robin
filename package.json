@@ -4,6 +4,8 @@
   "description": "A Web Security Tool",
   "main": "index.js",
   "scripts": {
+    "postinstall": "npm run install-modules",
+    "install-modules": "concurrently --kill-others-on-fail \"cd main && npm i\" \"cd renderer && npm i\"",
     "copy-shared": "copyfiles --flat shared/*.ts main/src/shared/ && copyfiles --flat shared/*.ts renderer/src/shared/",
     "start-react": "cd renderer && npm run start",
     "start-electron": "cd main && npm run start",
