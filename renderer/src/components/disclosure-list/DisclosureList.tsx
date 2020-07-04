@@ -37,7 +37,7 @@ export const DisclosureList = (props: { list: DisclosureListModel, actionHandler
   const contextMenuActionHandler = (action: ContextAction) => onContextMenuAction(action, listState.contextMenuData!.item, setListState, props.actionHandler)
   // Handle header actions
   const headerActionHandler = (action: DiscloseAction, content: any | undefined) => onHeaderAction(action, content, setListState, props.actionHandler)
-  // Dismiss Context Menu handler
+  // Dismiss Context Menu
   const dismissContextMenu = () => { setListState({ ...listState, contextMenuData: undefined }) }
 
   useEffect(() => {
@@ -55,9 +55,14 @@ export const DisclosureList = (props: { list: DisclosureListModel, actionHandler
   return (
     <div ref={wrapperRef} >
       <DisclosureListHeader actionHandler={headerActionHandler} />
+
       { hasFocusedItems ? 
           <SplitList items={props.list.items} actionHandler={itemActionHandler} /> :
-          <RecursiveDisclosureList items={props.list.items} actionHandler={itemActionHandler} /> }
+          <div className="HorizontallScrollable">
+            <RecursiveDisclosureList items={props.list.items} actionHandler={itemActionHandler} />
+          </div>
+      }
+      
       {listState.contextMenuData !== undefined ?
         <ContextMenu items={contextMenuDataSource(listState.contextMenuData!.item, contextMenuActionHandler)}
           xPosition={listState.contextMenuData!.clientX}
@@ -74,7 +79,7 @@ const SplitList = (props: { items: DisclosureItemModel[], actionHandler: ItemAct
   const unfocusedItems = props.items.filter(item => !item.isFocused)
 
   return (
-    <div>
+    <div className="HorizontallScrollable">
       <p className="Title">Focused</p>
       <RecursiveDisclosureList items={focusedItems} actionHandler={props.actionHandler} />
       <p className="Title">Others</p>
@@ -91,15 +96,13 @@ function onItemAction(action: ItemAction, content: any, list: DisclosureListMode
       const itemKey = content as string
       // Means a previously selected item was deselected.
       if (itemKey === "") {
-        actionHandler(DiscloseAction.select, ["", []])
+        actionHandler(DiscloseAction.select, ["", ""])
         setState(state => { return { ...state, selectedItemKey: "" } })
         return
       }
       // Otherwise, we must het the item
       const selectedItem = list.getItem(itemKey)!
-      // TODO: REMOVE THIS `underneathOriginalRequestKeys` SOMEHOW
-      const underneathRequestsKeys = selectedItem.underneathOriginalRequestKeys()
-      actionHandler(DiscloseAction.select, [selectedItem.originalRequestKey, underneathRequestsKeys])
+      actionHandler(DiscloseAction.select, [selectedItem.originalRequestKey, selectedItem.path])
       setState(state => { return { ...state, selectedItemKey: itemKey } })
       break
     }
@@ -144,7 +147,7 @@ function onMouseEvent(event: MouseEvent,
   // Detects a tap on the RequestsSidebar but not on the list component. The expected behavior is to unselect
   // the current selected item - if it exists.
   if (!listWrapperRef.current?.contains(targetNode) && targetNode.className === "RequestsSidebar") {
-    actionHandler(DiscloseAction.select, ["", []])
+    actionHandler(DiscloseAction.select, ["", ""])
     setState(state => { return { ...state, selectedItemKey: "" } })
   }
 }

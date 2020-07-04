@@ -66,19 +66,4 @@ export class DisclosureItemModel {
 
     return hasNotVisibleChild
   }
-
-  /**
-   * Recursively collect all `originalRequestKey` from subitems. It indicates
-   * all requests ids that are represented by this item and its subitems.
-   */
-  underneathOriginalRequestKeys(): string[] {
-    let requestsKeys = [this.originalRequestKey]
-
-    for (const subItem of this.subItems) {
-      const subItemKeys = subItem.underneathOriginalRequestKeys()
-      requestsKeys = requestsKeys.concat(subItemKeys)
-    }
-
-    return requestsKeys
-  }
 }

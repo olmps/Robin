@@ -19,14 +19,6 @@ const RequestsList = ( props: { requests: RequestCycle[], actionHandler: Disclos
 
   const listActionHandler = (action: DiscloseAction, content: any | undefined) => {
     switch (action) {
-      // Remove duplicates from the underneath id's before moving on
-      case DiscloseAction.select:
-        const selectedCycleId: string = content[0]
-        const associatedRequestsIds: string[] = content[1]
-        let filteredAssociateIds = associatedRequestsIds.unique()
-        filteredAssociateIds = filteredAssociateIds.filter(id => id !== selectedCycleId)
-        props.actionHandler(DiscloseAction.select, [selectedCycleId, filteredAssociateIds])
-        break
       case DiscloseAction.interceptPath:
         const interceptedPaths = state.interceptedPaths
         if (interceptedPaths.includes(content)) {
@@ -97,7 +89,7 @@ function buildDisclosureItems(cycles: RequestCycle[], interceptedPaths: string[]
     const staticValues = {
       sourceRequestId: cycle.id, 
       isBlocked: cycle.request.dropped, 
-      isLoading: cycle.response === undefined,
+      isLoading: !cycle.isComplete,
       interceptPath: interceptedPaths.find(path => path.includes(relatedItem.path))
     }
     setup(cycle.url, cycle.fullHostname, relatedItem, relatedItem.key, staticValues)

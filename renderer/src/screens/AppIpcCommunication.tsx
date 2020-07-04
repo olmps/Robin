@@ -87,8 +87,8 @@ function ipcHandlers(setAppState: SetAppState): [CycleUpdateHandler, CycleUpdate
 
       if (isInterceptEnabled && interceptPaths.find(path => updatedCycle?.fullUrl.includes(path)) !== undefined) {
         const interceptedRequests = state.interceptedRequests
-        const { cycleId, status, statusCode, headers } = response
-        const updatedContent = { cycleId, status, statusCode, headers }
+        const { cycleId, status, statusCode, headers, body } = response
+        const updatedContent = { cycleId, status, statusCode, headers, body }
         interceptedRequests.push(updatedContent)
         return { ...state, cycles, interceptedRequests }
       } else if (isInterceptEnabled) {

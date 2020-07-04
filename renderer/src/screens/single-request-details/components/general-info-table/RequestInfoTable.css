@@ -16,12 +16,14 @@ td, th {
 
 td {
   white-space: nowrap;
-  text-overflow: ellipsis;
-  overflow: hidden;
   width: 100%;
   word-wrap: break-word;
 }
 
 .Underscored {
   border-bottom: 1pt solid #4C4C4C;
+}
+
+.Scrollable {
+  overflow-x: scroll;
 }
