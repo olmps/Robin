@@ -61,7 +61,7 @@ const RequestDetailsPane = (props: { appState: AppState, interceptHandler: Inter
 
   return (
     hasInterceptedContent ?
-      <InterceptedRequestDetails content={interceptedContent} handler={props.interceptHandler} /> :
+      <InterceptedRequestDetails key={interceptedContent.cycleId} content={interceptedContent} handler={props.interceptHandler} /> :
       isSingleRequest ?
         <SingleRequestDetails selectedCycle={props.appState.selectedCycle!} /> :
         hasSelectedRequest ?
