@@ -153,7 +153,9 @@ export class ProxyHandler {
 
         response.statusCode = updatedContent.statusCode
         response.headers = updatedContent.headers
-        response.string = updatedContent.body
+        if (updatedContent.body) {
+          response.stringBody = updatedContent.body
+        }
 
         return Promise.resolve(response)
       } catch (error) {

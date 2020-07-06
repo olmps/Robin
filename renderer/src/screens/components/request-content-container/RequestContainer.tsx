@@ -137,19 +137,18 @@ function formatResponseChanges(newValue: string): any {
  * This function extract the headers and body from the text area editor.
  */
 function handleCommonChanges(contentLines: string[]): CommonContent {
-  const headerRegex = new RegExp('([a-zA-Z0-9-_]+):(.*)')
   let headers: Record<string, HeaderValue> = { }
   let isReadingBody = false
   let body = ""
 
   for (const line of contentLines) {
-    if (line === "" || !headerRegex.test(line)) {
+    if (line === "") {
       isReadingBody = true
       continue
     }
     if (!isReadingBody) {
       const key = line.split(':')[0]
-      const value = line.split(':')[1].trim()
+      const value = line.substring(line.indexOf(":") + 1)
       if (key in headers) {
         const values = headers[key] as string[]
         values.push(value)
@@ -158,7 +157,7 @@ function handleCommonChanges(contentLines: string[]): CommonContent {
       }
       headers[key] = value
     } else {
-      body += `\n${line}`
+      body += `${line}\n`
     }
   }
 
