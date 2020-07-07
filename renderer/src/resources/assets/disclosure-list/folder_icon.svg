@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="60px" height="46px" viewBox="0 0 60 46" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 54.1 (76490) - https://sketchapp.com -->
+    <title>Antu_folder-dropbox</title>
+    <desc>Created with Sketch.</desc>
+    <defs>
+        <linearGradient x1="15.0887149%" y1="50.9788843%" x2="15.1158815%" y2="42.7786602%" id="linearGradient-1">
+            <stop stop-color="#4B88A6" offset="0%"></stop>
+            <stop stop-color="#71B9F1" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="Page-1" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Antu_folder-dropbox" fill-rule="nonzero">
+            <path d="M1.9743654,0.3898914 C1.39084176,0.3898914 0.92122254,0.85887992 0.92122254,1.4412683 L0.92122254,21.8015257 L59.0742853,21.9276657 L59.0742853,6.6394977 C59.0742853,6.05698318 58.60454,5.5881208 58.0210163,5.5881208 L24.5333691,5.5881208 C23.4599177,5.68285194 23.3215422,5.54056602 22.7911235,4.83367746 C22.0388245,3.82859394 20.9029338,2.12885744 20.1623659,1.14912806 C19.5679942,0.29074536 19.4714971,0.38976526 18.485713,0.38976526 L1.9743654,0.3898914 Z" id="Path" fill="url(#linearGradient-1)"></path>
+            <rect id="Rectangle" stroke="#69B8D7" stroke-width="0.5" fill="#5EB4DC" x="0.743239" y="8.2194012" width="58.510039" height="37.2276982" rx="9.63"></rect>
+        </g>
+    </g>
+</svg>

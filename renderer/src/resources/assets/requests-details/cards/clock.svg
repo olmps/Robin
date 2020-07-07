@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="50px" height="50px" viewBox="0 0 50 50" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <!-- Generator: Sketch 54.1 (76490) - https://sketchapp.com -->
+    <title>query_builder-24px</title>
+    <desc>Created with Sketch.</desc>
+    <g id="Symbols" stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+        <g id="Time-Card" transform="translate(-90.000000, -25.000000)">
+            <g id="Group">
+                <g id="query_builder-24px" transform="translate(85.000000, 20.000000)">
+                    <path d="M29.975,5 C16.175,5 5,16.2 5,30 C5,43.8 16.175,55 29.975,55 C43.8,55 55,43.8 55,30 C55,16.2 43.8,5 29.975,5 Z M30,50 C18.95,50 10,41.05 10,30 C10,18.95 18.95,10 30,10 C41.05,10 50,18.95 50,30 C50,41.05 41.05,50 30,50 Z" id="Shape" fill="#F6F5F5" fill-rule="nonzero"></path>
+                    <polygon id="Path" points="0 0 60 0 60 60 0 60"></polygon>
+                    <polygon id="Path" fill="#F6F5F5" fill-rule="nonzero" points="31.25 17.5 27.5 17.5 27.5 32.5 40.625 40.375 42.5 37.3 31.25 30.625"></polygon>
+                </g>
+            </g>
+        </g>
+    </g>
+</svg>

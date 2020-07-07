@@ -1,0 +1,44 @@
+.ContentColumn {
+  box-sizing: border-box;
+  overflow-y: scroll;
+  height: 100%;
+  width: 100%;
+  padding: 20px 40px 20px 40px;
+}
+
+.ButtonsContainer {
+  padding-top: 24px;
+  padding-bottom: 24px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.SendButton, .DropButton {
+  cursor: pointer;
+  font-size: 28px;
+  font-weight: bold;
+  border-radius: 6px;
+  height: 60px;
+  width: 200px;
+  outline: none;
+  border: none;
+  color: white;
+}
+
+.SendButton {
+  margin-left: 40px;
+  background-color: #41A22E;
+}
+
+.SendButton:active {
+  opacity: 0.8;
+}
+
+.DropButton {
+  background-color: #D11A1A;
+}
+
+.DropButton:active {
+  opacity: 0.8;
+}

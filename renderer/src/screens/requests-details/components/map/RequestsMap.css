@@ -1,0 +1,33 @@
+.HighlightedCircle {
+  fill: #325AD0;
+  animation: circlecolorchange 1s;
+}
+
+@keyframes circlecolorchange {
+  0% {
+    fill: #325AD0;
+  }
+  50% {
+    fill: #FFFFFF;
+  }
+  100% {
+    fill: #325AD0;
+  }
+}
+
+.HighlightedLine {
+  stroke: #325AD0;
+  animation: linecolorchange 1s;
+}
+
+@keyframes linecolorchange {
+  0% {
+    stroke: #325AD0;
+  }
+  50% {
+    stroke: #FFFFFF;
+  }
+  100% {
+    stroke: #325AD0;
+  }
+}

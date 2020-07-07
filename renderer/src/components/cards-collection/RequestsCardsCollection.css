@@ -1,0 +1,28 @@
+.CardsCollection {
+  padding: 20px 0px 40px 0px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: nowrap;
+  justify-content: space-evenly;
+}
+
+.CardsCollection > * {
+  margin: 0 10px;
+}
+
+.CardsCollection > :first-child {
+  margin-left: 0px;
+}
+
+.CardsCollection > :last-child {
+  margin-right: 0px;
+}
+
+.CardIcon {
+  height: 60px;
+  width: 60px;
+}
+
+.Red g {
+  fill: red;
+}

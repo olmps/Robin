@@ -1,0 +1,29 @@
+.RequestInfoTable {
+  padding: 32px 0px 0px 0px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+td, th {
+  text-align: left;
+  padding: 8px;
+  width: 20%;
+}
+
+td {
+  white-space: nowrap;
+  width: 100%;
+  word-wrap: break-word;
+}
+
+.Underscored {
+  border-bottom: 1pt solid #4C4C4C;
+}
+
+.Scrollable {
+  overflow-x: scroll;
+}

@@ -1,0 +1,8 @@
+.Title {
+  margin: 8px;
+  font-weight: bold;
+}
+
+.HorizontallScrollable {
+  overflow-x: scroll;
+}

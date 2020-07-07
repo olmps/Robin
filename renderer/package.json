@@ -1,0 +1,81 @@
+{
+  "name": "robin",
+  "description": "A Web Security Tool",
+  "version": "1.0.0",
+  "private": true,
+  "author": "Guilherme Girotto",
+  "homepage": "./",
+  "build": {
+    "appId": "com.guilhermegirotto.robin",
+    "productName": "Robin",
+    "files": [
+      "build/**/*",
+      "node_modules/**/*"
+    ],
+    "directories": {
+      "buildResources": "assets"
+    },
+    "win": {
+      "target": "portable",
+      "icon": "assets/app.ico"
+    }
+  },
+  "dependencies": {
+    "chart.js": "^2.9.3",
+    "codemirror": "^5.53.2",
+    "geoip-lite": "^1.4.2",
+    "public-ip": "^4.0.1",
+    "react": "^16.8.6",
+    "react-chartjs-2": "^2.9.0",
+    "react-codemirror2": "^7.1.0",
+    "react-dom": "^16.8.6",
+    "react-scripts": "3.0.1",
+    "react-simple-maps": "^2.0.0",
+    "react-spinners": "^0.8.3",
+    "typescript": "3.8.3",
+    "uuidv4": "^6.0.7",
+    "web-proxy-sniffer": "^1.1.0"
+  },
+  "scripts": {
+    "react-start": "react-scripts start",
+    "react-build": "react-scripts build",
+    "react-test": "react-scripts test --env=jsdom",
+    "react-eject": "react-scripts eject",
+    "react-prebuild": "cross-env cp -R ../main/dist/ public/",
+    "electron-build": "electron-builder",
+    "release": "npm run react-prebuild && npm run react-build && electron-builder build --mac --win -c.extraMetadata.main=build/electron.js --publish never",
+    "build": "npm run react-prebuild && npm run react-build && npm run electron-build",
+    "start": "cross-env BROWSER=none npm run react-start"
+  },
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/codemirror": "0.0.91",
+    "@types/react-simple-maps": "^1.0.2",
+    "@types/electron": "^1.6.10",
+    "@types/jest": "^25",
+    "@types/node": "^13",
+    "@types/react": "^16",
+    "@types/react-dom": "^16",
+    "concurrently": "^5",
+    "cross-env": "^7",
+    "electron": "^8",
+    "electron-builder": "^22",
+    "electron-reload": "^1.4.0",
+    "wait-on": "^4",
+    "watch": "^1.0.2"
+  }
+}

@@ -1,0 +1,42 @@
+.SegmentedControl {
+  display: inline-flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: flex-end;
+  width: 100%;
+  min-width: 650px;
+}
+
+.SegmentedControl > :last-child {
+  margin-right: 0px;
+}
+
+.HighlightedSegment {
+  cursor: pointer;
+  text-align: center;
+  margin-right: 100px;
+  border-bottom: 3px solid #41A22E;
+}
+
+.HighlightedSegment h2 {
+  margin: 0px 0px 10px 0px;
+  font-size: 32px;
+  color: #F6F5F5;
+}
+
+.NormalSegment {
+  cursor: pointer;
+  text-align: center;
+  margin-right: 100px;
+}
+
+.NormalSegment h2 {
+  margin: 0px 0px 10px 0px;
+  font-size: 32px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.NormalSegment h2:hover {
+  font-size: 32px;
+  color: #F6F5F5;
+}

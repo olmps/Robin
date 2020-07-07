@@ -1,0 +1,30 @@
+.ContextMenu {
+  display: flex;
+  flex-flow: column;
+  position: absolute;
+  z-index: 9999;
+  border-radius: 8px;
+  background-color: rgba(33, 33, 33, 1);
+  border-color: #494949;
+  border-width: 1px;
+  border-style: solid;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2);
+  min-width: 150px;
+  padding: 4px 0px 4px 0px;
+}
+
+.Separator {
+  height: 1px;
+  background-color: #494949;
+}
+
+.Item {
+  margin: 0;
+  font-size: 20;
+  padding: 8px;
+  user-select: none;
+}
+
+.Item:hover {
+  background-color: #3E68DB;
+}
