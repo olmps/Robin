@@ -40,21 +40,15 @@ const InterceptedRequestDetails = (props: { content: AnyContent, handler: Interc
 const InformationContainer = (props: { content: AnyContent, type: ContentType, setState: SetInterceptState }) => {
   switch (props.type) {
     case ContentType.request:
-      const requestHandler = (updatedContent: AnyContent) => { requestUpdateHandler(updatedContent, props.setState) }
+      const requestHandler = (updatedContent: AnyContent) => { contentUpdateHandler(updatedContent, props.setState) }
       return <RequestContainer content={props.content} type={props.type} readOnly={false} handler={requestHandler} />
     case ContentType.response:
-      const responseHandler = (updatedContent: AnyContent) => { responseUpdateHandler(updatedContent, props.setState) }
+      const responseHandler = (updatedContent: AnyContent) => { contentUpdateHandler(updatedContent, props.setState) }
       return <RequestContainer content={props.content} type={props.type} readOnly={false} handler={responseHandler} />
   }
 }
 
-function requestUpdateHandler(updatedContent: AnyContent, setState: SetInterceptState) {
-  setState(state => {
-    return { ...state, updatedContent }
-  })
-}
-
-function responseUpdateHandler(updatedContent: AnyContent, setState: SetInterceptState) {
+function contentUpdateHandler(updatedContent: AnyContent, setState: SetInterceptState) {
   setState(state => {
     return { ...state, updatedContent }
   })

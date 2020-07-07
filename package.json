@@ -8,7 +8,14 @@
     "start-react": "cd renderer && npm run start",
     "start-electron": "cd main && npm run start",
     "start-modules": "concurrently --kill-others \"npm run start-react\" \"npm run start-electron\"",
-    "start": "npm run copy-shared && npm run start-modules"
+    "start": "npm run copy-shared && npm run start-modules",
+    "install-electron": "cd main && npm i",
+    "install-react": "cd renderer && npm i",
+    "install-dependencies": "npm i && npm run install-electron && npm run install-react",
+    "build-electron": "cd main && npm run build",
+    "build-react": "cd renderer && npm run build",
+    "build": "npm run build-electron && npm run build-react",
+    "release": "npm run build-electron && cd renderer && npm run release"
   },
   "devDependencies": {
     "concurrently": "^5.2.0",

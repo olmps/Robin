@@ -1,6 +1,7 @@
 import * as Sniffer from 'web-proxy-sniffer'
 import { uuid } from 'uuidv4'
 import * as fs from 'fs'
+import * as path from 'path'
 import { ProxyConfig } from './proxy-config'
 import { exec } from 'child_process'
 import GeoIpHandler from '../geoip/geoip'
@@ -23,8 +24,8 @@ export class ProxyHandler {
 
     this.proxyServer = Sniffer.createServer({
       certAuthority: {
-        key: fs.readFileSync(`src/resources/certificates/proxy-cert-key.key.pem`),
-        cert: fs.readFileSync(`src/resources/certificates/proxy-cert.crt.pem`)
+        key: fs.readFileSync(path.join(__dirname, "..") + `/resources/certificates/proxy-cert-key.key.pem`),
+        cert: fs.readFileSync(path.join(__dirname, "..") + `/resources/certificates/proxy-cert.crt.pem`)
       }
     })
 
@@ -153,7 +154,9 @@ export class ProxyHandler {
 
         response.statusCode = updatedContent.statusCode
         response.headers = updatedContent.headers
-        response.string = updatedContent.body
+        if (updatedContent.body) {
+          response.stringBody = updatedContent.body
+        }
 
         return Promise.resolve(response)
       } catch (error) {

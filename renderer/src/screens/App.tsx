@@ -61,7 +61,7 @@ const RequestDetailsPane = (props: { appState: AppState, interceptHandler: Inter
 
   return (
     hasInterceptedContent ?
-      <InterceptedRequestDetails content={interceptedContent} handler={props.interceptHandler} /> :
+      <InterceptedRequestDetails key={interceptedContent.cycleId} content={interceptedContent} handler={props.interceptHandler} /> :
       isSingleRequest ?
         <SingleRequestDetails selectedCycle={props.appState.selectedCycle!} /> :
         hasSelectedRequest ?
@@ -105,7 +105,6 @@ function setupAppHandlers(appState: AppState, setAppState: SetAppState): [Disclo
         sendUpdatedProxyOptions(setAppState, updatedOptions.isFingerprintEnabled, updatedOptions.isInterceptEnabled)
         break
       case DiscloseAction.interceptPath:
-        console.log("Intercepting path " + content)
         const interceptedPaths = updatedOptions.interceptPaths
         if (interceptedPaths.includes(content)) {
           const index = interceptedPaths.indexOf(content)

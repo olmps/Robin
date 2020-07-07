@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "main": "dist/electron.js",
   "scripts": {
-    "start": "concurrently \"tsc -w\"  \"cross-env NODE_ENV=dev nodemon --exec 'wait-on http://localhost:3000 && electron dist/electron.js'\""
+    "build": "tsc && npm run copy-resources",
+    "copy-resources": "cross-env cp -R src/resources/ dist/resources/",
+    "start": "npm run build && concurrently \"tsc -w\"  \"cross-env NODE_ENV=dev nodemon --exec 'wait-on http://localhost:3000 && electron dist/electron.js'\""
   },
   "author": "Guilherme Girotto",
   "dependencies": {
+    "electron": "^8",
     "geoip-lite": "^1.4.2",
     "public-ip": "^4.0.1",
     "uuidv4": "^6.0.7",
@@ -20,8 +23,6 @@
     "@types/uuidv4": "^5.0.0",
     "concurrently": "^5",
     "cross-env": "^7",
-    "electron": "^8",
-    "electron-is-dev": "^1.1.0",
     "nodemon": "^2",
     "typescript": "^3",
     "wait-on": "^4"

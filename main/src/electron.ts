@@ -1,6 +1,6 @@
-import { BrowserWindow, app, ipcMain, ipcRenderer } from 'electron'
-import * as isDev from "electron-is-dev"
+import { BrowserWindow, app, ipcMain } from 'electron'
 import * as path from 'path'
+import * as url from 'url'
 import createProxyHandler, { ProxyHandler } from './proxy/proxy'
 import { UpdatedContent, IPCMessageChannel } from './shared'
 
@@ -17,13 +17,20 @@ function startWindow() {
     minHeight: 600,
     backgroundColor: '#FFFFFF',
     webPreferences: {
-      nodeIntegration: true,
+      nodeIntegration: true
     }
   })
+
+  const isDev = process.env.NODE_ENV == 'dev'
+
   mainWindow.loadURL(
     isDev
       ? "http://localhost:3000"
-      : `file://${path.join(__dirname, "../build/index.html")}`
+      : url.format({
+        pathname: path.join(__dirname, 'index.html'),
+        protocol: 'file:',
+        slashes: true,
+      })
   )
 
   if (isDev) { mainWindow.webContents.openDevTools() }

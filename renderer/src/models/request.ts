@@ -1,5 +1,5 @@
 export enum Method {
-  get, put, post, patch, delete
+  get, put, post, patch, delete, options, head, trace, connect
 }
 
 function createRequestMethod(rawMethod: string): Method {
@@ -9,8 +9,13 @@ function createRequestMethod(rawMethod: string): Method {
     case "PUT": return Method.put
     case "DELETE": return Method.delete
     case "PATCH": return Method.patch
+    case "OPTIONS": return Method.options
+    case "HEAD": return Method.head
+    case "TRACE": return Method.trace
+    case "CONNECT": return Method.connect
   }
 
+  console.log("[UNKNOWN RAW METHOD] WITH METHOD " + rawMethod)
   return Method.get
 }
 
@@ -21,6 +26,10 @@ function rawMethod(method: Method): string {
     case Method.put: return "PUT"
     case Method.delete: return "DELETE"
     case Method.patch: return "PATCH"
+    case Method.options: return "OPTIONS"
+    case Method.head: return "HEAD"
+    case Method.trace: return "TRACE"
+    case Method.connect: return "CONNECT"
   }
 }
 
