@@ -43,14 +43,9 @@ If you run `Robin` and your browser show scary messages about the traffic, you n
 # Clone the repository
 git clone https://github.com/olmps/Robin
 cd Robin
-# Install the root dependencies
-npm i
-# Install the Main dependencies
-cd main
-npm i
-# Install the Renderer dependencies
-cd renderer
-npm i
+
+# Install all modules dependencies
+npm run install-dependencies
 
 # Start the app
 npm run start
