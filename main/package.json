@@ -9,7 +9,7 @@
   },
   "author": "Guilherme Girotto",
   "dependencies": {
-    "electron": "^8",
+    "electron": "^9",
     "geoip-lite": "^1.4.2",
     "public-ip": "^4.0.1",
     "uuidv4": "^6.0.7",
